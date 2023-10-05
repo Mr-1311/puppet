@@ -1,18 +1,8 @@
 import 'dart:math';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final wheelShaderProgramProvider = FutureProvider((_) async {
-  return await FragmentProgram.fromAsset('shaders/wheel.frag');
-});
-
-final wheelShaderProvider = Provider((ref) {
-  final shaderProgram = ref.watch(wheelShaderProgramProvider);
-
-  return shaderProgram.whenData((value) => value.fragmentShader()).value;
-});
 
 final hoveredSectionProvider = StateProvider((ref) => 0);
 
@@ -62,45 +52,65 @@ class Wheel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
-    final shader = ref.watch(wheelShaderProvider);
     final section = ref.watch(hoveredSectionProvider);
 
     return Listener(
       onPointerHover: (event) => _updateHoverdSection(event, size, ref),
       child: CustomPaint(
         painter: WheelPainter(
-            size: size,
-            sectionSize: sectionSize,
-            section: section,
-            shader: shader),
+          size: size,
+          sectionSize: sectionSize,
+          section: section,
+        ),
       ),
     );
   }
 }
 
 class WheelPainter extends CustomPainter {
-  WheelPainter(
-      {required this.size,
-      required this.sectionSize,
-      required this.section,
-      required this.shader});
+  WheelPainter({
+    required this.size,
+    required this.sectionSize,
+    required this.section,
+  });
 
   final Size size;
   final int sectionSize;
   final int section;
-  final FragmentShader? shader;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (shader != null) {
-      shader!.setFloat(0, size.width);
-      shader!.setFloat(1, size.height);
-      shader!.setFloat(2, sectionSize.toDouble());
-      shader!.setFloat(3, section.toDouble());
+    final smallSide = min(size.width, size.height);
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final sectionAngle = 2 * pi / sectionSize;
+
+    // background
+    canvas.drawCircle(center, smallSide / 2, Paint()..color = Colors.blue);
+
+    // section
+    if (section != 0) {
+      canvas.drawArc(
+          Rect.fromCenter(center: center, width: smallSide, height: smallSide),
+          -section * sectionAngle,
+          sectionAngle,
+          true,
+          Paint()
+            ..blendMode = BlendMode.overlay
+            ..shader = ui.Gradient.radial(
+                center, smallSide, [Colors.white, Colors.black]));
     }
-    // canvas.drawCircle(const Offset(0, 0), 300, Paint());
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height), Paint()..shader = shader);
+
+    // sperators
+    var p1 = Offset(size.width / 2, size.height / 2);
+    var p2 = Offset((size.width / 2) + (smallSide / 2), size.height / 2);
+
+    for (var i = 0; i < sectionSize; i++) {
+      canvas.drawLine(p1, p2, Paint()..strokeWidth = 2);
+      canvas.translate(size.width / 2, size.height / 2);
+      canvas.rotate(sectionAngle);
+      canvas.translate(-size.width / 2, -size.height / 2);
+    }
   }
 
   @override

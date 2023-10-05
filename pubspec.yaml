@@ -20,3 +20,5 @@ flutter:
   uses-material-design: true
   shaders:
     - shaders/wheel.frag
+    - shaders/section.frag
+    - shaders/seperator.frag

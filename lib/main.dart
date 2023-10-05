@@ -14,7 +14,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Wheel(
-        sectionSize: 5,
+        sectionSize: 6,
       ),
     );
   }
