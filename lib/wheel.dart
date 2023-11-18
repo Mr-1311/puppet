@@ -12,7 +12,7 @@ class Wheel extends ConsumerWidget {
   final int sectionSize;
   late final double sectionAngle = 2 * pi / sectionSize;
 
-  _updateHoverdSection(PointerEvent event, Size size, WidgetRef ref) {
+  _updateHoverSection(PointerEvent event, Size size, WidgetRef ref) {
     // normalize mouse position and make origin to center
     var x = event.position.dx / size.width - 0.5;
     var y = (event.position.dy / size.height - 0.5) * -1;
@@ -54,13 +54,36 @@ class Wheel extends ConsumerWidget {
     final size = MediaQuery.of(context).size;
     final section = ref.watch(hoveredSectionProvider);
 
-    return Listener(
-      onPointerHover: (event) => _updateHoverdSection(event, size, ref),
-      child: CustomPaint(
-        painter: WheelPainter(
-          size: size,
-          sectionSize: sectionSize,
-          section: section,
+    return MouseRegion(
+      onExit: (event) => ref.read(hoveredSectionProvider.notifier).state = 0,
+      child: Listener(
+        onPointerHover: (event) => _updateHoverSection(event, size, ref),
+        onPointerUp: (event) {
+          print(ref.read(hoveredSectionProvider));
+          _updateHoverSection(event, size, ref);
+        },
+        child: Stack(
+          children: [
+            SizedBox.expand(
+              child: CustomPaint(
+                painter: WheelPainter(
+                  size: size,
+                  sectionSize: sectionSize,
+                  section: section,
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 18.0),
+                child: Text("1,a",
+                    style: TextStyle(
+                        fontSize: 30,
+                        color: Colors.black,
+                        decoration: TextDecoration.none)),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -80,37 +103,47 @@ class WheelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final smallSide = min(size.width, size.height);
+    final shortSide = size.shortestSide;
     final center = Offset(size.width / 2, size.height / 2);
 
     final sectionAngle = 2 * pi / sectionSize;
 
     // background
-    canvas.drawCircle(center, smallSide / 2, Paint()..color = Colors.blue);
+    canvas.drawCircle(center, shortSide / 2, Paint()..color = Colors.blue);
 
     // section
     if (section != 0) {
       canvas.drawArc(
-          Rect.fromCenter(center: center, width: smallSide, height: smallSide),
+          Rect.fromCenter(center: center, width: shortSide, height: shortSide),
           -section * sectionAngle,
           sectionAngle,
           true,
           Paint()
             ..blendMode = BlendMode.overlay
             ..shader = ui.Gradient.radial(
-                center, smallSide, [Colors.white, Colors.black]));
+                center, shortSide, [Colors.white, Colors.black]));
     }
 
+    final strokeWidth = shortSide * 0.002;
     // sperators
     var p1 = Offset(size.width / 2, size.height / 2);
-    var p2 = Offset((size.width / 2) + (smallSide / 2), size.height / 2);
+    var p2 = Offset((size.width / 2) + (shortSide / 2), size.height / 2);
 
     for (var i = 0; i < sectionSize; i++) {
-      canvas.drawLine(p1, p2, Paint()..strokeWidth = 2);
+      canvas.drawLine(p1, p2, Paint()..strokeWidth = strokeWidth);
       canvas.translate(size.width / 2, size.height / 2);
       canvas.rotate(sectionAngle);
       canvas.translate(-size.width / 2, -size.height / 2);
     }
+
+    // outline
+    canvas.drawCircle(
+        center,
+        (shortSide / 2) - (strokeWidth / 2),
+        Paint()
+          ..color = Colors.black
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth);
   }
 
   @override

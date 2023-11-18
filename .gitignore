@@ -46,3 +46,4 @@ app.*.map.json
 # temp
 /lib/wheel2.dart
 *.frag
+doc/

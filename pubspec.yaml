@@ -7,18 +7,20 @@ environment:
   sdk: '>=3.1.0-155.0.dev <4.0.0'
 
 dependencies:
+  app_dirs: ^0.2.0
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.3.6
+  flutter_riverpod: ^2.4.3
+  font_awesome_flutter: ^10.6.0
+  screen_retriever: ^0.1.9
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  custom_lint: ^0.5.3
+  riverpod_lint: ^2.3.1
 
 flutter:
-  uses-material-design: true
-  shaders:
-    - shaders/wheel.frag
-    - shaders/section.frag
-    - shaders/seperator.frag
+  assets:
+    - assets/config.json
