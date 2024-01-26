@@ -10,16 +10,17 @@ dependencies:
   app_dirs: ^0.2.0
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.4.3
+  flutter_riverpod: ^2.4.9
   font_awesome_flutter: ^10.6.0
   screen_retriever: ^0.1.9
+  window_manager: ^0.3.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
   custom_lint: ^0.5.3
-  riverpod_lint: ^2.3.1
+  riverpod_lint: ^2.3.7
 
 flutter:
   assets:

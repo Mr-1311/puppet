@@ -9,18 +9,18 @@ import 'package:screen_retriever/screen_retriever.dart';
 class ConfigRepository {
   static ConfigRepository? _instance;
 
-  final List<Items> _elements;
+  final Config _config;
 
   static Future<ConfigRepository> getInstance() async {
     if (_instance == null) {
       final configString = await _getConfigString();
       final config = Config.fromJson(jsonDecode(configString), Size(640, 640));
-      _instance = ConfigRepository._(config.menus.first.items);
+      _instance = ConfigRepository._(config);
     }
     return _instance!;
   }
 
-  ConfigRepository._(List<Items> elements) : _elements = elements;
+  ConfigRepository._(Config config) : _config = config;
 
   static Future<String> _getConfigString() async {
     final configPath = getAppDirs(application: 'puppet').config;
@@ -35,7 +35,7 @@ class ConfigRepository {
     return confFile.readAsString();
   }
 
-  List<Items> get elements => _elements;
+  Config get config => _config;
 }
 
 class MonitorInfo {

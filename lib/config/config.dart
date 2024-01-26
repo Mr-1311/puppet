@@ -68,6 +68,11 @@ class Config {
     data['menus'] = this.menus.map((v) => v.toJson()).toList();
     return data;
   }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 enum MenuType { wheel, list, canvas }
@@ -301,6 +306,11 @@ class Menus {
     data['maxElement'] = this.maxElement;
     data['items'] = this.items.map((v) => v.toJson()).toList();
     return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }
 
