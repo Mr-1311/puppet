@@ -101,7 +101,7 @@ class Menus {
     }
 
     if (json case {'type': String type}) {
-      if (MenuType.values.contains(type)) {
+      if (MenuType.values.asNameMap().containsKey(type)) {
         this.menuType = MenuType.values.byName(type);
         this.type = type;
       } else {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/config/config_repository.dart';
+import 'package:puppet/error_page.dart';
 import 'package:puppet/wheel.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -29,12 +30,11 @@ void main() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    // size: Size(800, 600),
+    size: Size(640, 640),
     // center: true,
     backgroundColor: Colors.transparent,
-    skipTaskbar: true,
-    // titleBarStyle: TitleBarStyle.hidden,
-    alwaysOnTop: true,
+    // skipTaskbar: true,
+    // alwaysOnTop: true,
   );
 
   windowManager.setResizable(false);
@@ -69,6 +69,7 @@ class MainApp extends ConsumerWidget {
     final conf = ref.watch(configRepositoryProvider);
     conf.whenData((value) {
       print(value.config.toString());
+      print(value.config.errors);
     });
     final menu = ref.watch(menuProvider);
     menu.whenData((value) {
@@ -76,10 +77,30 @@ class MainApp extends ConsumerWidget {
     });
 
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Wheel(
-        sectionSize: 3,
-      ),
-    );
+        debugShowCheckedModeBanner: false,
+        home: switch (conf) {
+          AsyncData(:final value) when value.config.errors.isNotEmpty =>
+            ErrorPage(value.config.errors),
+          _ => switch (menu) {
+              AsyncData(:final value) => Menu(menu: value),
+              _ => CircularProgressIndicator(),
+            }
+        });
+  }
+}
+
+class Menu extends StatelessWidget {
+  const Menu({required this.menu, super.key});
+
+  final Menus menu;
+
+  // TODO: generate menu items from plugin and send generated items to menu types
+  @override
+  Widget build(BuildContext context) {
+    return switch (menu) {
+      Menus(menuType: MenuType.wheel) => Wheel(menu: menu),
+      Menus(menuType: MenuType.list) => CircularProgressIndicator(),
+      Menus(menuType: MenuType.canvas) => CircularProgressIndicator(),
+    };
   }
 }
