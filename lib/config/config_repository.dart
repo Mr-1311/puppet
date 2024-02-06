@@ -11,10 +11,10 @@ class ConfigRepository {
 
   final Config _config;
 
-  static Future<ConfigRepository> getInstance() async {
+  static Future<ConfigRepository> getInstance(String? mainMenu) async {
     if (_instance == null) {
       final configString = await _getConfigString();
-      final config = Config.fromJson(jsonDecode(configString), Size(640, 640));
+      final config = Config.fromJson(jsonDecode(configString), Size(640, 640), mainMenu);
       _instance = ConfigRepository._(config);
     }
     return _instance!;

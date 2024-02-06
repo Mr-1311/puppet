@@ -14,13 +14,14 @@ class Config {
   late List<String> errors;
   late List<String> warnings;
 
-  Config.fromJson(Map<String, dynamic> json, Size screenSize) {
+  Config.fromJson(Map<String, dynamic> json, Size screenSize, String? mainMenuFromArgs) {
     if (json case {'version': int version}) {
       this.version = version;
-    } else {
-      _warnings.add(
-          "<version> property is null or empty or not a number, config will be parsed with version 1");
     }
+    // else {
+    //   _warnings.add(
+    //       "<version> property is null or empty or not a number, config will be parsed with version 1");
+    // }
 
     if (json case {'menus': List menus}) {
       this.menus = <Menus>[];
@@ -29,32 +30,38 @@ class Config {
       });
 
       if (this.menus.isEmpty) {
-        _errors.add(
-            "<menus> is null or empty or not a list, at least one menu is required to show");
+        _errors.add("<menus> is null or empty or not a list, at least one menu is required to show");
       }
     } else {
-      _errors.add(
-          "<menus> is null or empty or not a list, at least one menu is required to show");
+      _errors.add("<menus> is null or empty or not a list, at least one menu is required to show");
     }
 
-    if (json case {'mainMenu': String mainMenu}) {
-      if (mainMenu.isNotEmpty) {
-        if (this.menus.any((element) => element.name == mainMenu)) {
-          this.mainMenu = mainMenu;
+    if (mainMenuFromArgs != null) {
+      if (this.menus.any((element) => element.name == mainMenuFromArgs)) {
+        this.mainMenu = mainMenu;
+      } else {
+        _warnings.add("There is no menu name equal to given argument '$mainMenuFromArgs' in the menus list");
+      }
+    }
+
+    if (mainMenu.isEmpty) {
+      if (json case {'mainMenu': String mainMenu}) {
+        if (mainMenu.isNotEmpty) {
+          if (this.menus.any((element) => element.name == mainMenu)) {
+            this.mainMenu = mainMenu;
+          } else {
+            _warnings.add(
+                "There is no menu named $mainMenu in the menus list, main menu will be the first menu in the menus list");
+            this.mainMenu = this.menus[0].name;
+          }
         } else {
-          _warnings.add(
-              "There is no menu named $mainMenu in the menus list, main menu will be the first menu in the menus list");
+          _warnings.add("<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
           this.mainMenu = this.menus[0].name;
         }
       } else {
-        _warnings.add(
-            "<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
+        _warnings.add("<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
         this.mainMenu = this.menus[0].name;
       }
-    } else {
-      _warnings.add(
-          "<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
-      this.mainMenu = this.menus[0].name;
     }
 
     errors = _errors;
@@ -184,12 +191,10 @@ class Menus {
         for (String pos in position.split('-')) {
           switch (pos) {
             case 'top' || 'bottom' when (this.alignment!.y == 0.0):
-              this.alignment =
-                  Alignment(this.alignment!.x, pos == 'top' ? -1.0 : 1.0);
+              this.alignment = Alignment(this.alignment!.x, pos == 'top' ? -1.0 : 1.0);
               break;
             case 'left' || 'right' when (this.alignment!.x == 0.0):
-              this.alignment =
-                  Alignment(pos == 'left' ? -1.0 : 1.0, this.alignment!.y);
+              this.alignment = Alignment(pos == 'left' ? -1.0 : 1.0, this.alignment!.y);
               break;
             default:
               if (pos != 'center') {
@@ -207,8 +212,7 @@ class Menus {
     if (json case {'marginVertical': String marginVertical}) {
       this.marginVertical = marginVertical;
       if (marginVertical.endsWith('%')) {
-        var percent = int.tryParse(
-            marginVertical.substring(0, marginVertical.length - 1));
+        var percent = int.tryParse(marginVertical.substring(0, marginVertical.length - 1));
         if (percent != null && percent > 0) {
           percent = percent > 100 ? 100 : percent;
           final v = screenSize.height * (percent / 100);
@@ -222,8 +226,7 @@ class Menus {
       } else if (marginVertical != '_') {
         int? px;
         if (marginVertical.endsWith('px')) {
-          px = int.tryParse(
-              marginVertical.substring(0, marginVertical.length - 2));
+          px = int.tryParse(marginVertical.substring(0, marginVertical.length - 2));
         } else {
           px = int.tryParse(marginVertical);
         }
@@ -241,8 +244,7 @@ class Menus {
     if (json case {'marginHorizontal': String marginHorizontal}) {
       this.marginHorizontal = marginHorizontal;
       if (marginHorizontal.endsWith('%')) {
-        var percent = int.tryParse(
-            marginHorizontal.substring(0, marginHorizontal.length - 1));
+        var percent = int.tryParse(marginHorizontal.substring(0, marginHorizontal.length - 1));
         if (percent != null && percent > 0) {
           percent = percent > 100 ? 100 : percent;
           final h = screenSize.width * (percent / 100);
@@ -255,8 +257,7 @@ class Menus {
       } else if (marginHorizontal != '_') {
         int? px;
         if (marginHorizontal.endsWith('px')) {
-          px = int.tryParse(
-              marginHorizontal.substring(0, marginHorizontal.length - 2));
+          px = int.tryParse(marginHorizontal.substring(0, marginHorizontal.length - 2));
         } else {
           px = int.tryParse(marginHorizontal);
         }
@@ -277,8 +278,7 @@ class Menus {
     if (json case {'maxElement': int maxElement}) {
       this.maxElement = maxElement;
     } else {
-      _warnings.add(
-          'Menu #$index has a wrong <maxElement> property. The maxElement should be a number. exp: 9');
+      _warnings.add('Menu #$index has a wrong <maxElement> property. The maxElement should be a number. exp: 9');
     }
 
     if (json case {'items': List items}) {
@@ -288,8 +288,7 @@ class Menus {
         this.items.add(new Items.fromJson(v, sg));
       });
     } else {
-      _warnings.add(
-          "Menu #$index has null or empty or wrong <items> list, no items will be shown");
+      _warnings.add("Menu #$index has null or empty or wrong <items> list, no items will be shown");
     }
   }
 
@@ -400,17 +399,7 @@ class ShortcodeGenerator {
 
 enum IconType { img, icon, svg, def }
 
-const supportedIconImageExtensions = [
-  '.png',
-  '.jpg',
-  '.jpeg',
-  '.gif',
-  '.webp',
-  '.bmp',
-  '.wbmp',
-  '.ico',
-  '.icon'
-];
+const supportedIconImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.wbmp', '.ico', '.icon'];
 
 class ItemIcon {
   late IconType type;

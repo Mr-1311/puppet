@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puppet/config/config.dart';
@@ -8,24 +9,22 @@ import 'package:puppet/error_page.dart';
 import 'package:puppet/wheel.dart';
 import 'package:window_manager/window_manager.dart';
 
-final configRepositoryProvider = FutureProvider<ConfigRepository>((ref) {
-  return ConfigRepository.getInstance();
+final configRepositoryProvider = FutureProvider.family<ConfigRepository, String?>((ref, mainMenu) {
+  return ConfigRepository.getInstance(mainMenu);
 });
 
-final menuProvider =
-    AsyncNotifierProvider<MenuNotifier, Menus>(MenuNotifier.new);
+final menuProvider = AsyncNotifierProvider.family<MenuNotifier, Menus, String?>(MenuNotifier.new);
 
-class MenuNotifier extends AsyncNotifier<Menus> {
+class MenuNotifier extends FamilyAsyncNotifier<Menus, String?> {
   @override
-  Future<Menus> build() async {
-    final configRepo = await ref.watch(configRepositoryProvider.future);
+  Future<Menus> build(String? menu) async {
+    final configRepo = await ref.watch(configRepositoryProvider(menu).future);
 
-    return configRepo.config.menus
-        .firstWhere((element) => element.name == configRepo.config.mainMenu);
+    return configRepo.config.menus.firstWhere((element) => element.name == configRepo.config.mainMenu);
   }
 }
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
@@ -58,20 +57,27 @@ void main() async {
     await windowManager.focus();
   });
 
-  runApp(const ProviderScope(child: MainApp()));
+  final argParser = ArgParser();
+  argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
+  final results = argParser.parse(args);
+
+  runApp(ProviderScope(child: MainApp(results)));
 }
 
 class MainApp extends ConsumerWidget {
-  const MainApp({super.key});
+  const MainApp(this.args, {super.key});
+
+  final ArgResults args;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final conf = ref.watch(configRepositoryProvider);
+    final conf = ref.watch(configRepositoryProvider(args['menu']));
     conf.whenData((value) {
       print(value.config.toString());
-      print(value.config.errors);
+      print('errors: ${value.config.errors}');
+      print('warnings: ${value.config.warnings}');
     });
-    final menu = ref.watch(menuProvider);
+    final menu = ref.watch(menuProvider(args['menu']));
     menu.whenData((value) {
       print(value.toString());
     });
@@ -79,8 +85,7 @@ class MainApp extends ConsumerWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
-          AsyncData(:final value) when value.config.errors.isNotEmpty =>
-            ErrorPage(value.config.errors),
+          AsyncData(:final value) when value.config.errors.isNotEmpty => ErrorPage(value.config.errors),
           _ => switch (menu) {
               AsyncData(:final value) => Menu(menu: value),
               _ => CircularProgressIndicator(),
