@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 
-Future<Offset> calcWindowPosition(Size windowSize, Alignment alignment,
+Future<Offset> calculateWindowPosition(
+    {required Size windowSize,
+    Alignment? alignment,
+    Offset? offset,
 // display names are wrong in the plugin so we use index,
 // can be changed to display names if https://github.com/leanflutter/screen_retriever/issues/19 is fixed.
-    [String display = '1']) async {
+    String display = '1'}) async {
+  Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
+  if (alignment == null) {
+    return Offset(cursorScreenPoint.dx - windowSize.width * 0.5, cursorScreenPoint.dy - windowSize.height * 0.5);
+  }
+
   Display primaryDisplay = await screenRetriever.getPrimaryDisplay();
   List<Display> allDisplays = await screenRetriever.getAllDisplays();
-  Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
 
   Display currentDisplay;
 
@@ -24,9 +31,7 @@ Future<Offset> calcWindowPosition(Size windowSize, Alignment alignment,
       orElse: () => primaryDisplay,
     );
   } else {
-    currentDisplay = allDisplays.length >= displayIndex
-        ? allDisplays[displayIndex - 1]
-        : primaryDisplay;
+    currentDisplay = allDisplays.length >= displayIndex ? allDisplays[displayIndex - 1] : primaryDisplay;
   }
 
   num visibleWidth = currentDisplay.size.width;
@@ -42,6 +47,15 @@ Future<Offset> calcWindowPosition(Size windowSize, Alignment alignment,
     visibleStartX = currentDisplay.visiblePosition!.dx;
     visibleStartY = currentDisplay.visiblePosition!.dy;
   }
+
+  //adjust offset
+  if (offset != null) {
+    visibleStartX += offset.dx;
+    visibleStartY += offset.dy;
+    visibleWidth -= (offset.dx + visibleStartX);
+    visibleHeight -= (offset.dy + visibleStartY);
+  }
+
   Offset position = const Offset(0, 0);
 
   if (alignment == Alignment.topLeft) {

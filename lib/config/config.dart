@@ -144,7 +144,7 @@ class Menus {
         }
         if (px != null && px > 0) {
           // if width is null or 0, use height, checking width will override this in the next if.
-          this.size = Size(px as double, px as double);
+          this.size = Size(px.toDouble(), px.toDouble());
         } else {
           this.height = conf_height;
           _warnings.add(
@@ -174,7 +174,7 @@ class Menus {
           px = int.tryParse(width);
         }
         if (px != null && px > 0) {
-          this.size = Size(px as double, this.size.height);
+          this.size = Size(px.toDouble(), this.size.height);
         } else {
           this.width = conf_width;
           _warnings.add(
@@ -230,9 +230,9 @@ class Menus {
         } else {
           px = int.tryParse(marginVertical);
         }
-        if (px != null && px > 0) {
-          // if marginHorizontal is null or 0, use marginVertical, checking marginHorizontal will override this in the next if.
-          this.offset = Offset(px as double, px as double);
+        if (px != null) {
+          // if marginHorizontal is null, use marginVertical, checking marginHorizontal will override this in the next if.
+          this.offset = Offset(px.toDouble(), px.toDouble());
         } else {
           this.marginVertical = conf_marginVertical;
           _warnings.add(
@@ -261,8 +261,8 @@ class Menus {
         } else {
           px = int.tryParse(marginHorizontal);
         }
-        if (px != null && px > 0) {
-          this.offset = Offset(px as double, this.offset.dy);
+        if (px != null) {
+          this.offset = Offset(px.toDouble(), this.offset.dy);
         } else {
           this.marginHorizontal = conf_marginHorizontal;
           _warnings.add(

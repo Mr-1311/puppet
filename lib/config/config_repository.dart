@@ -14,7 +14,8 @@ class ConfigRepository {
   static Future<ConfigRepository> getInstance(String? mainMenu) async {
     if (_instance == null) {
       final configString = await _getConfigString();
-      final config = Config.fromJson(jsonDecode(configString), Size(640, 640), mainMenu);
+      final primaryDisplay = await screenRetriever.getPrimaryDisplay();
+      final config = Config.fromJson(jsonDecode(configString), primaryDisplay.size, mainMenu);
       _instance = ConfigRepository._(config);
     }
     return _instance!;

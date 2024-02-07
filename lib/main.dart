@@ -8,6 +8,7 @@ import 'package:puppet/config/config_repository.dart';
 import 'package:puppet/error_page.dart';
 import 'package:puppet/wheel.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:puppet/config/calculate_window_position.dart';
 
 final configRepositoryProvider = FutureProvider.family<ConfigRepository, String?>((ref, mainMenu) {
   return ConfigRepository.getInstance(mainMenu);
@@ -20,7 +21,14 @@ class MenuNotifier extends FamilyAsyncNotifier<Menus, String?> {
   Future<Menus> build(String? menu) async {
     final configRepo = await ref.watch(configRepositoryProvider(menu).future);
 
-    return configRepo.config.menus.firstWhere((element) => element.name == configRepo.config.mainMenu);
+    final mainMenu = configRepo.config.menus.firstWhere((element) => element.name == configRepo.config.mainMenu);
+    windowManager.setSize(mainMenu.size);
+
+    final positionCoordinate = await calculateWindowPosition(
+        windowSize: mainMenu.size, alignment: mainMenu.alignment, offset: mainMenu.offset, display: mainMenu.monitor);
+    windowManager.setPosition(positionCoordinate);
+
+    return mainMenu;
   }
 }
 
@@ -29,7 +37,7 @@ void main(List<String> args) async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(640, 640),
+    // size: Size(640, 640),
     // center: true,
     backgroundColor: Colors.transparent,
     // skipTaskbar: true,
