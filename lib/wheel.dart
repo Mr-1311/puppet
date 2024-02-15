@@ -2,20 +2,68 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/config.dart';
+import 'package:puppet/main.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-final hoveredSectionProvider = StateProvider((ref) => 0);
+final hoveredSectionProvider = StateProvider<int>((ref) => 0);
+
+final currentItemsProvider =
+    NotifierProvider.family<CurrentItemsNotifier, List<Items>, int>(() => CurrentItemsNotifier());
+
+class CurrentItemsNotifier extends FamilyNotifier<List<Items>, int> {
+  int _index = 0;
+  @override
+  List<Items> build(int maxElement) {
+    final items = ref.watch(itemsProvider);
+    if (items.length > maxElement) {
+      return items.sublist(0, maxElement);
+    }
+    return items;
+  }
+
+  void next(int maxElement) {
+    final allItems = ref.read(itemsProvider);
+    if (allItems.length > _index + maxElement) {
+      int to = (_index + maxElement * 2) > allItems.length ? allItems.length : (_index + maxElement * 2);
+      _index += maxElement;
+      state = allItems.sublist(_index, to);
+      ref.read(currentPageProvider.notifier).state += 1;
+    }
+  }
+
+  void prev(int maxElement) {
+    final allItems = ref.read(itemsProvider);
+    if (_index - maxElement >= 0) {
+      _index -= maxElement;
+      state = allItems.sublist(_index, _index + maxElement);
+      ref.read(currentPageProvider.notifier).state -= 1;
+    } else {
+      _index = 0;
+      if (allItems.length > maxElement) {
+        state = allItems.sublist(_index, maxElement);
+      } else {
+        state = [...allItems];
+      }
+
+      ref.read(currentPageProvider.notifier).state = max(ref.read(currentPageProvider) - 1, 0);
+    }
+  }
+}
+
+final currentPageProvider = StateProvider<int>((ref) => 0);
 
 class Wheel extends ConsumerWidget {
-  Wheel({required this.menu, super.key});
+  Wheel({required this.maxElement, required this.menuName, super.key});
 
-  final Menus menu;
-  late final double sectionAngle = 2 * pi / menu.items.length;
+  final int maxElement;
+  final String menuName;
 
-  _updateHoverSection(PointerEvent event, Size size, WidgetRef ref) {
+  _updateHoverSection(PointerEvent event, Size size, double sectionAngle, double centerSize, WidgetRef ref) {
     // normalize mouse position and make origin to center
     var x = event.position.dx / size.width - 0.5;
     var y = (event.position.dy / size.height - 0.5) * -1;
@@ -32,7 +80,7 @@ class Wheel extends ConsumerWidget {
 
     var distToCenter = sqrt(x * x + y * y);
     // if mouse position is outside of wheel
-    if (distToCenter > radius) {
+    if (distToCenter > radius || distToCenter < (centerSize / size.shortestSide)) {
       ref.read(hoveredSectionProvider.notifier).state = 0;
       return;
     }
@@ -56,14 +104,27 @@ class Wheel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
     final section = ref.watch(hoveredSectionProvider);
+    final currentItems = ref.watch(currentItemsProvider(maxElement));
+    final double sectionAngle = 2 * pi / currentItems.length;
+    final centerSize = size.shortestSide * 0.15;
+    final pageSize = (ref.watch(itemsProvider).length / maxElement).ceil();
+    final currentPage = ref.watch(currentPageProvider);
 
     return MouseRegion(
       onExit: (event) => ref.read(hoveredSectionProvider.notifier).state = 0,
       child: Listener(
-        onPointerHover: (event) => _updateHoverSection(event, size, ref),
+        onPointerHover: (event) => _updateHoverSection(event, size, sectionAngle, centerSize, ref),
         onPointerUp: (event) {
           print(ref.read(hoveredSectionProvider));
-          _updateHoverSection(event, size, ref);
+          _updateHoverSection(event, size, sectionAngle, centerSize, ref);
+        },
+        onPointerSignal: (pointerSignal) {
+          if (pointerSignal is PointerScrollEvent) {
+            if (pointerSignal.scrollDelta.direction.isNegative)
+              ref.read(currentItemsProvider(maxElement).notifier).next(maxElement);
+            else
+              ref.read(currentItemsProvider(maxElement).notifier).prev(maxElement);
+          }
         },
         child: Stack(
           children: [
@@ -71,12 +132,40 @@ class Wheel extends ConsumerWidget {
               child: CustomPaint(
                 painter: WheelPainter(
                   size: size,
-                  sectionSize: menu.items.length,
+                  sectionSize: currentItems.length,
                   section: section,
+                  centerSize: centerSize,
                 ),
               ),
             ),
-            ...getMenuItems(menu.items, size, sectionAngle)
+            ...getMenuItems(currentItems, size, sectionAngle),
+            Center(
+              child: Container(
+                width: centerSize * 1.8,
+                height: centerSize * 1.5,
+                // child: PageSelector(pageSize: pageSize),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    AutoSizeText(
+                      '$menuName',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: (centerSize * .2).floorToDouble(),
+                    ),
+                    AnimatedSmoothIndicator(
+                        count: pageSize,
+                        activeIndex: currentPage,
+                        effect: ScrollingDotsEffect(
+                          maxVisibleDots: 5,
+                          spacing: centerSize * .05,
+                          dotHeight: centerSize * .1,
+                          dotWidth: centerSize * .1,
+                        )),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -89,11 +178,13 @@ class WheelPainter extends CustomPainter {
     required this.size,
     required this.sectionSize,
     required this.section,
+    required this.centerSize,
   });
 
   final Size size;
   final int sectionSize;
   final int section;
+  final double centerSize;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -130,6 +221,11 @@ class WheelPainter extends CustomPainter {
         canvas.translate(-size.width / 2, -size.height / 2);
       }
     }
+
+    // center
+    canvas.drawCircle(center, centerSize, Paint()..color = Colors.green
+        // ..blendMode = BlendMode.dstOut
+        );
 
     // outline
     canvas.drawCircle(

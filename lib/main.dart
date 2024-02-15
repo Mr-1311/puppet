@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/config/config_repository.dart';
 import 'package:puppet/error_page.dart';
+import 'package:puppet/settings_page.dart';
 import 'package:puppet/wheel.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:puppet/config/calculate_window_position.dart';
@@ -28,7 +29,37 @@ class MenuNotifier extends FamilyAsyncNotifier<Menus, String?> {
         windowSize: mainMenu.size, alignment: mainMenu.alignment, offset: mainMenu.offset, display: mainMenu.monitor);
     windowManager.setPosition(positionCoordinate);
 
+    ref.read(itemsProvider.notifier).state = mainMenu.items;
+
     return mainMenu;
+  }
+}
+
+final itemsProvider = StateProvider<List<Items>>((ref) => []);
+
+void setWindowMode(bool isSettings) {
+  if (isSettings) {
+    windowManager.setSize(Size(640, 640));
+    windowManager.center();
+  } else {
+    windowManager.setBackgroundColor(Colors.transparent);
+    windowManager.setResizable(false);
+
+    if (Platform.isMacOS) {
+      windowManager.setMovable(false);
+      windowManager.setMinimizable(false);
+      windowManager.setMaximizable(false);
+      windowManager.setVisibleOnAllWorkspaces(true);
+      windowManager.setHasShadow(false);
+    }
+    if (Platform.isWindows) {
+      windowManager.setMinimizable(false);
+      windowManager.setMaximizable(false);
+      windowManager.setHasShadow(false);
+    }
+
+    windowManager.setAsFrameless();
+    // windowManager.setAlwaysOnTop(true);
   }
 }
 
@@ -36,40 +67,26 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
-  WindowOptions windowOptions = WindowOptions(
-    // size: Size(640, 640),
-    // center: true,
-    backgroundColor: Colors.transparent,
-    // skipTaskbar: true,
-    // alwaysOnTop: true,
-  );
+  final argParser = ArgParser();
+  argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
+  argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
+  final results = argParser.parse(args);
 
-  windowManager.setResizable(false);
-  if (Platform.isMacOS) {
-    windowManager.setMovable(false);
-    windowManager.setMinimizable(false);
-    windowManager.setMaximizable(false);
-    windowManager.setVisibleOnAllWorkspaces(true);
-    windowManager.setHasShadow(false);
-  }
-  if (Platform.isWindows) {
-    windowManager.setMinimizable(false);
-    windowManager.setMaximizable(false);
-    windowManager.setHasShadow(false);
-  }
+  // final isSettings = results['settings'];
+  final isSettings = true;
 
-  windowManager.setAsFrameless();
+  setWindowMode(isSettings);
 
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
+  windowManager.waitUntilReadyToShow(null, () async {
+    // if (!isSettings) {
+    //   // https://github.com/leanflutter/window_manager/issues/190#issuecomment-1200255947
+    //   // windowManager.setSkipTaskbar(true);
+    // }
     await windowManager.show();
     await windowManager.focus();
   });
 
-  final argParser = ArgParser();
-  argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
-  final results = argParser.parse(args);
-
-  runApp(ProviderScope(child: MainApp(results)));
+  runApp(ProviderScope(child: isSettings ? SettingsPage() : MainApp(results)));
 }
 
 class MainApp extends ConsumerWidget {
@@ -111,7 +128,7 @@ class Menu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (menu) {
-      Menus(menuType: MenuType.wheel) => Wheel(menu: menu),
+      Menus(menuType: MenuType.wheel) => Wheel(maxElement: menu.maxElement, menuName: menu.name),
       Menus(menuType: MenuType.list) => CircularProgressIndicator(),
       Menus(menuType: MenuType.canvas) => CircularProgressIndicator(),
     };

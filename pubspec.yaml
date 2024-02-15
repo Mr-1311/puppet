@@ -15,6 +15,7 @@ dependencies:
   flutter_riverpod: ^2.4.9
   font_awesome_flutter: ^10.6.0
   screen_retriever: ^0.1.9
+  smooth_page_indicator: ^1.1.0
   window_manager: ^0.3.7
 
 dev_dependencies:
