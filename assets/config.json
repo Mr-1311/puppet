@@ -1,10 +1,19 @@
 {
     "version": 1,
     "mainMenu": "main menu",
+    "shortcut": {
+        "keyCode": "space",
+        "modifiers": [
+            "alt"
+        ]
+    },
     "menus": [
         {
             "name": "main menu",
             "type": "wheel",
+            "shortcut": {},
+            "theme": "",
+            "themeColorSchema": "system",
             "width": "_",
             "height": "50%",
             "position": "center-center",
@@ -16,6 +25,7 @@
                 {
                     "name": "puppet",
                     "description": "puppet project site",
+                    "repeat": false,
                     "shortcut": "p",
                     "icon": "50",
                     "type": "run",

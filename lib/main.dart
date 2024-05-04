@@ -1,45 +1,25 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
-import 'package:puppet/config/config_repository.dart';
+import 'package:puppet/config_providers.dart';
 import 'package:puppet/error_page.dart';
-import 'package:puppet/settings_page.dart';
+import 'package:puppet/settings/settings_page.dart';
 import 'package:puppet/wheel.dart';
+import 'package:tray_manager/tray_manager.dart' as tray;
 import 'package:window_manager/window_manager.dart';
-import 'package:puppet/config/calculate_window_position.dart';
 
-final configRepositoryProvider = FutureProvider.family<ConfigRepository, String?>((ref, mainMenu) {
-  return ConfigRepository.getInstance(mainMenu);
-});
-
-final menuProvider = AsyncNotifierProvider.family<MenuNotifier, Menus, String?>(MenuNotifier.new);
-
-class MenuNotifier extends FamilyAsyncNotifier<Menus, String?> {
-  @override
-  Future<Menus> build(String? menu) async {
-    final configRepo = await ref.watch(configRepositoryProvider(menu).future);
-
-    final mainMenu = configRepo.config.menus.firstWhere((element) => element.name == configRepo.config.mainMenu);
-    windowManager.setSize(mainMenu.size);
-
-    final positionCoordinate = await calculateWindowPosition(
-        windowSize: mainMenu.size, alignment: mainMenu.alignment, offset: mainMenu.offset, display: mainMenu.monitor);
-    windowManager.setPosition(positionCoordinate);
-
-    ref.read(itemsProvider.notifier).state = mainMenu.items;
-
-    return mainMenu;
-  }
-}
-
-final itemsProvider = StateProvider<List<Items>>((ref) => []);
-
-void setWindowMode(bool isSettings) {
+void _setWindowMode(bool isSettings) {
   if (isSettings) {
-    windowManager.setSize(Size(640, 640));
+    windowManager.setTitle('Settings');
+    windowManager.setIcon(Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
+    windowManager.setSize(Size(940, 640));
+    windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
   } else {
     windowManager.setBackgroundColor(Colors.transparent);
@@ -59,6 +39,7 @@ void setWindowMode(bool isSettings) {
     }
 
     windowManager.setAsFrameless();
+    windowManager.setPreventClose(true);
     // windowManager.setAlwaysOnTop(true);
   }
 }
@@ -66,6 +47,7 @@ void setWindowMode(bool isSettings) {
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  await hotKeyManager.unregisterAll();
 
   final argParser = ArgParser();
   argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
@@ -75,7 +57,31 @@ void main(List<String> args) async {
   // final isSettings = results['settings'];
   final isSettings = true;
 
-  setWindowMode(isSettings);
+  _setWindowMode(isSettings);
+  // tray icon settings
+  if (!isSettings) {
+    await tray.trayManager.setIcon(
+      Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png',
+    );
+    tray.Menu menu = tray.Menu(
+      items: [
+        tray.MenuItem(
+          key: 'show_window',
+          label: 'Open Puppet',
+        ),
+        tray.MenuItem(
+          key: 'show_settings',
+          label: 'Open Settings',
+        ),
+        tray.MenuItem.separator(),
+        tray.MenuItem(
+          key: 'exit_app',
+          label: 'Exit Puppet',
+        ),
+      ],
+    );
+    await tray.trayManager.setContextMenu(menu);
+  }
 
   windowManager.waitUntilReadyToShow(null, () async {
     // if (!isSettings) {
@@ -86,36 +92,113 @@ void main(List<String> args) async {
     await windowManager.focus();
   });
 
-  runApp(ProviderScope(child: isSettings ? SettingsPage() : MainApp(results)));
+  runApp(ProviderScope(
+      child: isSettings
+          ? SettingsPage()
+          : Consumer(
+              builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                if (results['menu'] != null) {
+                  ref.read(configProvider.notifier).setMainMenu(results['menu']);
+                }
+                return MainApp();
+              },
+            )));
 }
 
-class MainApp extends ConsumerWidget {
-  const MainApp(this.args, {super.key});
-
-  final ArgResults args;
+class MainApp extends ConsumerStatefulWidget {
+  const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final conf = ref.watch(configRepositoryProvider(args['menu']));
+  ConsumerState<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, WindowListener {
+  @override
+  void initState() {
+    super.initState();
+    tray.trayManager.addListener(this);
+    windowManager.addListener(this);
+  }
+
+  @override
+  void dispose() {
+    tray.trayManager.removeListener(this);
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final conf = ref.watch(configProvider);
     conf.whenData((value) {
-      print(value.config.toString());
-      print('errors: ${value.config.errors}');
-      print('warnings: ${value.config.warnings}');
-    });
-    final menu = ref.watch(menuProvider(args['menu']));
-    menu.whenData((value) {
       print(value.toString());
+      print('errors: ${value.errors}');
+      print('warnings: ${value.warnings}');
     });
+    final menu = ref.watch(menuProvider);
+    // menu.whenData((value) {
+    //   print(value.toString());
+    // });
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
-          AsyncData(:final value) when value.config.errors.isNotEmpty => ErrorPage(value.config.errors),
+          AsyncData(value: final conf) when conf.errors.isNotEmpty => ErrorPage(conf.errors),
           _ => switch (menu) {
-              AsyncData(:final value) => Menu(menu: value),
+              AsyncData(:final value) => CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(
+                      LogicalKeyboardKey.escape,
+                    ): () {
+                      ref.read(menuProvider.notifier).back();
+                    },
+                  },
+                  child: Focus(
+                    autofocus: true,
+                    child: Menu(menu: value),
+                  ),
+                ),
               _ => CircularProgressIndicator(),
             }
         });
+  }
+
+  @override
+  void onTrayIconMouseDown() {
+    tray.trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    tray.trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayMenuItemClick(tray.MenuItem menuItem) {
+    if (menuItem.key == 'show_window') {
+      windowManager.show();
+    } else if (menuItem.key == 'show_settings') {
+      String executablePath = Platform.resolvedExecutable;
+      Process.start(executablePath, ['--settings']).then((Process process) {
+        process.stdout.transform(utf8.decoder).listen((data) {
+          if (data == 'config_updated') {}
+          stdout.writeln('settings stdout: $data');
+          ref.read(configProvider.notifier).rebuild();
+        });
+      });
+    } else if (menuItem.key == 'exit_app') {
+      windowManager.destroy();
+    }
+  }
+
+  @override
+  void onWindowClose() {
+    windowManager.hide();
+  }
+
+  @override
+  void onWindowFocus() {
+    setState(() {});
   }
 }
 

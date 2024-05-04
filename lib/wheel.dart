@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/config.dart';
-import 'package:puppet/main.dart';
+import 'package:puppet/config_providers.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 final hoveredSectionProvider = StateProvider<int>((ref) => 0);
@@ -121,9 +121,9 @@ class Wheel extends ConsumerWidget {
         onPointerSignal: (pointerSignal) {
           if (pointerSignal is PointerScrollEvent) {
             if (pointerSignal.scrollDelta.direction.isNegative)
-              ref.read(currentItemsProvider(maxElement).notifier).next(maxElement);
-            else
               ref.read(currentItemsProvider(maxElement).notifier).prev(maxElement);
+            else
+              ref.read(currentItemsProvider(maxElement).notifier).next(maxElement);
           }
         },
         child: Stack(
@@ -143,7 +143,6 @@ class Wheel extends ConsumerWidget {
               child: Container(
                 width: centerSize * 1.8,
                 height: centerSize * 1.5,
-                // child: PageSelector(pageSize: pageSize),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -262,15 +261,17 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle)
   final squareLength = calculateMaxSquare(radius, min(sectionAngle * 0.5, pi / 5));
   final distance = (radius * 0.9) - (squareLength * 0.5);
 
+  final pivot_x = size.width > size.height ? (size.width - size.height) / 2 : 0;
+  final pivot_y = size.height > size.width ? (size.height - size.width) / 2 : 0;
+
   for (int i = 1; i <= items.length; i++) {
     final angle = items.length == 1 ? pi * 0.5 : sectionAngle * i - sectionAngle * 0.5;
     menuItems.add(Positioned(
-      left: radius + cos(angle) * distance - squareLength / 2,
-      bottom: radius + sin(angle) * distance - squareLength / 2,
+      left: radius + cos(angle) * distance - squareLength / 2 + pivot_x,
+      bottom: radius + sin(angle) * distance - squareLength / 2 + pivot_y,
       child: Container(
         width: squareLength,
         height: squareLength,
-        // color: Colors.green,
         child: Column(
           children: [
             Icon(

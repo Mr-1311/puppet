@@ -3,8 +3,8 @@ import 'package:screen_retriever/screen_retriever.dart';
 
 Future<Offset> calculateWindowPosition(
     {required Size windowSize,
-    Alignment? alignment,
-    Offset? offset,
+    required Alignment? alignment,
+    required List<Offset> offsets,
 // display names are wrong in the plugin so we use index,
 // can be changed to display names if https://github.com/leanflutter/screen_retriever/issues/19 is fixed.
     String display = '1'}) async {
@@ -21,15 +21,16 @@ Future<Offset> calculateWindowPosition(
   int? displayIndex = int.tryParse(display);
 
   if (displayIndex == null) {
-    currentDisplay = allDisplays.firstWhere(
+    final currentDisplayIndex = allDisplays.indexWhere(
       (display) => Rect.fromLTWH(
         display.visiblePosition!.dx,
         display.visiblePosition!.dy,
         display.size.width,
         display.size.height,
       ).contains(cursorScreenPoint),
-      orElse: () => primaryDisplay,
     );
+    currentDisplay = currentDisplayIndex == -1 ? primaryDisplay : allDisplays[currentDisplayIndex];
+    displayIndex = currentDisplayIndex == -1 ? 1 : currentDisplayIndex + 1;
   } else {
     currentDisplay = allDisplays.length >= displayIndex ? allDisplays[displayIndex - 1] : primaryDisplay;
   }
@@ -46,14 +47,6 @@ Future<Offset> calculateWindowPosition(
   if (currentDisplay.visiblePosition != null) {
     visibleStartX = currentDisplay.visiblePosition!.dx;
     visibleStartY = currentDisplay.visiblePosition!.dy;
-  }
-
-  //adjust offset
-  if (offset != null) {
-    visibleStartX += offset.dx;
-    visibleStartY += offset.dy;
-    visibleWidth -= (offset.dx + visibleStartX);
-    visibleHeight -= (offset.dy + visibleStartY);
   }
 
   Offset position = const Offset(0, 0);
@@ -104,5 +97,22 @@ Future<Offset> calculateWindowPosition(
       visibleStartY + (visibleHeight - windowSize.height),
     );
   }
-  return position;
+
+  final off = offsets[displayIndex - 1];
+  final x = switch (alignment.x) {
+    -1.0 => position.dx + off.dx,
+    1.0 => position.dx - off.dx,
+    _ => position.dx,
+  };
+  final y = switch (alignment.y) {
+    -1.0 => position.dy + off.dy,
+    1.0 => position.dy - off.dy,
+    _ => position.dy,
+  };
+  return Offset(x, y);
+}
+
+Future<Offset> getWindowOffsetOnMouse(Size windowSize) async {
+  Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
+  return Offset(cursorScreenPoint.dx - windowSize.width * 0.5, cursorScreenPoint.dy - windowSize.height * 0.5);
 }

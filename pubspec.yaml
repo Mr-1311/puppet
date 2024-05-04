@@ -12,10 +12,13 @@ dependencies:
   auto_size_text: ^3.0.0
   flutter:
     sdk: flutter
+  flutter_colorpicker: ^1.0.3
   flutter_riverpod: ^2.4.9
   font_awesome_flutter: ^10.6.0
+  hotkey_manager: ^0.1.8
   screen_retriever: ^0.1.9
   smooth_page_indicator: ^1.1.0
+  tray_manager: ^0.2.1
   window_manager: ^0.3.7
 
 dev_dependencies:
@@ -26,5 +29,12 @@ dev_dependencies:
   riverpod_lint: ^2.3.7
 
 flutter:
+  uses-material-design: true
   assets:
     - assets/config.json
+    - assets/logo.png
+    - assets/logo_64.png
+    - assets/logo_32.ico
+    - assets/icon_wheel.png
+    - assets/icon_list.png
+    - assets/transparent_bg.png
