@@ -9,6 +9,7 @@ import 'package:puppet/settings/gradient_picker.dart';
 import 'package:puppet/settings/settings_element.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:puppet/config/theme.dart' as t;
+import 'package:system_fonts/system_fonts.dart';
 
 class ThemeDetailPane extends ConsumerWidget {
   ThemeDetailPane({super.key});
@@ -102,6 +103,7 @@ class ThemeDetailPane extends ConsumerWidget {
                   AutoOrNum => _getAutoOrNumWidget(prop, theme, themeName, isLight, ref),
                   bool => _getBoolWidget(prop, theme, themeName, isLight, ref),
                   ThemeColor || ThemeColorSolid => _getColorWidget(prop, theme, themeName, isLight, ref),
+                  Font => _getFontWidget(prop, theme, themeName, isLight, ref),
                   _ => throw UnimplementedError(),
                 },
               ],
@@ -155,7 +157,6 @@ class ThemeDetailPane extends ConsumerWidget {
         Switch(
           value: prop.getPropVariable(theme),
           onChanged: (val) {
-            prop.setPropVariable(theme, val);
             _updateTheme(val, prop, theme, themeName, isLight, ref);
           },
         ),
@@ -163,11 +164,20 @@ class ThemeDetailPane extends ConsumerWidget {
     );
   }
 
+  _getFontWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
+    final fontVal = prop.getPropVariable(theme).value as String;
+    return SystemFontSelector(
+      initial: fontVal.isEmpty ? null : fontVal,
+      onFontSelected: (val) {
+        _updateTheme(Font(val), prop, theme, themeName, isLight, ref);
+      },
+    );
+  }
+
   _getColorWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     return InkWell(
       onTap: () => _showColorPickerDialog(ref, prop, theme).then((value) {
         if (value == null) return;
-        prop.setPropVariable(theme, value);
         _updateTheme(value, prop, theme, themeName, isLight, ref);
       }),
       child: Stack(
@@ -187,7 +197,6 @@ class ThemeDetailPane extends ConsumerWidget {
             ),
         ],
       ),
-      // child: ColorIndicator(HSVColor.fromColor(prop.getPropVariable(theme).value as Color)),
     );
   }
 

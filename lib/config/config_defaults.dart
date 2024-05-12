@@ -20,6 +20,17 @@ const conf_shortcut = {
 final conf_hotkey = HotKey(KeyCode.space, modifiers: [KeyModifier.alt]);
 
 // THEME
+final thm_backgroundColor = ThemeColorSolid('#3498db');
+final thm_separatorColor = ThemeColorSolid('#3498db');
+final thm_outlineColor = ThemeColorSolid('#3498db');
+final thm_hoveredBackgroundColor = ThemeColorSolid('#3498db');
+final thm_hoveredSeparatorColor = ThemeColorSolid('#3498db');
+final thm_hoveredOutlineColor = ThemeColorSolid('#3498db');
+final thm_separatorThickness = AONInt(3);
+final thm_outlineThickness = AONInt(3);
+final thm_itemNameFont = Font('');
+final thm_menuNameFont = Font('');
+final thm_descriptionFont = Font('');
 final thm_itemNameFontSize = AONAuto();
 final thm_menuNameFontSize = AONAuto();
 final thm_iconSize = AONAuto();
@@ -29,9 +40,3 @@ final thm_showDescOnCenter = false;
 final thm_showIconOnCenter = false;
 final thm_pageIndicatorActiveColor = ThemeColorSolid('#ffffff');
 final thm_pageIndicatorPassiveColor = ThemeColorSolid('#474747');
-final thm_backgroundColor = ThemeColorSolid('#3498db');
-final thm_separatorColor = ThemeColorSolid('#3498db');
-final thm_outlineColor = ThemeColorSolid('#3498db');
-final thm_hoveredBackgroundColor = ThemeColorSolid('#3498db');
-final thm_hoveredSeparatorColor = ThemeColorSolid('#3498db');
-final thm_hoveredOutlineColor = ThemeColorSolid('#3498db');
