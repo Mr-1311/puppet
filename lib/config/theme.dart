@@ -52,6 +52,99 @@ class Theme {
     }
   }
 
+  Theme.withValues(
+    this.backgroundColor,
+    this.separatorColor,
+    this.outlineColor,
+    this.hoveredBackgroundColor,
+    this.hoveredSeparatorColor,
+    this.hoveredOutlineColor,
+    this.separatorThickness,
+    this.outlineThickness,
+    this.itemNameFont,
+    this.menuNameFont,
+    this.descriptionFont,
+    this.itemNameFontSize,
+    this.menuNameFontSize,
+    this.iconSize,
+    this.descriptionFontSize,
+    this.showItemNameOnCenter,
+    this.showDescOnCenter,
+    this.showIconOnCenter,
+    this.pageIndicatorActiveColor,
+    this.pageIndicatorPassiveColor,
+  );
+
+  Theme.clone(Theme t)
+      : this.withValues(
+          t.backgroundColor,
+          t.separatorColor,
+          t.outlineColor,
+          t.hoveredBackgroundColor,
+          t.hoveredSeparatorColor,
+          t.hoveredOutlineColor,
+          t.separatorThickness,
+          t.outlineThickness,
+          t.itemNameFont,
+          t.menuNameFont,
+          t.descriptionFont,
+          t.itemNameFontSize,
+          t.menuNameFontSize,
+          t.iconSize,
+          t.descriptionFontSize,
+          t.showItemNameOnCenter,
+          t.showDescOnCenter,
+          t.showIconOnCenter,
+          t.pageIndicatorActiveColor,
+          t.pageIndicatorPassiveColor,
+        );
+
+  Theme copyWith({
+    ThemeColor? backgroundColor,
+    ThemeColor? separatorColor,
+    ThemeColor? outlineColor,
+    ThemeColor? hoveredBackgroundColor,
+    ThemeColor? hoveredSeparatorColor,
+    ThemeColor? hoveredOutlineColor,
+    AutoOrNum? separatorThickness,
+    AutoOrNum? outlineThickness,
+    Font? itemNameFont,
+    Font? menuNameFont,
+    Font? descriptionFont,
+    AutoOrNum? itemNameFontSize,
+    AutoOrNum? menuNameFontSize,
+    AutoOrNum? iconSize,
+    AutoOrNum? descriptionFontSize,
+    bool? showItemNameOnCenter,
+    bool? showDescOnCenter,
+    bool? showIconOnCenter,
+    ThemeColorSolid? pageIndicatorActiveColor,
+    ThemeColorSolid? pageIndicatorPassiveColor,
+  }) {
+    return Theme.withValues(
+      backgroundColor ?? this.backgroundColor,
+      separatorColor ?? this.separatorColor,
+      outlineColor ?? this.outlineColor,
+      hoveredBackgroundColor ?? this.hoveredBackgroundColor,
+      hoveredSeparatorColor ?? this.hoveredSeparatorColor,
+      hoveredOutlineColor ?? this.hoveredOutlineColor,
+      separatorThickness ?? this.separatorThickness,
+      outlineThickness ?? this.outlineThickness,
+      itemNameFont ?? this.itemNameFont,
+      menuNameFont ?? this.menuNameFont,
+      descriptionFont ?? this.descriptionFont,
+      itemNameFontSize ?? this.itemNameFontSize,
+      menuNameFontSize ?? this.menuNameFontSize,
+      iconSize ?? this.iconSize,
+      descriptionFontSize ?? this.descriptionFontSize,
+      showItemNameOnCenter ?? this.showItemNameOnCenter,
+      showDescOnCenter ?? this.showDescOnCenter,
+      showIconOnCenter ?? this.showIconOnCenter,
+      pageIndicatorActiveColor ?? this.pageIndicatorActiveColor,
+      pageIndicatorPassiveColor ?? this.pageIndicatorPassiveColor,
+    );
+  }
+
   void _setPropValue(ThemeProps prop, dynamic value) {
     final propVal = switch (prop.propType) {
       AutoOrNum => switch (value) {

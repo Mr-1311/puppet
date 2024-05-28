@@ -228,6 +228,49 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
     return themeMap;
   }
 
+  Future<void> rebuild() async {
+    final themeDir = Directory(getAppDirs(application: 'puppet').config + '/themes');
+
+    final themeFiles = await themeDir
+        .list(recursive: false, followLinks: false)
+        .where((entity) => entity is File && entity.path.endsWith('.json'))
+        .toList();
+
+    final themeMap = <String, ThemeVariants>{};
+    for (final thmFile in themeFiles) {
+      final jsonObj = jsonDecode(await File(thmFile.path).readAsString());
+      final fileName = basenameWithoutExtension(thmFile.path);
+
+      Theme? lightTheme = null;
+      Theme? darkTheme = null;
+      if (jsonObj case {'light': Map<String, dynamic> theme}) {
+        lightTheme = Theme.fromJson(theme);
+      }
+
+      if (jsonObj case {'dark': Map<String, dynamic> theme}) {
+        darkTheme = Theme.fromJson(theme);
+      }
+
+      switch ((lightTheme, darkTheme)) {
+        case (null, null):
+          final t = Theme.fromJson(jsonObj);
+          themeMap[fileName] = ThemeVariants(light: t, dark: t);
+          break;
+        case (Theme lightTheme, null):
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: lightTheme);
+          break;
+        case (null, Theme darkTheme):
+          themeMap[fileName] = ThemeVariants(light: darkTheme, dark: darkTheme);
+          break;
+        case (Theme lightTheme, Theme darkTheme):
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: darkTheme);
+          break;
+      }
+    }
+
+    state = AsyncData(themeMap);
+  }
+
   Future<void> createNewTheme() async {
     await update((oldState) {
       var counter = 0;
@@ -246,14 +289,15 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
 
   Future<void> updateTheme(Theme theme, String? themeName, bool isLight) async {
     if (themeName == null) return;
-    await update((oldState) {
+
+    await update((oldState) async {
       oldState[themeName] = oldState[themeName]!.copyWith(
         light: isLight ? theme : null,
         dark: !isLight ? theme : null,
       );
-      _saveToDisk(oldState[themeName]!, themeName);
+      await _saveToDisk(oldState[themeName]!, themeName);
       stdout.write('theme_updated');
-      return oldState;
+      return Map.from(oldState);
     });
   }
 
@@ -314,3 +358,26 @@ class SystemBrightnessNotifier extends Notifier<String> {
 
 final systemBrightnessNotifierProvider =
     NotifierProvider<SystemBrightnessNotifier, String>(SystemBrightnessNotifier.new);
+
+final currentThemeProvider = Provider<Theme>((ref) {
+  final menu = ref.watch(menuProvider);
+  final themes = ref.watch(themeProvider);
+
+  switch (menu) {
+    case AsyncData(:final value):
+      {
+        final isLight = switch ((value.systemBrightness, value.themeColorScheme)) {
+          ('system', _) => value.systemBrightness == 'light',
+          (_, _) => value.themeColorScheme == 'light',
+        };
+        final tName = value.getThemeName();
+        return switch (themes) {
+          AsyncData(:final value) =>
+            value[tName] == null ? Theme() : (isLight ? value[tName]!.light : value[tName]!.dark),
+          _ => Theme(),
+        };
+      }
+    default:
+      return Theme();
+  }
+});

@@ -42,7 +42,6 @@ class ThemesPane extends ConsumerWidget {
                           children: [
                             IconButton(
                                 onPressed: () {
-                                  // print('theme delete');
                                   _deleteConfirmationDialogBuilder(context, themeName).then((value) {
                                     if (value == true) {
                                       ref.read(themeProvider.notifier).deleteTheme(themeName);

@@ -20,7 +20,7 @@ const conf_shortcut = {
 final conf_hotkey = HotKey(KeyCode.space, modifiers: [KeyModifier.alt]);
 
 // THEME
-final thm_backgroundColor = ThemeColorSolid('#3498db');
+final thm_backgroundColor = ThemeColorSolid('#cc278d');
 final thm_separatorColor = ThemeColorSolid('#3498db');
 final thm_outlineColor = ThemeColorSolid('#3498db');
 final thm_hoveredBackgroundColor = ThemeColorSolid('#3498db');

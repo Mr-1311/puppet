@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/config_providers.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:puppet/config/theme.dart' as t;
 
 final hoveredSectionProvider = StateProvider<int>((ref) => 0);
 
@@ -109,6 +110,7 @@ class Wheel extends ConsumerWidget {
     final centerSize = size.shortestSide * 0.15;
     final pageSize = (ref.watch(itemsProvider).length / maxElement).ceil();
     final currentPage = ref.watch(currentPageProvider);
+    final theme = ref.watch(currentThemeProvider);
 
     return MouseRegion(
       onExit: (event) => ref.read(hoveredSectionProvider.notifier).state = 0,
@@ -135,6 +137,7 @@ class Wheel extends ConsumerWidget {
                   sectionSize: currentItems.length,
                   section: section,
                   centerSize: centerSize,
+                  backgroundColor: theme.backgroundColor,
                 ),
               ),
             ),
@@ -178,12 +181,15 @@ class WheelPainter extends CustomPainter {
     required this.sectionSize,
     required this.section,
     required this.centerSize,
+    required this.backgroundColor,
   });
 
   final Size size;
   final int sectionSize;
   final int section;
   final double centerSize;
+
+  final t.ThemeColor backgroundColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -193,7 +199,21 @@ class WheelPainter extends CustomPainter {
     final sectionAngle = 2 * pi / sectionSize;
 
     // background
-    canvas.drawCircle(center, shortSide / 2, Paint()..color = Colors.blue);
+    final bg_paint = Paint();
+    switch (backgroundColor) {
+      case t.ThemeColorSolid():
+        bg_paint.color = (backgroundColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        bg_paint.shader = (backgroundColor as t.ThemeColorGradient)
+            .value
+            .createShader(Rect.fromCenter(center: center, width: shortSide, height: shortSide));
+      case t.ThemeColorRandom():
+      // TODO: Handle this case.
+    }
+    if (backgroundColor is t.ThemeColorSolid) {
+      bg_paint.color = (backgroundColor as t.ThemeColorSolid).value;
+    }
+    canvas.drawCircle(center, shortSide / 2, bg_paint);
 
     // section
     if (section != 0) {

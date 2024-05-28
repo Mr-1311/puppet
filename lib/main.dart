@@ -54,8 +54,8 @@ void main(List<String> args) async {
   argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
   final results = argParser.parse(args);
 
-  // final isSettings = results['settings'];
-  final isSettings = true;
+  final isSettings = results['settings'];
+  // final isSettings = true;
 
   _setWindowMode(isSettings);
   // tray icon settings
@@ -131,9 +131,9 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
   Widget build(BuildContext context) {
     final conf = ref.watch(configProvider);
     conf.whenData((value) {
-      print(value.toString());
-      print('errors: ${value.errors}');
-      print('warnings: ${value.warnings}');
+      // print(value.toString());
+      // print('errors: ${value.errors}');
+      // print('warnings: ${value.warnings}');
     });
     final menu = ref.watch(menuProvider);
     // menu.whenData((value) {
@@ -181,9 +181,13 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
       String executablePath = Platform.resolvedExecutable;
       Process.start(executablePath, ['--settings']).then((Process process) {
         process.stdout.transform(utf8.decoder).listen((data) {
-          if (data == 'config_updated') {}
           stdout.writeln('settings stdout: $data');
-          ref.read(configProvider.notifier).rebuild();
+          if (data == 'config_updated') {
+            ref.read(configProvider.notifier).rebuild();
+          }
+          if (data == 'theme_updated') {
+            ref.read(themeProvider.notifier).rebuild();
+          }
         });
       });
     } else if (menuItem.key == 'exit_app') {
