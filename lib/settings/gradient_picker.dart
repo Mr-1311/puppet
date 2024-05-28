@@ -53,7 +53,6 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
     sgmntBtnSelected = switch (widget.initial) {
       t.ThemeColorSolid() => {'solid'},
       t.ThemeColorGradient() => {'gradient'},
-      t.ThemeColorRandom() => {'random'},
     };
 
     sgmntBtnGradient = switch (widget.initial) {
@@ -66,7 +65,6 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
           ? Colors.black
           : (widget.initial as t.ThemeColorGradient).value.colors.first,
       t.ThemeColorSolid() => (widget.initial as t.ThemeColorSolid).value,
-      t.ThemeColorRandom() => Colors.white,
     };
 
     if (widget.initial is t.ThemeColorGradient) {
@@ -342,8 +340,6 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
             )),
           _ => t.ThemeColorSolid('#FFFFFF'),
         };
-      case 'random':
-        return t.ThemeColorRandom();
       default:
         return t.ThemeColorSolid(currentColor.red.toRadixString(16).padLeft(2, '0') +
             currentColor.green.toRadixString(16).padLeft(2, '0') +
@@ -899,11 +895,9 @@ class ThemeColorIndicator extends StatefulWidget {
   ThemeColorIndicator.fromThemeColor(
       {this.width = 100, this.height = 100, BorderRadius? radius, required t.ThemeColor themeColor})
       : color = themeColor is t.ThemeColorSolid ? themeColor.value : null,
-        linearGradient = themeColor is t.ThemeColorRandom
-            ? random
-            : (themeColor is t.ThemeColorGradient
-                ? (themeColor.value is LinearGradient ? themeColor.value as LinearGradient : null)
-                : null),
+        linearGradient = themeColor is t.ThemeColorGradient
+            ? (themeColor.value is LinearGradient ? themeColor.value as LinearGradient : null)
+            : null,
         radialGradient = themeColor is t.ThemeColorGradient
             ? (themeColor.value is RadialGradient ? themeColor.value as RadialGradient : null)
             : null,

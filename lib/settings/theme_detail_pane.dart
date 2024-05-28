@@ -188,13 +188,6 @@ class ThemeDetailPane extends ConsumerWidget {
             height: 60,
             radius: BorderRadius.circular(30),
           ),
-          if (prop.getPropVariable(theme) is ThemeColorRandom)
-            Positioned.fill(
-              child: Icon(
-                Icons.shuffle,
-                size: 26,
-              ),
-            ),
         ],
       ),
     );

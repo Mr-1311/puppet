@@ -164,7 +164,6 @@ class Theme {
           _ => null,
         },
       ThemeColor => switch (value) {
-          String strVal when strVal == 'random' => ThemeColorRandom(),
           String strVal when strVal.startsWith('{"type":') => ThemeColorGradient(strVal),
           String strVal => ThemeColorSolid(strVal),
           _ => null,
@@ -520,12 +519,5 @@ class ThemeColorGradient extends ThemeColor {
       if (type == 'linear') 'end': '${linearEnd.resolve(null).x},${linearEnd.resolve(null).y}',
       if (type == 'radial') 'center': '${radialCenter.resolve(null).x},${radialCenter.resolve(null).y}',
     });
-  }
-}
-
-class ThemeColorRandom extends ThemeColor {
-  @override
-  String toString() {
-    return 'random';
   }
 }

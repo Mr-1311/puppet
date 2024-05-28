@@ -207,8 +207,6 @@ class WheelPainter extends CustomPainter {
         bg_paint.shader = (backgroundColor as t.ThemeColorGradient)
             .value
             .createShader(Rect.fromCenter(center: center, width: shortSide, height: shortSide));
-      case t.ThemeColorRandom():
-      // TODO: Handle this case.
     }
     if (backgroundColor is t.ThemeColorSolid) {
       bg_paint.color = (backgroundColor as t.ThemeColorSolid).value;
