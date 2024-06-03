@@ -10,6 +10,7 @@ import 'package:puppet/config/config.dart';
 import 'package:puppet/config_providers.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:puppet/config/theme.dart' as t;
+import 'package:system_fonts/system_fonts.dart';
 
 final hoveredSectionProvider = StateProvider<int>((ref) => 0);
 
@@ -101,6 +102,16 @@ class Wheel extends ConsumerWidget {
     ref.read(hoveredSectionProvider.notifier).state = section;
   }
 
+  (double, double) _getMenuFontSize(double centerSize, t.Theme theme) {
+    var menuFontSizeMax = (centerSize * .4).floorToDouble();
+    var menuFontSizeMin = (centerSize * .2).floorToDouble();
+    if (theme.menuNameFontSize case t.AONInt()) {
+      menuFontSizeMax = (theme.menuNameFontSize as t.AONInt).value.toDouble();
+      menuFontSizeMin = (theme.menuNameFontSize as t.AONInt).value.toDouble();
+    }
+    return (menuFontSizeMax, menuFontSizeMin);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
@@ -111,6 +122,8 @@ class Wheel extends ConsumerWidget {
     final pageSize = (ref.watch(itemsProvider).length / maxElement).ceil();
     final currentPage = ref.watch(currentPageProvider);
     final theme = ref.watch(currentThemeProvider);
+
+    final menuFontSize = _getMenuFontSize(centerSize, theme);
 
     return MouseRegion(
       onExit: (event) => ref.read(hoveredSectionProvider.notifier).state = 0,
@@ -138,10 +151,16 @@ class Wheel extends ConsumerWidget {
                   section: section,
                   centerSize: centerSize,
                   backgroundColor: theme.backgroundColor,
+                  separatorColor: theme.separatorColor,
+                  outlineColor: theme.outlineColor,
+                  centerColor: theme.centerColor,
+                  hoveredBackgroundColor: theme.hoveredBackgroundColor,
+                  separatorThickness: theme.separatorThickness,
+                  outlineThickness: theme.outlineThickness,
                 ),
               ),
             ),
-            ...getMenuItems(currentItems, size, sectionAngle),
+            ...getMenuItems(currentItems, size, sectionAngle, theme),
             Center(
               child: Container(
                 width: centerSize * 1.8,
@@ -151,9 +170,11 @@ class Wheel extends ConsumerWidget {
                   children: [
                     AutoSizeText(
                       '$menuName',
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      minFontSize: (centerSize * .2).floorToDouble(),
+                      textAlign: TextAlign.center,
+                      maxFontSize: menuFontSize.$1,
+                      minFontSize: menuFontSize.$2,
                     ),
                     AnimatedSmoothIndicator(
                         count: pageSize,
@@ -182,6 +203,12 @@ class WheelPainter extends CustomPainter {
     required this.section,
     required this.centerSize,
     required this.backgroundColor,
+    required this.separatorColor,
+    required this.outlineColor,
+    required this.centerColor,
+    required this.hoveredBackgroundColor,
+    required this.separatorThickness,
+    required this.outlineThickness,
   });
 
   final Size size;
@@ -190,6 +217,12 @@ class WheelPainter extends CustomPainter {
   final double centerSize;
 
   final t.ThemeColor backgroundColor;
+  final t.ThemeColor separatorColor;
+  final t.ThemeColor outlineColor;
+  final t.ThemeColor centerColor;
+  final t.ThemeColor hoveredBackgroundColor;
+  final t.AutoOrNum separatorThickness;
+  final t.AutoOrNum outlineThickness;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -208,31 +241,45 @@ class WheelPainter extends CustomPainter {
             .value
             .createShader(Rect.fromCenter(center: center, width: shortSide, height: shortSide));
     }
-    if (backgroundColor is t.ThemeColorSolid) {
-      bg_paint.color = (backgroundColor as t.ThemeColorSolid).value;
-    }
-    canvas.drawCircle(center, shortSide / 2, bg_paint);
+    canvas.drawCircle(center, (shortSide / 2) - 1, bg_paint);
 
     // section
+    final sc_paint = Paint()..blendMode = BlendMode.src;
+    switch (hoveredBackgroundColor) {
+      case t.ThemeColorSolid():
+        sc_paint.color = (hoveredBackgroundColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        sc_paint.shader = (hoveredBackgroundColor as t.ThemeColorGradient)
+            .value
+            .createShader(Rect.fromCenter(center: center, width: shortSide, height: shortSide));
+    }
     if (section != 0) {
-      canvas.drawArc(
-          Rect.fromCenter(center: center, width: shortSide, height: shortSide),
-          -section * sectionAngle,
-          sectionAngle,
-          true,
-          Paint()
-            ..blendMode = BlendMode.overlay
-            ..shader = ui.Gradient.radial(center, shortSide, [Colors.white, Colors.black]));
+      canvas.drawArc(Rect.fromCenter(center: center, width: shortSide, height: shortSide), -section * sectionAngle,
+          sectionAngle, true, sc_paint);
     }
 
-    final strokeWidth = shortSide * 0.002;
     // separators
+    final sp_paint = Paint()..blendMode = BlendMode.src;
+    switch (separatorThickness) {
+      case t.AONAuto():
+        sp_paint.strokeWidth = shortSide * 0.002;
+      case t.AONInt():
+        sp_paint.strokeWidth = (separatorThickness as t.AONInt).value.toDouble();
+    }
+    switch (separatorColor) {
+      case t.ThemeColorSolid():
+        sp_paint.color = (separatorColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        sp_paint.shader = (separatorColor as t.ThemeColorGradient).value.createShader(
+            Rect.fromCenter(center: center.translate(shortSide / 4, 0), width: shortSide / 2, height: shortSide / 2));
+    }
+
     var p1 = Offset(size.width / 2, size.height / 2);
-    var p2 = Offset((size.width / 2) + (shortSide / 2), size.height / 2);
+    var p2 = Offset(size.width, size.height / 2);
 
     if (sectionSize > 1) {
       for (var i = 0; i < sectionSize; i++) {
-        canvas.drawLine(p1, p2, Paint()..strokeWidth = strokeWidth);
+        canvas.drawLine(p1, p2, sp_paint);
         canvas.translate(size.width / 2, size.height / 2);
         canvas.rotate(sectionAngle);
         canvas.translate(-size.width / 2, -size.height / 2);
@@ -240,18 +287,36 @@ class WheelPainter extends CustomPainter {
     }
 
     // center
-    canvas.drawCircle(center, centerSize, Paint()..color = Colors.green
-        // ..blendMode = BlendMode.dstOut
-        );
+    final ct_paint = Paint()..blendMode = BlendMode.src;
+    switch (centerColor) {
+      case t.ThemeColorSolid():
+        ct_paint.color = (centerColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        ct_paint.shader = (centerColor as t.ThemeColorGradient)
+            .value
+            .createShader(Rect.fromCenter(center: center, width: centerSize * 2, height: centerSize * 2));
+    }
+    canvas.drawCircle(center, centerSize, ct_paint);
 
     // outline
-    canvas.drawCircle(
-        center,
-        (shortSide / 2) - (strokeWidth / 2),
-        Paint()
-          ..color = Colors.black
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth);
+    final ol_paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..blendMode = BlendMode.src;
+    switch (outlineThickness) {
+      case t.AONAuto():
+        ol_paint.strokeWidth = shortSide * 0.002;
+      case t.AONInt():
+        ol_paint.strokeWidth = (outlineThickness as t.AONInt).value.toDouble();
+    }
+    switch (outlineColor) {
+      case t.ThemeColorSolid():
+        ol_paint.color = (outlineColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        ol_paint.shader = (outlineColor as t.ThemeColorGradient)
+            .value
+            .createShader(Rect.fromCenter(center: center, width: shortSide, height: shortSide));
+    }
+    canvas.drawCircle(center, (shortSide / 2) - (ol_paint.strokeWidth / 2), ol_paint);
   }
 
   @override
@@ -271,8 +336,10 @@ double calculateMaxSquare(double side, double angle) {
   return (baseOfTriangle * heightOfTriangle) / (baseOfTriangle + heightOfTriangle);
 }
 
-List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle) {
+List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle, t.Theme theme) {
   List<Positioned> menuItems = [];
+  SystemFonts().loadFont(theme.itemNameFont.value ?? '');
+  SystemFonts().loadFont(theme.descriptionFont.value ?? '');
 
   final radius = size.shortestSide * 0.5;
   // biggest square inside the circle is when angle is tau/5
@@ -281,6 +348,24 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle)
 
   final pivot_x = size.width > size.height ? (size.width - size.height) / 2 : 0;
   final pivot_y = size.height > size.width ? (size.height - size.width) / 2 : 0;
+
+  var itemFontSizeMax = (squareLength * 0.245).floor().toDouble();
+  var itemFontSizeMin = (squareLength * 0.19).floor().toDouble();
+  if (theme.itemNameFontSize case t.AONInt()) {
+    itemFontSizeMax = (theme.itemNameFontSize as t.AONInt).value.toDouble();
+    itemFontSizeMin = (theme.itemNameFontSize as t.AONInt).value.toDouble();
+  }
+
+  var descFontSizeMax = (squareLength * 0.135).floor().toDouble();
+  var descFontSizeMin = (squareLength * 0.11).floor().toDouble();
+  if (theme.descriptionFontSize case t.AONInt()) {
+    descFontSizeMax = (theme.descriptionFontSize as t.AONInt).value.toDouble();
+    descFontSizeMin = (theme.descriptionFontSize as t.AONInt).value.toDouble();
+  }
+  var iconSize = squareLength * 0.3;
+  if (theme.iconSize case t.AONInt()) {
+    iconSize = (theme.iconSize as t.AONInt).value.toDouble();
+  }
 
   for (int i = 1; i <= items.length; i++) {
     final angle = items.length == 1 ? pi * 0.5 : sectionAngle * i - sectionAngle * 0.5;
@@ -294,24 +379,24 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle)
           children: [
             Icon(
               FontAwesomeIcons.terminal,
-              size: squareLength * 0.3,
+              size: iconSize,
             ),
             AutoSizeText(
               items[i - 1].name,
-              maxFontSize: (squareLength * 0.245).floor().toDouble(),
-              minFontSize: (squareLength * 0.19).floor().toDouble(),
+              maxFontSize: itemFontSizeMax,
+              minFontSize: itemFontSizeMin,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(decoration: TextDecoration.none),
+              style: TextStyle(decoration: TextDecoration.none, fontFamily: theme.itemNameFont.value),
               textAlign: TextAlign.center,
             ),
             AutoSizeText(
               items[i - 1].description,
-              maxFontSize: (squareLength * 0.135).floor().toDouble(),
-              minFontSize: (squareLength * 0.11).floor().toDouble(),
+              maxFontSize: descFontSizeMax,
+              minFontSize: descFontSizeMin,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(decoration: TextDecoration.none),
+              style: TextStyle(decoration: TextDecoration.none, fontFamily: theme.descriptionFont.value),
               textAlign: TextAlign.center,
             ),
           ],

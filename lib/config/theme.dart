@@ -25,6 +25,7 @@ class Theme {
   ThemeColor backgroundColor = thm_backgroundColor;
   ThemeColor separatorColor = thm_separatorColor;
   ThemeColor outlineColor = thm_outlineColor;
+  ThemeColor centerColor = thm_centerColor;
   ThemeColor hoveredBackgroundColor = thm_hoveredBackgroundColor;
   ThemeColor hoveredSeparatorColor = thm_hoveredSeparatorColor;
   ThemeColor hoveredOutlineColor = thm_hoveredOutlineColor;
@@ -34,9 +35,9 @@ class Theme {
   Font menuNameFont = thm_menuNameFont;
   Font descriptionFont = thm_descriptionFont;
   AutoOrNum itemNameFontSize = thm_itemNameFontSize;
+  AutoOrNum descriptionFontSize = thm_descriptionFontSize;
   AutoOrNum menuNameFontSize = thm_menuNameFontSize;
   AutoOrNum iconSize = thm_iconSize;
-  AutoOrNum descriptionFontSize = thm_descriptionFontSize;
   bool showItemNameOnCenter = thm_showItemNameOnCenter;
   bool showDescOnCenter = thm_showDescOnCenter;
   bool showIconOnCenter = thm_showIconOnCenter;
@@ -241,16 +242,16 @@ class Theme {
           ThemeColor val => val,
           _ => this.hoveredBackgroundColor,
         };
-      case ThemeProps.hoveredSeparatorColor:
-        this.hoveredSeparatorColor = switch (propVal) {
-          ThemeColor val => val,
-          _ => this.hoveredSeparatorColor,
-        };
-      case ThemeProps.hoveredOutlineColor:
-        this.hoveredOutlineColor = switch (propVal) {
-          ThemeColor val => val,
-          _ => this.hoveredOutlineColor,
-        };
+      // case ThemeProps.hoveredSeparatorColor:
+      //   this.hoveredSeparatorColor = switch (propVal) {
+      //     ThemeColor val => val,
+      //     _ => this.hoveredSeparatorColor,
+      //   };
+      // case ThemeProps.hoveredOutlineColor:
+      //   this.hoveredOutlineColor = switch (propVal) {
+      //     ThemeColor val => val,
+      //     _ => this.hoveredOutlineColor,
+      //   };
       case ThemeProps.separatorThickness:
         this.separatorThickness = switch (propVal) {
           AutoOrNum val => val,
@@ -276,6 +277,11 @@ class Theme {
           Font val => val,
           _ => this.descriptionFont,
         };
+      case ThemeProps.centerColor:
+        this.centerColor = switch (propVal) {
+          ThemeColor val => val,
+          _ => this.centerColor,
+        };
     }
   }
 
@@ -299,12 +305,13 @@ enum ThemeProps {
   backgroundColor('backgroundColor', ThemeColor, 'Background Color', 'Background Color of menu', ['wheel']),
   separatorColor('separatorColor', ThemeColor, 'Separator Color', 'Separator Color of menu items', ['wheel']),
   outlineColor('outlineColor', ThemeColor, 'Outline Color', 'Outline Color of menu', ['wheel']),
+  centerColor('centerColor', ThemeColor, 'Center Color', 'Color of circle at the center', ['wheel']),
   hoveredBackgroundColor('hoveredBackgroundColor', ThemeColor, 'Background Color on Hover',
       'Background Color of hovered menu items', ['wheel']),
-  hoveredSeparatorColor('hoveredSeparatorColor', ThemeColor, 'Separator Color on Hover',
-      'Separator Color of hovered menu items', ['wheel']),
-  hoveredOutlineColor(
-      'hoveredOutlineColor', ThemeColor, 'Outline Color on Hover', 'Outline Color of hovered menus', ['wheel']),
+  // hoveredSeparatorColor('hoveredSeparatorColor', ThemeColor, 'Separator Color on Hover',
+  //     'Separator Color of hovered menu items', ['wheel']),
+  // hoveredOutlineColor(
+  //     'hoveredOutlineColor', ThemeColor, 'Outline Color on Hover', 'Outline Color of hovered menus', ['wheel']),
   separatorThickness('separatorThickness', AutoOrNum, 'Separator Thickness', 'Separator Thickness', ['wheel']),
   outlineThickness('outlineThickness', AutoOrNum, 'Outline Thickness', 'Outline Thickness', ['wheel']),
   itemNameFont('itemNameFont', Font, 'Font of item name', 'Font of item name', ['wheel']),
@@ -345,13 +352,14 @@ enum ThemeProps {
       ThemeProps.separatorColor => theme.separatorColor,
       ThemeProps.outlineColor => theme.outlineColor,
       ThemeProps.hoveredBackgroundColor => theme.hoveredBackgroundColor,
-      ThemeProps.hoveredSeparatorColor => theme.hoveredSeparatorColor,
-      ThemeProps.hoveredOutlineColor => theme.hoveredOutlineColor,
+      // ThemeProps.hoveredSeparatorColor => theme.hoveredSeparatorColor,
+      // ThemeProps.hoveredOutlineColor => theme.hoveredOutlineColor,
       ThemeProps.separatorThickness => theme.separatorThickness,
       ThemeProps.outlineThickness => theme.outlineThickness,
       ThemeProps.itemNameFont => theme.itemNameFont,
       ThemeProps.menuNameFont => theme.menuNameFont,
       ThemeProps.descriptionFont => theme.descriptionFont,
+      ThemeProps.centerColor => theme.centerColor,
     };
   }
 
@@ -383,10 +391,10 @@ enum ThemeProps {
         theme.outlineColor = value;
       case ThemeProps.hoveredBackgroundColor:
         theme.hoveredBackgroundColor = value;
-      case ThemeProps.hoveredSeparatorColor:
-        theme.hoveredSeparatorColor = value;
-      case ThemeProps.hoveredOutlineColor:
-        theme.hoveredOutlineColor = value;
+      // case ThemeProps.hoveredSeparatorColor:
+      //   theme.hoveredSeparatorColor = value;
+      // case ThemeProps.hoveredOutlineColor:
+      //   theme.hoveredOutlineColor = value;
       case ThemeProps.separatorThickness:
         theme.separatorThickness = value;
       case ThemeProps.outlineThickness:
@@ -397,16 +405,18 @@ enum ThemeProps {
         theme.menuNameFont = value;
       case ThemeProps.descriptionFont:
         theme.descriptionFont = value;
+      case ThemeProps.centerColor:
+        theme.centerColor = value;
     }
   }
 }
 
 class Font {
-  String value;
+  String? value;
   Font(this.value);
   @override
   String toString() {
-    return value;
+    return value ?? '';
   }
 }
 
