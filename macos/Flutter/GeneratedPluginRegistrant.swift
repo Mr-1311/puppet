@@ -5,13 +5,13 @@
 import FlutterMacOS
 import Foundation
 
-import hotkey_manager
+import hotkey_manager_macos
 import screen_retriever
 import tray_manager
 import window_manager
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  HotkeyManagerPlugin.register(with: registry.registrar(forPlugin: "HotkeyManagerPlugin"))
+  HotkeyManagerMacosPlugin.register(with: registry.registrar(forPlugin: "HotkeyManagerMacosPlugin"))
   ScreenRetrieverPlugin.register(with: registry.registrar(forPlugin: "ScreenRetrieverPlugin"))
   TrayManagerPlugin.register(with: registry.registrar(forPlugin: "TrayManagerPlugin"))
   WindowManagerPlugin.register(with: registry.registrar(forPlugin: "WindowManagerPlugin"))

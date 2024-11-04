@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/theme.dart';
 
@@ -17,7 +19,9 @@ const conf_shortcut = {
   "keyCode": "space",
   "modifiers": ["alt"]
 };
-final conf_hotkey = HotKey(KeyCode.space, modifiers: [KeyModifier.alt]);
+final conf_hotkey = HotKey(key: LogicalKeyboardKey.space, modifiers: [HotKeyModifier.alt]);
+
+final conf_iconData = FontAwesomeIcons.terminal;
 
 // THEME
 final thm_backgroundColor = ThemeColorSolid('#cc278d');
@@ -35,9 +39,9 @@ final thm_descriptionFont = Font(null);
 final thm_itemNameFontSize = AONAuto();
 final thm_menuNameFontSize = AONAuto();
 final thm_iconSize = AONAuto();
+final thm_itemFontColor = ThemeColorSolid('#ffffff');
+final thm_menuFontColor = ThemeColorSolid('#ffffff');
+final thm_descriptionFontColor = ThemeColorSolid('#ffffff');
 final thm_descriptionFontSize = AONAuto();
-final thm_showItemNameOnCenter = false;
-final thm_showDescOnCenter = false;
-final thm_showIconOnCenter = false;
 final thm_pageIndicatorActiveColor = ThemeColorSolid('#ffffff');
 final thm_pageIndicatorPassiveColor = ThemeColorSolid('#474747');

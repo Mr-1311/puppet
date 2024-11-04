@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:puppet/settings/settings_element.dart';
 import 'package:puppet/settings/theme_detail_pane.dart';
 
@@ -16,62 +16,72 @@ class ThemesPane extends ConsumerWidget {
     final themeDetail = ref.watch(themeDetailProvider);
     if (themeDetail == null) {
       return switch (theme) {
-        AsyncData(value: final theme) => ListView(children: [
-            Divider(),
-            for (final themeName in theme.keys)
-              InkWell(
-                onTap: () => (ref.read(themeDetailProvider.notifier).state = themeName),
-                child: Card(
-                  child: Container(
-                    height: elementHeight,
-                    padding: elementPadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              themeName,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ],
+        AsyncData(value: final theme) => Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.only(bottom: 85),
+                children: [
+                  for (final themeName in theme.keys)
+                    InkWell(
+                      onTap: () => (ref.read(themeDetailProvider.notifier).state = themeName),
+                      child: Card(
+                        child: Container(
+                          height: elementHeight,
+                          padding: elementPadding,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      themeName,
+                                      style: Theme.of(context).textTheme.titleLarge,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                      onPressed: () {
+                                        _deleteConfirmationDialogBuilder(context, themeName).then((value) {
+                                          if (value == true) {
+                                            ref.read(themeProvider.notifier).deleteTheme(themeName);
+                                          }
+                                        });
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                  SizedBox(width: 18),
+                                  FaIcon(
+                                    FontAwesomeIcons.chevronRight,
+                                    size: 18,
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                                onPressed: () {
-                                  _deleteConfirmationDialogBuilder(context, themeName).then((value) {
-                                    if (value == true) {
-                                      ref.read(themeProvider.notifier).deleteTheme(themeName);
-                                    }
-                                  });
-                                },
-                                icon: Icon(Icons.delete)),
-                            SizedBox(width: 18),
-                            FaIcon(
-                              FontAwesomeIcons.chevronRight,
-                              size: 18,
-                            )
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                ],
+              ),
+              Container(
+                alignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.all(12.0),
+                child: FloatingActionButton.extended(
+                  onPressed: () {
+                    ref.read(themeProvider.notifier).createNewTheme();
+                  },
+                  label: Text('Create New Theme'),
+                  icon: Icon(Icons.add),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  ref.read(themeProvider.notifier).createNewTheme();
-                },
-                label: Text('Create New Theme'),
-                icon: Icon(Icons.add),
-              ),
-            ),
-          ]),
+            ],
+          ),
         _ => CircularProgressIndicator(),
       };
     } else {

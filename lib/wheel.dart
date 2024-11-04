@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/config.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:puppet/config/theme.dart' as t;
 import 'package:system_fonts/system_fonts.dart';
@@ -124,6 +124,15 @@ class Wheel extends ConsumerWidget {
     final theme = ref.watch(currentThemeProvider);
 
     final menuFontSize = _getMenuFontSize(centerSize, theme);
+    SystemFonts().loadFont(theme.menuNameFont.value ?? '');
+    final menu_paint = Paint()..blendMode = BlendMode.src;
+    switch (theme.menuFontColor) {
+      case t.ThemeColorSolid():
+        menu_paint.color = (theme.menuFontColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        menu_paint.shader = (theme.menuFontColor as t.ThemeColorGradient).value.createShader(
+            Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width: centerSize, height: centerSize));
+    }
 
     return MouseRegion(
       onExit: (event) => ref.read(hoveredSectionProvider.notifier).state = 0,
@@ -175,12 +184,19 @@ class Wheel extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       maxFontSize: menuFontSize.$1,
                       minFontSize: menuFontSize.$2,
+                      style: TextStyle(
+                        decoration: TextDecoration.none,
+                        fontFamily: theme.menuNameFont.value,
+                        foreground: menu_paint,
+                      ),
                     ),
                     AnimatedSmoothIndicator(
                         count: pageSize,
                         activeIndex: currentPage,
                         effect: ScrollingDotsEffect(
                           maxVisibleDots: 5,
+                          activeDotColor: theme.pageIndicatorActiveColor.value,
+                          dotColor: theme.pageIndicatorPassiveColor.value,
                           spacing: centerSize * .05,
                           dotHeight: centerSize * .1,
                           dotWidth: centerSize * .1,
@@ -369,6 +385,29 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle,
 
   for (int i = 1; i <= items.length; i++) {
     final angle = items.length == 1 ? pi * 0.5 : sectionAngle * i - sectionAngle * 0.5;
+
+    final item_paint = Paint()..blendMode = BlendMode.src;
+    switch (theme.itemFontColor) {
+      case t.ThemeColorSolid():
+        item_paint.color = (theme.itemFontColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        item_paint.shader = (theme.itemFontColor as t.ThemeColorGradient).value.createShader(Rect.fromCenter(
+            center: Offset(radius + cos(angle) * distance, radius - sin(angle) * distance),
+            width: squareLength,
+            height: squareLength));
+    }
+
+    final desc_paint = Paint()..blendMode = BlendMode.src;
+    switch (theme.descriptionFontColor) {
+      case t.ThemeColorSolid():
+        desc_paint.color = (theme.descriptionFontColor as t.ThemeColorSolid).value;
+      case t.ThemeColorGradient():
+        desc_paint.shader = (theme.descriptionFontColor as t.ThemeColorGradient).value.createShader(Rect.fromCenter(
+            center: Offset(radius + cos(angle) * distance, radius - sin(angle) * distance),
+            width: squareLength,
+            height: squareLength));
+    }
+
     menuItems.add(Positioned(
       left: radius + cos(angle) * distance - squareLength / 2 + pivot_x,
       bottom: radius + sin(angle) * distance - squareLength / 2 + pivot_y,
@@ -387,7 +426,11 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle,
               minFontSize: itemFontSizeMin,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(decoration: TextDecoration.none, fontFamily: theme.itemNameFont.value),
+              style: TextStyle(
+                decoration: TextDecoration.none,
+                fontFamily: theme.itemNameFont.value,
+                foreground: item_paint,
+              ),
               textAlign: TextAlign.center,
             ),
             AutoSizeText(
@@ -396,7 +439,11 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle,
               minFontSize: descFontSizeMin,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(decoration: TextDecoration.none, fontFamily: theme.descriptionFont.value),
+              style: TextStyle(
+                decoration: TextDecoration.none,
+                fontFamily: theme.descriptionFont.value,
+                foreground: desc_paint,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

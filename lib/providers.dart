@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
+import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -26,6 +27,7 @@ void _hotkeyHandler(Config conf, Ref ref) async {
       final positionCoordinate = await calculateWindowPosition(
           windowSize: menu.size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
       windowManager.setPosition(positionCoordinate);
+      ref.read(menuProvider.notifier).setMenu(menu);
       await windowManager.show();
     },
   );
@@ -113,6 +115,18 @@ class ConfigNotifier extends AsyncNotifier<Config> {
           stateVal.menus[i] = menu;
         }
       }
+      updateConfig(stateVal);
+    }
+  }
+
+  Future<void> reorderMenuItem(int oldIndex, int newIndex, int menuId) async {
+    final stateVal = state.valueOrNull;
+    if (stateVal != null) {
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      final item = stateVal.menus[menuId].items.removeAt(oldIndex);
+      stateVal.menus[menuId].items.insert(newIndex, item);
       updateConfig(stateVal);
     }
   }
@@ -381,3 +395,13 @@ final currentThemeProvider = Provider<Theme>((ref) {
       return Theme();
   }
 });
+
+final pluginProvider = NotifierProvider<PluginNotifier, List<Plugin>>(PluginNotifier.new);
+
+class PluginNotifier extends Notifier<List<Plugin>> {
+  @override
+  List<Plugin> build() {
+    final pluginDirPath = dirname(getAppDirs(application: 'puppet').config) + '/plugins';
+    return getAvailablePlugins(pluginDirPath);
+  }
+}

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:puppet/error_page.dart';
 import 'package:puppet/settings/settings_page.dart';
 import 'package:puppet/wheel.dart';
@@ -54,8 +54,8 @@ void main(List<String> args) async {
   argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
   final results = argParser.parse(args);
 
-  final isSettings = results['settings'];
-  // final isSettings = true;
+  // final isSettings = results['settings'];
+  final isSettings = true;
 
   _setWindowMode(isSettings);
   // tray icon settings

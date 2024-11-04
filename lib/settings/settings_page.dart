@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:puppet/settings/menus_pane.dart';
 import 'package:puppet/settings/themes_pane.dart';
 
@@ -123,14 +123,16 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
                               0 => MenusPane(),
                               1 => ThemesPane(),
                               2 => Text('Plugins'),
-                              _ => Column(
-                                  children: [
-                                    for (var warning in conf!.warnings)
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: (Text(warning)),
-                                      ),
-                                  ],
+                              _ => SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      for (var warning in conf!.warnings)
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: (Text(warning)),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                             }),
                       ),

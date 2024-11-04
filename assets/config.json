@@ -28,7 +28,7 @@
                     "repeat": false,
                     "shortcut": "p",
                     "icon": "50",
-                    "type": "run",
+                    "plugin": "run",
                     "pluginArgs": {
                         "type": "open",
                         "command": "https://github.com/Mr-1311/puppet"

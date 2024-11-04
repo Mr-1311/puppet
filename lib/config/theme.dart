@@ -38,9 +38,9 @@ class Theme {
   AutoOrNum descriptionFontSize = thm_descriptionFontSize;
   AutoOrNum menuNameFontSize = thm_menuNameFontSize;
   AutoOrNum iconSize = thm_iconSize;
-  bool showItemNameOnCenter = thm_showItemNameOnCenter;
-  bool showDescOnCenter = thm_showDescOnCenter;
-  bool showIconOnCenter = thm_showIconOnCenter;
+  ThemeColor itemFontColor = thm_itemFontColor;
+  ThemeColor menuFontColor = thm_menuFontColor;
+  ThemeColor descriptionFontColor = thm_descriptionFontColor;
   ThemeColorSolid pageIndicatorActiveColor = thm_pageIndicatorActiveColor;
   ThemeColorSolid pageIndicatorPassiveColor = thm_pageIndicatorPassiveColor;
 
@@ -69,9 +69,6 @@ class Theme {
     this.menuNameFontSize,
     this.iconSize,
     this.descriptionFontSize,
-    this.showItemNameOnCenter,
-    this.showDescOnCenter,
-    this.showIconOnCenter,
     this.pageIndicatorActiveColor,
     this.pageIndicatorPassiveColor,
   );
@@ -93,9 +90,6 @@ class Theme {
           t.menuNameFontSize,
           t.iconSize,
           t.descriptionFontSize,
-          t.showItemNameOnCenter,
-          t.showDescOnCenter,
-          t.showIconOnCenter,
           t.pageIndicatorActiveColor,
           t.pageIndicatorPassiveColor,
         );
@@ -116,9 +110,6 @@ class Theme {
     AutoOrNum? menuNameFontSize,
     AutoOrNum? iconSize,
     AutoOrNum? descriptionFontSize,
-    bool? showItemNameOnCenter,
-    bool? showDescOnCenter,
-    bool? showIconOnCenter,
     ThemeColorSolid? pageIndicatorActiveColor,
     ThemeColorSolid? pageIndicatorPassiveColor,
   }) {
@@ -138,9 +129,6 @@ class Theme {
       menuNameFontSize ?? this.menuNameFontSize,
       iconSize ?? this.iconSize,
       descriptionFontSize ?? this.descriptionFontSize,
-      showItemNameOnCenter ?? this.showItemNameOnCenter,
-      showDescOnCenter ?? this.showDescOnCenter,
-      showIconOnCenter ?? this.showIconOnCenter,
       pageIndicatorActiveColor ?? this.pageIndicatorActiveColor,
       pageIndicatorPassiveColor ?? this.pageIndicatorPassiveColor,
     );
@@ -196,21 +184,6 @@ class Theme {
         this.iconSize = switch (propVal) {
           AutoOrNum val => val,
           _ => this.iconSize,
-        };
-      case ThemeProps.showItemNameOnCenter:
-        this.showItemNameOnCenter = switch (propVal) {
-          bool val => val,
-          _ => this.showItemNameOnCenter,
-        };
-      case ThemeProps.showDescOnCenter:
-        this.showDescOnCenter = switch (propVal) {
-          bool val => val,
-          _ => this.showDescOnCenter,
-        };
-      case ThemeProps.showIconOnCenter:
-        this.showIconOnCenter = switch (propVal) {
-          bool val => val,
-          _ => this.showIconOnCenter,
         };
       case ThemeProps.pageIndicatorActiveColor:
         this.pageIndicatorActiveColor = switch (propVal) {
@@ -282,6 +255,21 @@ class Theme {
           ThemeColor val => val,
           _ => this.centerColor,
         };
+      case ThemeProps.itemFontColor:
+        this.itemFontColor = switch (propVal) {
+          ThemeColor val => val,
+          _ => this.itemFontColor,
+        };
+      case ThemeProps.menuFontColor:
+        this.menuFontColor = switch (propVal) {
+          ThemeColor val => val,
+          _ => this.menuFontColor,
+        };
+      case ThemeProps.descFontColor:
+        this.descriptionFontColor = switch (propVal) {
+          ThemeColor val => val,
+          _ => this.descriptionFontColor,
+        };
     }
   }
 
@@ -321,9 +309,9 @@ enum ThemeProps {
   menuNameFontSize('menuNameFontSize', AutoOrNum, 'Menu Name Font Size', 'Menu Name Font Size', ['wheel']),
   iconSize('iconSize', AutoOrNum, 'Icon Size', 'Icon Size', ['wheel']),
   descFontSize('descriptionFontSize', AutoOrNum, 'Description Font Size', 'Description Font Size', ['wheel']),
-  showItemNameOnCenter('showItemNameOnCenter', bool, 'Show Item Name On Center', 'Show Item Name On Center', ['wheel']),
-  showDescOnCenter('showDescOnCenter', bool, 'Show Description On Center', 'Show Description On Center', ['wheel']),
-  showIconOnCenter('showIconOnCenter', bool, 'Show Icon On Center', 'Show Icon On Center', ['wheel']),
+  itemFontColor('itemFontColor', ThemeColor, 'Item Name Font Color', 'Item Name Font Color', ['wheel']),
+  menuFontColor('menuFontColor', ThemeColor, 'Menu Name Font Color', 'Menu Name Font Color', ['wheel']),
+  descFontColor('descFontColor', ThemeColor, 'Description Font Color', 'Description Font Color', ['wheel']),
   pageIndicatorActiveColor('pageIndicatorActiveColor', ThemeColorSolid, 'Page Indicator Active Dot Color',
       'Page Indicator Active Dot Color on Wheel Menu', ['wheel']),
   pageIndicatorPassiveColor('pageIndicatorPassiveColor', ThemeColorSolid, 'Page Indicator Passive Dot Color',
@@ -343,9 +331,6 @@ enum ThemeProps {
       ThemeProps.itemNameFontSize => theme.itemNameFontSize,
       ThemeProps.menuNameFontSize => theme.menuNameFontSize,
       ThemeProps.iconSize => theme.iconSize,
-      ThemeProps.showItemNameOnCenter => theme.showItemNameOnCenter,
-      ThemeProps.showDescOnCenter => theme.showDescOnCenter,
-      ThemeProps.showIconOnCenter => theme.showIconOnCenter,
       ThemeProps.pageIndicatorActiveColor => theme.pageIndicatorActiveColor,
       ThemeProps.pageIndicatorPassiveColor => theme.pageIndicatorPassiveColor,
       ThemeProps.backgroundColor => theme.backgroundColor,
@@ -360,6 +345,9 @@ enum ThemeProps {
       ThemeProps.menuNameFont => theme.menuNameFont,
       ThemeProps.descriptionFont => theme.descriptionFont,
       ThemeProps.centerColor => theme.centerColor,
+      ThemeProps.itemFontColor => theme.itemFontColor,
+      ThemeProps.menuFontColor => theme.menuFontColor,
+      ThemeProps.descFontColor => theme.descriptionFontColor,
     };
   }
 
@@ -373,12 +361,6 @@ enum ThemeProps {
         theme.menuNameFontSize = value;
       case ThemeProps.iconSize:
         theme.iconSize = value;
-      case ThemeProps.showItemNameOnCenter:
-        theme.showItemNameOnCenter = value;
-      case ThemeProps.showDescOnCenter:
-        theme.showDescOnCenter = value;
-      case ThemeProps.showIconOnCenter:
-        theme.showIconOnCenter = value;
       case ThemeProps.pageIndicatorActiveColor:
         theme.pageIndicatorActiveColor = value;
       case ThemeProps.pageIndicatorPassiveColor:
@@ -407,6 +389,12 @@ enum ThemeProps {
         theme.descriptionFont = value;
       case ThemeProps.centerColor:
         theme.centerColor = value;
+      case ThemeProps.itemFontColor:
+        theme.itemFontColor = value;
+      case ThemeProps.menuFontColor:
+        theme.menuFontColor = value;
+      case ThemeProps.descFontColor:
+        theme.descriptionFontColor = value;
     }
   }
 }

@@ -1,15 +1,19 @@
+import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:app_dirs/app_dirs.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:path/path.dart';
 import 'package:puppet/config/config_defaults.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:puppet/config/theme.dart' as conf;
 
-List<String> _errors = [];
-List<String> _warnings = [];
+HashSet<String> _errors = HashSet<String>();
+HashSet<String> _warnings = HashSet<String>();
 
 class Config {
   String mainMenu = '';
@@ -17,12 +21,15 @@ class Config {
   HotKey hotkey = conf_hotkey;
   int version = conf_version;
   List<Menus> menus = <Menus>[];
+  final HashMap<String, dynamic> iconDatas = HashMap<String, dynamic>();
 
-  late List<String> errors;
-  late List<String> warnings;
+  late HashSet<String> errors;
+  late HashSet<String> warnings;
 
   Config.fromJson(Map<String, dynamic> json, List<Size> screenSizes,
       {String? mainMenuFromArgs = null, String systemBrightness = 'light'}) {
+    iconDatas['default'] = conf_iconData;
+
     if (json case {'version': int version}) {
       this.version = version;
     }
@@ -38,14 +45,14 @@ class Config {
         this.hotkey = h;
       } catch (e) {
         _warnings.add(
-            "main menu shortcut is not a valid hotkey, please set a valid hotkey from the settings, until then, it will be <alt+space>");
+            "$shortcut main menu shortcut is not a valid hotkey, please set a valid hotkey from the settings, until then, it will be <alt+space>");
       }
     }
 
     if (json case {'menus': List menus}) {
       this.menus = <Menus>[];
       menus.forEachIndexed((index, value) {
-        final menu = Menus.fromJson(value, index, screenSizes, systemBrightness);
+        final menu = Menus.fromJson(value, index, screenSizes, systemBrightness, iconDatas);
         if (this.menus.any((m) => m.name == menu.name)) {
           _errors.add("There is a menu named '${menu.name}' in the menus list, every menu must have a unique name");
         } else {
@@ -164,7 +171,8 @@ class Menus {
 
   Menus({required this.name, this.systemBrightness = 'light'});
 
-  Menus.fromJson(Map<String, dynamic> json, int index, List<Size> screenSizes, this.systemBrightness) {
+  Menus.fromJson(Map<String, dynamic> json, int index, List<Size> screenSizes, this.systemBrightness,
+      HashMap<String, dynamic> iconDatas) {
     if (json case {'name': String name}) {
       this.name = name;
     } else {
@@ -192,7 +200,7 @@ class Menus {
         }
       } catch (e) {
         _warnings.add(
-            '${this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'"} shortcut is not a valid hotkey, please set a valid hotkey from the settings');
+            '<shortcut> is not a valid hotkey on ${this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'"}, please set a valid hotkey from the settings');
       }
     }
 
@@ -390,9 +398,8 @@ class Menus {
 
     if (json case {'items': List items}) {
       this.items = <Items>[];
-      final sg = ShortcodeGenerator();
       items.forEach((v) {
-        this.items.add(new Items.fromJson(v, sg));
+        this.items.add(new Items.fromJson(v, this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'", iconDatas));
       });
     } else {
       _warnings.add(
@@ -428,21 +435,32 @@ class Items {
   String name = '';
   String description = '';
   bool repeat = false;
-  String shortcutInJson = '';
-  late String shortcut;
+  String shortcut = '';
   String icon = '';
-  // ItemIcon icon = ItemIcon.defaultIcon();
-  late String type;
+  String plugin = 'menu';
   Map<String, dynamic> pluginArgs = {};
 
-  Items.fromJson(Map<String, dynamic> json, ShortcodeGenerator sg) {
-    // TODO: check the plugin is available
-    if (json case {'type': String type}) {
-      this.type = type;
-    }
+  Items();
 
+  Items.fromJson(Map<String, dynamic> json, String menuName, HashMap<String, dynamic> iconDatas) {
     if (json case {'name': String name}) {
       this.name = name;
+    }
+
+    var _isPluginAvailable = (false, <String>[]);
+    if (json case {'plugin': String plugin}) {
+      this.plugin = plugin;
+      if (plugin == 'menu') {
+        _isPluginAvailable = (true, ['menu name']);
+      } else {
+        _isPluginAvailable = _checkPlugin(plugin);
+      }
+      if (!_isPluginAvailable.$1) {
+        _warnings.add(
+            'The <plugin> named "${plugin}" on item \'${name}\' in menu ${menuName} is not available, plugin will be ignored');
+      }
+    } else {
+      _warnings.add('item on ${menuName} has null or empty <plugin> property, plugin will be ignored');
     }
 
     if (json case {'description': String description}) {
@@ -454,19 +472,34 @@ class Items {
     }
 
     if (json case {'shortcut': String shortcut}) {
-      this.shortcut = shortcut.trim().isNotEmpty ? shortcut : sg.getShortcode();
-      this.shortcutInJson = shortcut;
-    } else {
-      this.shortcut = sg.getShortcode();
+      this.shortcut = shortcut.trim().length == 1 ? shortcut.trim() : '';
+      if (shortcut.trim().length > 1) {
+        _warnings.add(
+            'item on ${menuName} has a wrong <shortcut> property. The shortcut on item should be a single character');
+      }
     }
 
     if (json case {'icon': String icon}) {
       this.icon = icon;
-      // this.icon = ItemIcon(icon);
+      if (!iconDatas.containsKey(icon)) {
+        final iconData = _getIconData(icon);
+        iconDatas[icon] = iconData;
+        if (iconData == null && icon.isNotEmpty) {
+          _warnings.add('item on ${menuName} has a wrong <icon> property as "$icon". The icon not found.');
+        }
+      }
     }
 
     if (json case {'pluginArgs': Map<String, dynamic> pluginArgs}) {
       this.pluginArgs = pluginArgs;
+      if (_isPluginAvailable.$1) {
+        for (final arg in pluginArgs.keys) {
+          if (!_isPluginAvailable.$2.contains(arg)) {
+            _warnings.add(
+                'item "${name}" on ${menuName} has a wrong <pluginArgs> property. The "$plugin" plugin not use the "$arg" argument');
+          }
+        }
+      }
     }
   }
 
@@ -475,71 +508,70 @@ class Items {
     data['name'] = this.name;
     data['description'] = this.description;
     data['repeat'] = this.repeat;
-    data['shortcut'] = this.shortcutInJson;
+    data['shortcut'] = this.shortcut;
     data['icon'] = this.icon;
-    data['type'] = this.type;
+    data['plugin'] = this.plugin;
     data['pluginArgs'] = this.pluginArgs;
     return data;
   }
 }
 
-class ShortcodeGenerator {
-  final _numericBase = '1'.codeUnitAt(0);
-  final _numericLast = '9'.codeUnitAt(0);
-  final _alphabeticBase = 'a'.codeUnitAt(0);
-  final _alphabeticLast = 'z'.codeUnitAt(0);
-
-  var _currentIndex;
-
-  ShortcodeGenerator() {
-    _currentIndex = _numericBase - 1;
-  }
-
-  String getShortcode() {
-    if (_currentIndex == _numericLast) {
-      _currentIndex = _alphabeticBase - 1;
-      return '0';
-    }
-    if (_currentIndex == _alphabeticLast) {
-      return '';
-    }
-
-    _currentIndex += 1;
-
-    return String.fromCharCode(_currentIndex);
-  }
-}
-
-enum IconType { img, icon, svg, def }
-
 const supportedIconImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.wbmp', '.ico', '.icon'];
 
-class ItemIcon {
-  late IconType type;
-  late String path;
+dynamic _getIconData(String icon) {
+  if (supportedIconImageExtensions.contains(extension(icon))) {
+    final path = dirname(icon) != '.' ? icon : getAppDirs(application: 'puppet').config + '/icons/' + icon;
+    final file = File(path);
+    if (!file.existsSync()) {
+      return null;
+    }
+    final bytes = file.readAsBytesSync();
+    return MemoryImage(bytes);
+  }
+  if (icon.split(':').length == 3 &&
+      int.tryParse(icon.split(':')[0], radix: 16) != null &&
+      int.parse(icon.split(':')[0], radix: 16) <= 1114111) {
+    return IconData(int.parse(icon.split(':')[0], radix: 16),
+        fontFamily: icon.split(':')[1], fontPackage: icon.split(':')[2]);
+  }
+  if (int.tryParse(icon, radix: 16) != null && int.parse(icon, radix: 16) <= 1114111) {
+    return IconData(
+      int.parse(icon, radix: 16),
+      fontFamily: 'FontAwesomeSolid',
+      fontPackage: 'font_awesome_flutter',
+    );
+  }
+  return null;
+}
 
-  ItemIcon(String s) {
-    final ext = extension(s).toLowerCase();
-    if (ext == '.svg') {
-      type = IconType.svg;
-      path = s;
-    } else if (supportedIconImageExtensions.contains(ext)) {
-      type = IconType.img;
-      path = s;
-    } else {
-      type = IconType.icon;
-      path = s;
+(bool, List<String>) _checkPlugin(String name) {
+  final directory = Directory(dirname(getAppDirs(application: 'puppet').config) + '/plugins');
+  if (!directory.existsSync()) {
+    return (false, []);
+  }
+  final files = directory.listSync().toList();
+
+  for (var file in files) {
+    if (file is Directory) {
+      final manifestFile = File('${file.path}/manifest.json');
+      if (manifestFile.existsSync()) {
+        final manifestContent = manifestFile.readAsStringSync();
+        final manifestJson = jsonDecode(manifestContent);
+        if (manifestJson case {'name': String pluginName}) {
+          if (pluginName == name) {
+            var args = <String>[];
+            if (manifestJson case {'pluginArgs': List<Map<String, String>> pluginArgs}) {
+              for (final arg in pluginArgs) {
+                if (arg case {'name': String name}) {
+                  args.add(name);
+                }
+              }
+            }
+            return (true, args);
+          }
+        }
+      }
     }
   }
-
-  ItemIcon.defaultIcon() {
-    type = IconType.def;
-    path = '';
-  }
-
-  // TODO: implement toString
-  @override
-  String toString() {
-    return path;
-  }
+  return (false, []);
 }

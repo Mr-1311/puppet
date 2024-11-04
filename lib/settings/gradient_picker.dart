@@ -9,7 +9,6 @@ enum PickerType {
   solid,
   linearGradient,
   radialGradient,
-  random,
 }
 
 class ThemeColorPicker extends StatefulWidget {
@@ -19,7 +18,6 @@ class ThemeColorPicker extends StatefulWidget {
       PickerType.solid,
       PickerType.linearGradient,
       PickerType.radialGradient,
-      PickerType.random
     ],
     this.onChange,
     super.key,
@@ -106,9 +104,6 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
                       widget.availableTypes.contains(PickerType.radialGradient))
                   ? [ButtonSegment(value: 'gradient', label: Text('Gradient'))]
                   : [],
-              ...widget.availableTypes.contains(PickerType.random)
-                  ? [ButtonSegment(value: 'random', label: Text('Random'))]
-                  : [],
             ],
             selected: sgmntBtnSelected,
             onSelectionChanged: (p0) => setState(() {
@@ -116,127 +111,103 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
               _setColorPickerHeight();
             }),
           ),
-        sgmntBtnSelected.first == 'random'
-            ? Padding(
-                padding: const EdgeInsets.all(32.0),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: HueRingPicker(
+                  enableAlpha: true,
+                  portraitOnly: true,
+                  colorPickerHeight: colorPickerHeight,
+                  pickerColor: currentColor,
+                  onColorChanged: (val) => _updateCurrentIndicatorColor(val),
+                ),
+              ),
+            ),
+            if (sgmntBtnSelected.contains('gradient'))
+              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Stack(
-                      children: [
-                        ThemeColorIndicator.random(width: 70, height: 70),
-                        Positioned.fill(
-                          child: Icon(
-                            Icons.shuffle,
-                            size: 46,
-                          ),
-                        ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: MultiSlider(
+                        width: multiSliderWidth,
+                        indicators: indicators,
+                        lastSelected: lastSelected,
+                        linearGradient: sliderBackground,
+                        onValueChanged: (v) => setState(() {
+                          indicators = v;
+                          sliderBackground = _getSliderBackground();
+                        }),
+                        onSelectedChanged: (v) => setState(() {
+                          lastSelected = v;
+                          currentColor = v.indicator.color!;
+                        }),
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Use random color every time',
-                      style: Theme.of(context).textTheme.labelLarge,
+                    SegmentedButton(
+                      segments: <ButtonSegment<String>>[
+                        ButtonSegment(value: 'linear', label: Text('Linear')),
+                        ButtonSegment(value: 'radial', label: Text('Radial')),
+                      ],
+                      selected: sgmntBtnGradient,
+                      onSelectionChanged: (p0) => setState(() {
+                        sgmntBtnGradient = p0;
+                      }),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ThemeColorIndicator(
+                        width: 70,
+                        height: 70,
+                        radius: sgmntBtnGradient.first == 'radial' ? BorderRadius.circular(35) : null,
+                        linearGradient: sgmntBtnGradient.first == 'linear'
+                            ? LinearGradient(
+                                colors: indicators.map((e) => e.indicator.color!).toList(),
+                                stops: indicators.map((e) => e.val).toList(),
+                                begin: linearBegin,
+                                end: linearEnd,
+                              )
+                            : null,
+                        radialGradient: RadialGradient(
+                          colors: indicators.map((e) => e.indicator.color!).toList(),
+                          stops: indicators.map((e) => e.val).toList(),
+                          center: radialCenter,
+                        ),
+                      ),
+                    ),
+                    sgmntBtnGradient.first == 'linear'
+                        ? LinearGradientDirectionSelector(
+                            size: 50,
+                            begin: linearBegin,
+                            end: linearEnd,
+                            onBeginChanged: (p0) => setState(() {
+                              linearBegin = p0.resolve(null);
+                            }),
+                            onEndChanged: (p0) => setState(() {
+                              linearEnd = p0.resolve(null);
+                            }),
+                          )
+                        : RadialGradientDirectionSelector(
+                            size: 50,
+                            center: radialCenter,
+                            onCenterChanged: (p0) => setState(() {
+                              radialCenter = p0.resolve(null);
+                            }),
+                          ),
+                    Column(
+                      children: [..._getGradientComponents()],
                     ),
                   ],
                 ),
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: HueRingPicker(
-                        enableAlpha: true,
-                        portraitOnly: true,
-                        colorPickerHeight: colorPickerHeight,
-                        pickerColor: currentColor,
-                        onColorChanged: (val) => _updateCurrentIndicatorColor(val),
-                      ),
-                    ),
-                  ),
-                  if (sgmntBtnSelected.contains('gradient'))
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                            child: MultiSlider(
-                              width: multiSliderWidth,
-                              indicators: indicators,
-                              lastSelected: lastSelected,
-                              linearGradient: sliderBackground,
-                              onValueChanged: (v) => setState(() {
-                                indicators = v;
-                                sliderBackground = _getSliderBackground();
-                              }),
-                              onSelectedChanged: (v) => setState(() {
-                                lastSelected = v;
-                                currentColor = v.indicator.color!;
-                              }),
-                            ),
-                          ),
-                          SegmentedButton(
-                            segments: <ButtonSegment<String>>[
-                              ButtonSegment(value: 'linear', label: Text('Linear')),
-                              ButtonSegment(value: 'radial', label: Text('Radial')),
-                            ],
-                            selected: sgmntBtnGradient,
-                            onSelectionChanged: (p0) => setState(() {
-                              sgmntBtnGradient = p0;
-                            }),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ThemeColorIndicator(
-                              width: 70,
-                              height: 70,
-                              radius: sgmntBtnGradient.first == 'radial' ? BorderRadius.circular(35) : null,
-                              linearGradient: sgmntBtnGradient.first == 'linear'
-                                  ? LinearGradient(
-                                      colors: indicators.map((e) => e.indicator.color!).toList(),
-                                      stops: indicators.map((e) => e.val).toList(),
-                                      begin: linearBegin,
-                                      end: linearEnd,
-                                    )
-                                  : null,
-                              radialGradient: RadialGradient(
-                                colors: indicators.map((e) => e.indicator.color!).toList(),
-                                stops: indicators.map((e) => e.val).toList(),
-                                center: radialCenter,
-                              ),
-                            ),
-                          ),
-                          sgmntBtnGradient.first == 'linear'
-                              ? LinearGradientDirectionSelector(
-                                  size: 50,
-                                  begin: linearBegin,
-                                  end: linearEnd,
-                                  onBeginChanged: (p0) => setState(() {
-                                    linearBegin = p0.resolve(null);
-                                  }),
-                                  onEndChanged: (p0) => setState(() {
-                                    linearEnd = p0.resolve(null);
-                                  }),
-                                )
-                              : RadialGradientDirectionSelector(
-                                  size: 50,
-                                  center: radialCenter,
-                                  onCenterChanged: (p0) => setState(() {
-                                    radialCenter = p0.resolve(null);
-                                  }),
-                                ),
-                          Column(
-                            children: [..._getGradientComponents()],
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
               ),
+          ],
+        ),
       ],
     );
   }

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/theme.dart';
-import 'package:puppet/config_providers.dart';
+import 'package:puppet/providers.dart';
 import 'package:puppet/settings/gradient_picker.dart';
 import 'package:puppet/settings/settings_element.dart';
 import 'package:puppet/settings/themes_pane.dart';
@@ -207,7 +207,7 @@ class ThemeDetailPane extends ConsumerWidget {
                 onChange: (p0) => res = p0,
                 availableTypes: prop.propType == ThemeColorSolid
                     ? [PickerType.solid]
-                    : [PickerType.solid, PickerType.linearGradient, PickerType.radialGradient, PickerType.random],
+                    : [PickerType.solid, PickerType.linearGradient, PickerType.radialGradient],
               ),
             ),
           ),
