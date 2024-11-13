@@ -54,8 +54,8 @@ void main(List<String> args) async {
   argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
   final results = argParser.parse(args);
 
-  // final isSettings = results['settings'];
-  final isSettings = true;
+  final isSettings = results['settings'];
+  // final isSettings = true;
 
   _setWindowMode(isSettings);
   // tray icon settings
@@ -180,10 +180,11 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
     } else if (menuItem.key == 'show_settings') {
       String executablePath = Platform.resolvedExecutable;
       Process.start(executablePath, ['--settings']).then((Process process) {
-        process.stdout.transform(utf8.decoder).listen((data) {
+        process.stdout.transform(utf8.decoder).listen((data) async {
           stdout.writeln('settings stdout: $data');
           if (data == 'config_updated') {
-            ref.read(configProvider.notifier).rebuild();
+            ref.read(itemsProvider.notifier).clearCache();
+            await ref.read(configProvider.notifier).rebuild();
           }
           if (data == 'theme_updated') {
             ref.read(themeProvider.notifier).rebuild();

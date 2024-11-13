@@ -52,7 +52,7 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
     //     MediaQuery.of(context).platformBrightness == Brightness.dark ? 'dark' : 'light';
     ref.watch(systemBrightnessNotifierProvider.notifier).setSystemTheme(context);
 
-    final surfaceColor = Color.alphaBlend(Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.6),
+    final surfaceColor = Color.alphaBlend(Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
         Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white);
 
     final conf = ref.watch(configProvider).whenOrNull(data: (value) => value);

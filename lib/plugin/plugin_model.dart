@@ -18,6 +18,26 @@ class PluginArg {
   const PluginArg(this.name, this.description, this.defaultValue);
 }
 
+class PluginItem {
+  final String name;
+  final String description;
+  final String icon;
+  final String? shortcut;
+  final bool repeat;
+  final String plugin;
+  final Map<String, dynamic> args;
+
+  const PluginItem(
+    this.name,
+    this.description,
+    this.icon,
+    this.plugin,
+    this.shortcut,
+    this.repeat, [
+    this.args = const {},
+  ]);
+}
+
 Plugin? _parseManifest(String manifestJson) {
   final manifest = jsonDecode(manifestJson);
 
@@ -39,15 +59,7 @@ Plugin? _parseManifest(String manifestJson) {
 }
 
 List<Plugin> getAvailablePlugins(String pluginDirPath) {
-  final plugins = <Plugin>[
-    Plugin('menu', 'open different menu', [
-      'windows',
-      'macos',
-      'linux'
-    ], [
-      PluginArg('menu name', 'name of the menu to open', ''),
-    ])
-  ];
+  final plugins = _builtInPlugins;
   final directory = Directory(pluginDirPath);
   if (!directory.existsSync()) {
     return plugins;
@@ -67,3 +79,32 @@ List<Plugin> getAvailablePlugins(String pluginDirPath) {
   }
   return plugins;
 }
+
+const _builtInPlugins = [
+  Plugin('menu', 'open different menu', [
+    'windows',
+    'macos',
+    'linux'
+  ], [
+    PluginArg('menu name', 'name of the menu to open', ''),
+  ]),
+  Plugin('run', 'run a command', [
+    'windows',
+    'macos',
+    'linux'
+  ], [
+    PluginArg('command', 'command to run', ''),
+    PluginArg(
+        'arguments',
+        'arguments to pass to the command, separated by spaces, if there are any spaces in the argument, enclose it in quotes, e.g. arg1 arg2 "arg with spaces"',
+        ''),
+    PluginArg(
+        'environment variables',
+        'environment variables to pass to the command, written as a JSON object, e.g. {"var1": "value1", "var2": "value2"}',
+        ''),
+    PluginArg(
+        'run in shell',
+        'run the command in the shell. If "true", the process will be spawned through a system shell. On Linux and OS X, /bin/sh is used, while %WINDIR%\system32\cmd.exe is used on Windows.',
+        ''),
+  ]),
+];

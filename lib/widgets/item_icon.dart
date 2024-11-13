@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:puppet/config/config.dart';
 
 class ItemIcon extends StatelessWidget {
-  const ItemIcon({required dynamic this.iconData, required this.size, super.key});
+  ItemIcon({required String icon, required this.size, super.key}) {
+    iconData = iconDatas[icon];
+  }
 
-  final dynamic iconData;
+  late final dynamic iconData;
   final double size;
 
   @override

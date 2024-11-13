@@ -93,10 +93,6 @@ class MenuItemElement extends ConsumerWidget {
                 width: 630,
                 child: ListView(
                   children: [
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
-                    //   child: Text('Item Settings:'),
-                    // ),
                     SettingsElement(conf: conf, field: Fields.itemName, menuId: menuId, itemId: itemId),
                     SettingsElement(conf: conf, field: Fields.itemDescription, menuId: menuId, itemId: itemId),
                     SettingsElement(conf: conf, field: Fields.itemRepeat, menuId: menuId, itemId: itemId),

@@ -99,24 +99,6 @@ class MenusPane extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  //   child: FloatingActionButton.extended(
-                  //     onPressed: () {
-                  //       var counter = 1;
-                  //       var menuName = 'New Menu $counter';
-                  //       while (conf.menus.firstWhereOrNull((menu) => menu.name == menuName) != null) {
-                  //         counter++;
-                  //         menuName = 'New Menu $counter';
-                  //       }
-                  //       Menus newMenu = Menus(name: menuName);
-                  //       conf.menus = [...conf.menus, newMenu];
-                  //       ref.read(configProvider.notifier).updateConfig(conf);
-                  //     },
-                  //     label: Text('Create New Menu'),
-                  //     icon: Icon(Icons.add),
-                  //   ),
-                  // ),
                 ],
               ),
               Container(

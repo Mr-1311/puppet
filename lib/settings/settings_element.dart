@@ -4,6 +4,7 @@ import 'package:app_dirs/app_dirs.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_iconpicker/Models/configuration.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -14,7 +15,7 @@ import 'package:puppet/settings/menus_pane.dart';
 import 'package:puppet/widgets/item_icon.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter_iconpicker/flutter_iconpicker.dart' as ip;
+import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:path/path.dart';
 
 const elementHeight = 82.0;
@@ -539,7 +540,7 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
           ),
         );
       case Fields.itemIcon:
-        final iconData = widget.conf.iconDatas[widget.conf.menus[widget.menuId].items[widget.itemId].icon];
+        final iconData = iconDatas[widget.conf.menus[widget.menuId].items[widget.itemId].icon];
         return Row(
           children: [
             Tooltip(
@@ -561,7 +562,7 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
             (iconData == null)
                 ? Text('No Icon')
                 : ItemIcon(
-                    iconData: iconData,
+                    icon: iconData,
                     size: 26,
                   ),
           ],
@@ -730,16 +731,16 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
   }
 
   _pickIcon(BuildContext context) async {
-    IconData? icon = await ip.showIconPicker(
-      context,
-      iconPackModes: [ip.IconPack.fontAwesomeIcons],
-      showTooltips: true,
-    );
+    IconPickerIcon? icon = await showIconPicker(context,
+        configuration: SinglePickerConfiguration(
+          iconPackModes: [IconPack.fontAwesomeIcons],
+          showTooltips: true,
+        ));
 
     if (icon != null) {
-      final iconString = '${icon.codePoint.toRadixString(16)}:${icon.fontFamily}:${icon.fontPackage}';
+      final iconString = '${icon.data.codePoint.toRadixString(16)}:${icon.data.fontFamily}:${icon.data.fontPackage}';
       widget.conf.menus[widget.menuId].items[widget.itemId].icon = iconString;
-      widget.conf.iconDatas[iconString] = icon;
+      iconDatas[iconString] = icon.data;
       ref.read(configProvider.notifier).updateConfig(widget.conf);
     }
   }
@@ -777,7 +778,7 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
       if (file != null && result.files.first.path != null) {
         File(result.files.first.path!).copySync(file.path);
         widget.conf.menus[widget.menuId].items[widget.itemId].icon = result.files.first.name;
-        widget.conf.iconDatas[result.files.first.name] = MemoryImage(file.readAsBytesSync());
+        iconDatas[result.files.first.name] = MemoryImage(file.readAsBytesSync());
         ref.read(configProvider.notifier).updateConfig(widget.conf);
         return true;
       }
@@ -809,7 +810,7 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
                         child: Image.file(File(images[index].path)),
                         onTap: () {
                           widget.conf.menus[widget.menuId].items[widget.itemId].icon = basename(images[index].path);
-                          widget.conf.iconDatas[basename(images[index].path)] =
+                          iconDatas[basename(images[index].path)] =
                               MemoryImage(File(images[index].path).readAsBytesSync());
                           ref.read(configProvider.notifier).updateConfig(widget.conf);
                           Navigator.of(context).pop();

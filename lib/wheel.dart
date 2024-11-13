@@ -1,13 +1,13 @@
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/config/config.dart';
+import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/providers.dart';
+import 'package:puppet/widgets/item_icon.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:puppet/config/theme.dart' as t;
 import 'package:system_fonts/system_fonts.dart';
@@ -15,13 +15,20 @@ import 'package:system_fonts/system_fonts.dart';
 final hoveredSectionProvider = StateProvider<int>((ref) => 0);
 
 final currentItemsProvider =
-    NotifierProvider.family<CurrentItemsNotifier, List<Items>, int>(() => CurrentItemsNotifier());
+    NotifierProvider.family<CurrentItemsNotifier, List<PluginItem>, int>(() => CurrentItemsNotifier());
 
-class CurrentItemsNotifier extends FamilyNotifier<List<Items>, int> {
-  int _index = 0;
+class CurrentItemsNotifier extends FamilyNotifier<List<PluginItem>, int> {
   @override
-  List<Items> build(int maxElement) {
+  List<PluginItem> build(int maxElement) {
     final items = ref.watch(itemsProvider);
+    final currentPage = ref.read(currentPageProvider);
+
+    // set menu items to where it is when update config
+    if (currentPage > 0 && items.length > 0) {
+      final to = (currentPage + 1) * maxElement > items.length ? items.length : (currentPage + 1) * maxElement;
+      return items.sublist(currentPage * maxElement, to);
+    }
+
     if (items.length > maxElement) {
       return items.sublist(0, maxElement);
     }
@@ -30,29 +37,23 @@ class CurrentItemsNotifier extends FamilyNotifier<List<Items>, int> {
 
   void next(int maxElement) {
     final allItems = ref.read(itemsProvider);
-    if (allItems.length > _index + maxElement) {
-      int to = (_index + maxElement * 2) > allItems.length ? allItems.length : (_index + maxElement * 2);
-      _index += maxElement;
-      state = allItems.sublist(_index, to);
+    final nextPage = ref.read(currentPageProvider) + 1;
+
+    if (allItems.length > maxElement * nextPage) {
+      final to =
+          nextPage * maxElement + maxElement > allItems.length ? allItems.length : nextPage * maxElement + maxElement;
+      state = allItems.sublist(nextPage * maxElement, to);
       ref.read(currentPageProvider.notifier).state += 1;
     }
   }
 
   void prev(int maxElement) {
     final allItems = ref.read(itemsProvider);
-    if (_index - maxElement >= 0) {
-      _index -= maxElement;
-      state = allItems.sublist(_index, _index + maxElement);
-      ref.read(currentPageProvider.notifier).state -= 1;
-    } else {
-      _index = 0;
-      if (allItems.length > maxElement) {
-        state = allItems.sublist(_index, maxElement);
-      } else {
-        state = [...allItems];
-      }
+    final currentPage = ref.read(currentPageProvider) - 1;
 
-      ref.read(currentPageProvider.notifier).state = max(ref.read(currentPageProvider) - 1, 0);
+    if (currentPage > -1) {
+      state = allItems.sublist(currentPage * maxElement, (currentPage + 1) * maxElement);
+      ref.read(currentPageProvider.notifier).state -= 1;
     }
   }
 }
@@ -141,6 +142,7 @@ class Wheel extends ConsumerWidget {
         onPointerUp: (event) {
           print(ref.read(hoveredSectionProvider));
           _updateHoverSection(event, size, sectionAngle, centerSize, ref);
+          ref.read(itemsProvider.notifier).onClick(currentItems[ref.read(hoveredSectionProvider) - 1]);
         },
         onPointerSignal: (pointerSignal) {
           if (pointerSignal is PointerScrollEvent) {
@@ -190,17 +192,18 @@ class Wheel extends ConsumerWidget {
                         foreground: menu_paint,
                       ),
                     ),
-                    AnimatedSmoothIndicator(
-                        count: pageSize,
-                        activeIndex: currentPage,
-                        effect: ScrollingDotsEffect(
-                          maxVisibleDots: 5,
-                          activeDotColor: theme.pageIndicatorActiveColor.value,
-                          dotColor: theme.pageIndicatorPassiveColor.value,
-                          spacing: centerSize * .05,
-                          dotHeight: centerSize * .1,
-                          dotWidth: centerSize * .1,
-                        )),
+                    if (pageSize > 1)
+                      AnimatedSmoothIndicator(
+                          count: pageSize,
+                          activeIndex: currentPage,
+                          effect: ScrollingDotsEffect(
+                            maxVisibleDots: 5,
+                            activeDotColor: theme.pageIndicatorActiveColor.value,
+                            dotColor: theme.pageIndicatorPassiveColor.value,
+                            spacing: centerSize * .05,
+                            dotHeight: centerSize * .1,
+                            dotWidth: centerSize * .1,
+                          )),
                   ],
                 ),
               ),
@@ -352,7 +355,7 @@ double calculateMaxSquare(double side, double angle) {
   return (baseOfTriangle * heightOfTriangle) / (baseOfTriangle + heightOfTriangle);
 }
 
-List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle, t.Theme theme) {
+List<Positioned> getMenuItems(List<PluginItem> items, Size size, double sectionAngle, t.Theme theme) {
   List<Positioned> menuItems = [];
   SystemFonts().loadFont(theme.itemNameFont.value ?? '');
   SystemFonts().loadFont(theme.descriptionFont.value ?? '');
@@ -416,10 +419,7 @@ List<Positioned> getMenuItems(List<Items> items, Size size, double sectionAngle,
         height: squareLength,
         child: Column(
           children: [
-            Icon(
-              FontAwesomeIcons.terminal,
-              size: iconSize,
-            ),
+            ItemIcon(icon: items[i - 1].icon, size: iconSize),
             AutoSizeText(
               items[i - 1].name,
               maxFontSize: itemFontSizeMax,

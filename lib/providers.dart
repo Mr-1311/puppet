@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,6 +10,7 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
+import 'package:puppet/wheel.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:puppet/config/calculate_window_position.dart';
@@ -141,6 +143,13 @@ class MenuNotifier extends AsyncNotifier<Menus> {
   Future<Menus> build() async {
     final conf = await ref.watch(configProvider.future);
 
+    // don't reset menu on config change.
+    if (_menuHistory.isNotEmpty) {
+      final lastMenuName = _menuHistory.removeLast().name;
+      setMenu(conf.menus.firstWhere((element) => element.name == lastMenuName));
+      return _menuHistory.last;
+    }
+
     final mainMenu = conf.menus.firstWhere((element) => element.name == conf.mainMenu);
     _adjustWindow(mainMenu);
     _menuHistory = [mainMenu];
@@ -180,16 +189,93 @@ class MenuNotifier extends AsyncNotifier<Menus> {
         windowSize: menu.size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
     windowManager.setPosition(positionCoordinate);
   }
+
+  void reset() {
+    _menuHistory = [];
+    ref.invalidate(menuProvider);
+  }
 }
 
-final itemsProvider = Provider<List<Items>>((ref) {
-  final menu = ref.watch(menuProvider);
+final itemsProvider = NotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
 
-  return switch (menu) {
-    AsyncData(:final value) => value.items,
-    _ => [],
-  };
-});
+class ItemsNotifier extends Notifier<List<PluginItem>> {
+  HashMap<String, List<PluginItem>> _cache = HashMap<String, List<PluginItem>>();
+  @override
+  List<PluginItem> build() {
+    final menu = ref.watch(menuProvider);
+
+    return switch (menu) {
+      AsyncData(:final value) => _getItems(value),
+      _ => [],
+    };
+  }
+
+  List<PluginItem> _getItems(Menus menu) {
+    if (_cache.containsKey(menu.name)) {
+      return _cache[menu.name]!;
+    }
+    final List<PluginItem> items = [];
+
+    for (Items item in menu.items) {
+      if (item.plugin == 'menu' || item.plugin == 'run') {
+        items.add(PluginItem(
+          item.name,
+          item.description,
+          item.icon,
+          item.plugin,
+          item.shortcut,
+          item.repeat,
+          item.pluginArgs,
+        ));
+      }
+    }
+    _cache[menu.name] = items;
+    return items;
+  }
+
+  void onClick(PluginItem item) async {
+    if (item.plugin == 'menu') {
+      final conf = ref.watch(configProvider).unwrapPrevious().valueOrNull;
+
+      if (conf == null || conf.menus.indexWhere((el) => el.name == item.args['menu name']) < 0) return;
+
+      ref.read(currentPageProvider.notifier).state = 0;
+      ref
+          .read(menuProvider.notifier)
+          .changeMenu(conf.menus.firstWhere((element) => element.name == item.args['menu name']));
+    } else if (item.plugin == 'run') {
+      final regExp = RegExp(r'("[^"]+"|\S+)');
+      final args = regExp.allMatches(item.args['arguments']).map((match) {
+        var item = match.group(0)!;
+        // Remove surrounding quotes, if any
+        if (item.startsWith('"') && item.endsWith('"')) {
+          item = item.substring(1, item.length - 1);
+        }
+        return item;
+      }).toList();
+      var env = <String, String>{};
+      try {
+        final Map<String, dynamic> decodedMap = jsonDecode(item.args['environment variables']);
+        env.addAll(decodedMap.map((key, value) => MapEntry(key, value.toString())));
+      } catch (e) {
+        env = {};
+      }
+      var p = await Process.run(
+        item.args['command'],
+        args,
+        environment: env,
+        runInShell: item.args['run in shell'] == 'true',
+      );
+      print(p.stdout);
+    }
+
+    // if (!item.repeat && item.plugin != 'menu') {
+    //   ref.read(menuProvider.notifier).reset();
+    // }
+  }
+
+  void clearCache() => _cache.clear();
+}
 
 final themeProvider = AsyncNotifierProvider<ThemeNotifier, Map<String, ThemeVariants>>(ThemeNotifier.new);
 

@@ -14,6 +14,7 @@ import 'package:puppet/config/theme.dart' as conf;
 
 HashSet<String> _errors = HashSet<String>();
 HashSet<String> _warnings = HashSet<String>();
+final HashMap<String, dynamic> iconDatas = HashMap<String, dynamic>();
 
 class Config {
   String mainMenu = '';
@@ -21,7 +22,6 @@ class Config {
   HotKey hotkey = conf_hotkey;
   int version = conf_version;
   List<Menus> menus = <Menus>[];
-  final HashMap<String, dynamic> iconDatas = HashMap<String, dynamic>();
 
   late HashSet<String> errors;
   late HashSet<String> warnings;
@@ -437,7 +437,7 @@ class Items {
   bool repeat = false;
   String shortcut = '';
   String icon = '';
-  String plugin = 'menu';
+  String plugin = '';
   Map<String, dynamic> pluginArgs = {};
 
   Items();
@@ -452,6 +452,8 @@ class Items {
       this.plugin = plugin;
       if (plugin == 'menu') {
         _isPluginAvailable = (true, ['menu name']);
+      } else if (plugin == 'run') {
+        _isPluginAvailable = (true, ['command', 'arguments', 'environment variables', 'run in shell']);
       } else {
         _isPluginAvailable = _checkPlugin(plugin);
       }
@@ -497,6 +499,11 @@ class Items {
           if (!_isPluginAvailable.$2.contains(arg)) {
             _warnings.add(
                 'item "${name}" on ${menuName} has a wrong <pluginArgs> property. The "$plugin" plugin not use the "$arg" argument');
+          }
+        }
+        for (final arg in _isPluginAvailable.$2) {
+          if (!pluginArgs.containsKey(arg)) {
+            pluginArgs[arg] = '';
           }
         }
       }
