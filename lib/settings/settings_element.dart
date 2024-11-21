@@ -540,7 +540,7 @@ class _SettingsElementState extends ConsumerState<SettingsElement> {
           ),
         );
       case Fields.itemIcon:
-        final iconData = iconDatas[widget.conf.menus[widget.menuId].items[widget.itemId].icon];
+        final iconData = widget.conf.menus[widget.menuId].items[widget.itemId].icon;
         return Row(
           children: [
             Tooltip(

@@ -26,11 +26,8 @@ void _hotkeyHandler(Config conf, Ref ref) async {
     conf.hotkey,
     keyDownHandler: (_) async {
       final menu = conf.menus.firstWhere((menu) => menu.name == conf.mainMenu);
-      final positionCoordinate = await calculateWindowPosition(
-          windowSize: menu.size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
-      windowManager.setPosition(positionCoordinate);
       ref.read(menuProvider.notifier).setMenu(menu);
-      await windowManager.show();
+      windowManager.show();
     },
   );
   for (var i = 0; i < conf.menus.length; i++) {
@@ -39,9 +36,6 @@ void _hotkeyHandler(Config conf, Ref ref) async {
       hotKeyManager.register(
         menu.hotkey!,
         keyDownHandler: (_) async {
-          final positionCoordinate = await calculateWindowPosition(
-              windowSize: menu.size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
-          windowManager.setPosition(positionCoordinate);
           ref.read(menuProvider.notifier).setMenu(menu);
           await windowManager.show();
         },
@@ -190,9 +184,8 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     windowManager.setPosition(positionCoordinate);
   }
 
-  void reset() {
+  void clearHistory() {
     _menuHistory = [];
-    ref.invalidate(menuProvider);
   }
 }
 
@@ -269,9 +262,12 @@ class ItemsNotifier extends Notifier<List<PluginItem>> {
       print(p.stdout);
     }
 
-    // if (!item.repeat && item.plugin != 'menu') {
-    //   ref.read(menuProvider.notifier).reset();
-    // }
+    if (!item.repeat && item.plugin != 'menu') {
+      ref.read(menuProvider.notifier).clearHistory();
+      ref.invalidate(menuProvider);
+      ref.invalidate(currentPageProvider);
+      windowManager.hide();
+    }
   }
 
   void clearCache() => _cache.clear();
@@ -479,6 +475,23 @@ final currentThemeProvider = Provider<Theme>((ref) {
       }
     default:
       return Theme();
+  }
+});
+
+// light = true, dark = false
+final currentThemeBrightnessProvider = Provider<bool>((ref) {
+  final menu = ref.watch(menuProvider);
+
+  switch (menu) {
+    case AsyncData(:final value):
+      {
+        return switch ((value.systemBrightness, value.themeColorScheme)) {
+          ('system', _) => value.systemBrightness == 'light',
+          (_, _) => value.themeColorScheme == 'light',
+        };
+      }
+    default:
+      return true;
   }
 });
 

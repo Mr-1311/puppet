@@ -4,7 +4,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:puppet/config/config.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/widgets/item_icon.dart';
@@ -123,6 +122,7 @@ class Wheel extends ConsumerWidget {
     final pageSize = (ref.watch(itemsProvider).length / maxElement).ceil();
     final currentPage = ref.watch(currentPageProvider);
     final theme = ref.watch(currentThemeProvider);
+    final themeBrightness = ref.watch(currentThemeBrightnessProvider);
 
     final menuFontSize = _getMenuFontSize(centerSize, theme);
     SystemFonts().loadFont(theme.menuNameFont.value ?? '');
@@ -171,7 +171,7 @@ class Wheel extends ConsumerWidget {
                 ),
               ),
             ),
-            ...getMenuItems(currentItems, size, sectionAngle, theme),
+            ...getMenuItems(currentItems, size, sectionAngle, theme, centerSize, themeBrightness),
             Center(
               child: Container(
                 width: centerSize * 1.8,
@@ -355,7 +355,8 @@ double calculateMaxSquare(double side, double angle) {
   return (baseOfTriangle * heightOfTriangle) / (baseOfTriangle + heightOfTriangle);
 }
 
-List<Positioned> getMenuItems(List<PluginItem> items, Size size, double sectionAngle, t.Theme theme) {
+List<Positioned> getMenuItems(
+    List<PluginItem> items, Size size, double sectionAngle, t.Theme theme, double centerSize, bool themeBrightness) {
   List<Positioned> menuItems = [];
   SystemFonts().loadFont(theme.itemNameFont.value ?? '');
   SystemFonts().loadFont(theme.descriptionFont.value ?? '');
@@ -447,6 +448,44 @@ List<Positioned> getMenuItems(List<PluginItem> items, Size size, double sectionA
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    ));
+
+    var shortcutText = '';
+    if (items[i - 1].shortcut != null && items[i - 1].shortcut!.isNotEmpty) {
+      shortcutText = '${items[i - 1].shortcut}';
+    }
+    if (i < 10) {
+      shortcutText += shortcutText.isEmpty ? '$i' : '❘$i';
+    }
+    if (i == items.length) {
+      shortcutText += shortcutText.isEmpty ? '0' : '';
+    }
+
+    menuItems.add(Positioned(
+      left: cos(angle) * (centerSize + 10) + radius - 16 + pivot_x,
+      bottom: sin(angle) * (centerSize + 10) + radius - 16 + pivot_y,
+      child: Container(
+        width: 32,
+        height: 32,
+        child: Center(
+          child: Container(
+            width: 32,
+            height: 16,
+            child: Center(
+              child: AutoSizeText(
+                shortcutText,
+                minFontSize: 8,
+                style: TextStyle(
+                  color:
+                      themeBrightness ? const Color.fromARGB(128, 0, 0, 0) : const Color.fromARGB(128, 255, 255, 255),
+                  letterSpacing: 2,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     ));

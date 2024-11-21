@@ -13,6 +13,7 @@ import 'package:puppet/settings/settings_page.dart';
 import 'package:puppet/wheel.dart';
 import 'package:tray_manager/tray_manager.dart' as tray;
 import 'package:window_manager/window_manager.dart';
+import 'package:collection/collection.dart';
 
 void _setWindowMode(bool isSettings) {
   if (isSettings) {
@@ -40,7 +41,7 @@ void _setWindowMode(bool isSettings) {
 
     windowManager.setAsFrameless();
     windowManager.setPreventClose(true);
-    // windowManager.setAlwaysOnTop(true);
+    windowManager.setAlwaysOnTop(true);
   }
 }
 
@@ -150,6 +151,14 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
                     const SingleActivator(
                       LogicalKeyboardKey.escape,
                     ): () {
+                      ref.read(menuProvider.notifier).clearHistory();
+                      ref.invalidate(menuProvider);
+                      ref.invalidate(currentPageProvider);
+                      windowManager.hide();
+                    },
+                    const SingleActivator(
+                      LogicalKeyboardKey.backspace,
+                    ): () {
                       ref.read(menuProvider.notifier).back();
                     },
                   },
@@ -207,16 +216,58 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
   }
 }
 
-class Menu extends StatelessWidget {
+class Menu extends ConsumerStatefulWidget {
   const Menu({required this.menu, super.key});
 
   final Menus menu;
 
-  // TODO: generate menu items from plugin and send generated items to menu types
+  @override
+  ConsumerState<Menu> createState() => _MenuState();
+}
+
+class _MenuState extends ConsumerState<Menu> {
+  bool _onKey(KeyEvent event) {
+    final items = ref.watch(currentItemsProvider(widget.menu.maxElement));
+
+    if (event is KeyUpEvent) {
+      final key = event.logicalKey.keyLabel;
+      var item = items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
+      if (item == null) {
+        final num = int.tryParse(key);
+        if (num == 0) {
+          item = items.last;
+        } else if (num != null && num < 10 && num <= items.length) {
+          item = items[num - 1];
+        }
+        ;
+      }
+      if (item != null) {
+        ref.read(itemsProvider.notifier).onClick(item);
+        return true;
+      }
+
+      // "Key down: $key, alt: ${HardwareKeyboard.instance.isAltPressed}, shift: ${HardwareKeyboard.instance.isShiftPressed}, ctrl: ${HardwareKeyboard.instance.isControlPressed}");
+    }
+
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return switch (menu) {
-      Menus(menuType: MenuType.wheel) => Wheel(maxElement: menu.maxElement, menuName: menu.name),
+    return switch (widget.menu) {
+      Menus(menuType: MenuType.wheel) => Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
       Menus(menuType: MenuType.list) => CircularProgressIndicator(),
       Menus(menuType: MenuType.canvas) => CircularProgressIndicator(),
     };
