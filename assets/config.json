@@ -1,42 +1,40 @@
 {
-    "version": 1,
-    "mainMenu": "main menu",
-    "shortcut": {
-        "keyCode": "space",
-        "modifiers": [
-            "alt"
-        ]
-    },
-    "menus": [
+  "version": 1,
+  "mainMenu": "main menu",
+  "shortcut": {
+    "keyCode": "space",
+    "modifiers": ["alt"]
+  },
+  "menus": [
+    {
+      "name": "main menu",
+      "type": "wheel",
+      "shortcut": {},
+      "theme": "",
+      "themeColorSchema": "system",
+      "width": "_",
+      "height": "30%",
+      "position": "center-center",
+      "marginVertical": "0",
+      "marginHorizontal": "0",
+      "monitor": "auto",
+      "maxElement": 9,
+      "items": [
         {
-            "name": "main menu",
-            "type": "wheel",
-            "shortcut": {},
-            "theme": "",
-            "themeColorSchema": "system",
-            "width": "_",
-            "height": "50%",
-            "position": "center-center",
-            "marginVertical": "0",
-            "marginHorizontal": "0",
-            "monitor": "auto",
-            "maxElement": 9,
-            "items": [
-                {
-                    "name": "puppet",
-                    "description": "puppet project site",
-                    "repeat": false,
-                    "shortcut": "p",
-                    "icon": "50",
-                    "plugin": "run",
-                    "pluginArgs": {
-                        "command": "open",
-                        "arguments": "https://github.com/Mr-1311/puppet",
-                        "environment variables": "{}",
-                        "run in shell": "false"
-                    }
-                }
-            ]
+          "name": "puppet",
+          "description": "puppet project site",
+          "repeat": false,
+          "shortcut": "p",
+          "icon": "50",
+          "plugin": "run",
+          "pluginArgs": {
+            "command": "open",
+            "arguments": "https://github.com/Mr-1311/puppet",
+            "environment variables": "{}",
+            "run in shell": "false"
+          }
         }
-    ]
+      ]
+    }
+  ]
 }

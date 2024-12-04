@@ -20,7 +20,12 @@ import 'config/theme.dart';
 
 import 'package:path/path.dart';
 
+bool isSettingsApp = false;
+
 void _hotkeyHandler(Config conf, Ref ref) async {
+  if (isSettingsApp) {
+    return;
+  }
   await hotKeyManager.unregisterAll();
   hotKeyManager.register(
     conf.hotkey,
@@ -51,7 +56,6 @@ class ConfigNotifier extends AsyncNotifier<Config> {
   @override
   Future<Config> build() async {
     final configPath = PathManager().config;
-    print(configPath);
     final File confFile = File('$configPath/config.json');
 
     if (!confFile.existsSync()) {

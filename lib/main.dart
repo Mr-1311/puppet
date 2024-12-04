@@ -60,7 +60,8 @@ void main(List<String> args) async {
       negatable: false);
   final results = argParser.parse(args);
 
-  final isSettings = results['settings'];
+  final bool isSettings = results['settings'];
+  isSettingsApp = isSettings;
   // final isSettings = true;
 
   _setWindowMode(isSettings);
@@ -222,6 +223,11 @@ class _MainAppState extends ConsumerState<MainApp>
   @override
   void onWindowFocus() {
     setState(() {});
+  }
+
+  @override
+  void onWindowBlur() {
+    windowManager.hide();
   }
 }
 
