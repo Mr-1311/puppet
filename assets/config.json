@@ -30,8 +30,10 @@
                     "icon": "50",
                     "plugin": "run",
                     "pluginArgs": {
-                        "type": "open",
-                        "command": "https://github.com/Mr-1311/puppet"
+                        "command": "open",
+                        "arguments": "https://github.com/Mr-1311/puppet",
+                        "environment variables": "{}",
+                        "run in shell": "false"
                     }
                 }
             ]

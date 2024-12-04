@@ -18,7 +18,8 @@ import 'package:collection/collection.dart';
 void _setWindowMode(bool isSettings) {
   if (isSettings) {
     windowManager.setTitle('Settings');
-    windowManager.setIcon(Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
+    windowManager.setIcon(
+        Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
     windowManager.setSize(Size(940, 640));
     windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
@@ -52,7 +53,11 @@ void main(List<String> args) async {
 
   final argParser = ArgParser();
   argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
-  argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
+  argParser.addFlag('settings',
+      abbr: 's',
+      defaultsTo: false,
+      help: 'open settings window',
+      negatable: false);
   final results = argParser.parse(args);
 
   final isSettings = results['settings'];
@@ -85,10 +90,10 @@ void main(List<String> args) async {
   }
 
   windowManager.waitUntilReadyToShow(null, () async {
-    // if (!isSettings) {
-    //   // https://github.com/leanflutter/window_manager/issues/190#issuecomment-1200255947
-    //   // windowManager.setSkipTaskbar(true);
-    // }
+    if (!isSettings) {
+      // https://github.com/leanflutter/window_manager/issues/190#issuecomment-1200255947
+      windowManager.setSkipTaskbar(true);
+    }
     await windowManager.show();
     await windowManager.focus();
   });
@@ -99,7 +104,9 @@ void main(List<String> args) async {
           : Consumer(
               builder: (BuildContext context, WidgetRef ref, Widget? child) {
                 if (results['menu'] != null) {
-                  ref.read(configProvider.notifier).setMainMenu(results['menu']);
+                  ref
+                      .read(configProvider.notifier)
+                      .setMainMenu(results['menu']);
                 }
                 return MainApp();
               },
@@ -113,7 +120,8 @@ class MainApp extends ConsumerStatefulWidget {
   ConsumerState<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, WindowListener {
+class _MainAppState extends ConsumerState<MainApp>
+    with tray.TrayListener, WindowListener {
   @override
   void initState() {
     super.initState();
@@ -144,7 +152,8 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
-          AsyncData(value: final conf) when conf.errors.isNotEmpty => ErrorPage(conf.errors),
+          AsyncData(value: final conf) when conf.errors.isNotEmpty =>
+            ErrorPage(conf.errors),
           _ => switch (menu) {
               AsyncData(:final value) => CallbackShortcuts(
                   bindings: {
@@ -231,7 +240,8 @@ class _MenuState extends ConsumerState<Menu> {
 
     if (event is KeyUpEvent) {
       final key = event.logicalKey.keyLabel;
-      var item = items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
+      var item =
+          items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
       if (item == null) {
         final num = int.tryParse(key);
         if (num == 0) {
@@ -267,7 +277,8 @@ class _MenuState extends ConsumerState<Menu> {
   @override
   Widget build(BuildContext context) {
     return switch (widget.menu) {
-      Menus(menuType: MenuType.wheel) => Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
+      Menus(menuType: MenuType.wheel) =>
+        Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
       Menus(menuType: MenuType.list) => CircularProgressIndicator(),
       Menus(menuType: MenuType.canvas) => CircularProgressIndicator(),
     };

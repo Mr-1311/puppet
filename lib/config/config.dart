@@ -2,13 +2,13 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:app_dirs/app_dirs.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:path/path.dart';
 import 'package:puppet/config/config_defaults.dart';
+import 'package:puppet/config/path_manager.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/config/theme.dart' as conf;
 
@@ -52,14 +52,18 @@ class Config {
     if (json case {'menus': List menus}) {
       this.menus = <Menus>[];
       menus.forEachIndexed((index, value) {
-        final menu = Menus.fromJson(value, index, screenSizes, systemBrightness, iconDatas);
+        final menu = Menus.fromJson(
+            value, index, screenSizes, systemBrightness, iconDatas);
         if (this.menus.any((m) => m.name == menu.name)) {
-          _errors.add("There is a menu named '${menu.name}' in the menus list, every menu must have a unique name");
+          _errors.add(
+              "There is a menu named '${menu.name}' in the menus list, every menu must have a unique name");
         } else {
           if (menu.shortcut.isNotEmpty &&
               (DeepCollectionEquality().equals(menu.shortcut, this.shortcut) ||
-                  this.menus.any((m) => DeepCollectionEquality().equals(m.shortcut, menu.shortcut)))) {
-            _warnings.add("Shortcut on menu '${menu.name}' is already used by another menu, it will be ignored");
+                  this.menus.any((m) => DeepCollectionEquality()
+                      .equals(m.shortcut, menu.shortcut)))) {
+            _warnings.add(
+                "Shortcut on menu '${menu.name}' is already used by another menu, it will be ignored");
             menu.shortcut = {};
             menu.hotkey = null;
           }
@@ -68,17 +72,20 @@ class Config {
       });
 
       if (this.menus.isEmpty) {
-        _errors.add("<menus> is null or empty or not a list, at least one menu is required to show");
+        _errors.add(
+            "<menus> is null or empty or not a list, at least one menu is required to show");
       }
     } else {
-      _errors.add("<menus> is null or empty or not a list, at least one menu is required to show");
+      _errors.add(
+          "<menus> is null or empty or not a list, at least one menu is required to show");
     }
 
     if (mainMenuFromArgs != null) {
       if (this.menus.any((element) => element.name == mainMenuFromArgs)) {
         this.mainMenu = mainMenuFromArgs;
       } else {
-        _warnings.add("There is no menu name equal to given argument '$mainMenuFromArgs' in the menus list");
+        _warnings.add(
+            "There is no menu name equal to given argument '$mainMenuFromArgs' in the menus list");
       }
     }
 
@@ -93,11 +100,13 @@ class Config {
             this.mainMenu = this.menus[0].name;
           }
         } else {
-          _warnings.add("<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
+          _warnings.add(
+              "<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
           this.mainMenu = this.menus[0].name;
         }
       } else {
-        _warnings.add("<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
+        _warnings.add(
+            "<mainMenu> property is null or empty, main menu will be the first menu in the menus list");
         this.mainMenu = this.menus[0].name;
       }
     }
@@ -151,8 +160,9 @@ class Menus {
     };
     final themes = ref.watch(themeProvider);
     return switch (themes) {
-      AsyncData(:final value) =>
-        value[_theme] == null ? conf.Theme() : (isLight ? value[_theme]!.light : value[_theme]!.dark),
+      AsyncData(:final value) => value[_theme] == null
+          ? conf.Theme()
+          : (isLight ? value[_theme]!.light : value[_theme]!.dark),
       _ => conf.Theme(),
     };
   }
@@ -171,8 +181,8 @@ class Menus {
 
   Menus({required this.name, this.systemBrightness = 'light'});
 
-  Menus.fromJson(Map<String, dynamic> json, int index, List<Size> screenSizes, this.systemBrightness,
-      HashMap<String, dynamic> iconDatas) {
+  Menus.fromJson(Map<String, dynamic> json, int index, List<Size> screenSizes,
+      this.systemBrightness, HashMap<String, dynamic> iconDatas) {
     if (json case {'name': String name}) {
       this.name = name;
     } else {
@@ -188,7 +198,8 @@ class Menus {
             '${this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'"} has an invalid <type> property, <type> should be one of ${MenuType.values.map((e) => e.name)}');
       }
     } else {
-      _errors.add('${this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'"} is missing a <type> property');
+      _errors.add(
+          '${this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'"} is missing a <type> property');
     }
 
     if (json case {'shortcut': Map<String, dynamic> shortcut}) {
@@ -216,7 +227,8 @@ class Menus {
     }
 
     // set the default size if width and height are not specified.
-    this.size = Size(screenSizes.first.height / 2, screenSizes.first.height / 2);
+    this.size =
+        Size(screenSizes.first.height / 2, screenSizes.first.height / 2);
     if (json case {'height': String height}) {
       this.height = height;
       if (height.endsWith('%')) {
@@ -270,7 +282,8 @@ class Menus {
           px = int.tryParse(width);
         }
         if (px != null && px > 0) {
-          this.size = Size(px.toDouble(), this.height == '_' ? px.toDouble() : this.size.height);
+          this.size = Size(px.toDouble(),
+              this.height == '_' ? px.toDouble() : this.size.height);
         } else {
           this.width = conf_width;
           _warnings.add(
@@ -287,10 +300,12 @@ class Menus {
         for (String pos in position.split('-')) {
           switch (pos) {
             case 'top' || 'bottom' when (this.alignment!.y == 0.0):
-              this.alignment = Alignment(this.alignment!.x, pos == 'top' ? -1.0 : 1.0);
+              this.alignment =
+                  Alignment(this.alignment!.x, pos == 'top' ? -1.0 : 1.0);
               break;
             case 'left' || 'right' when (this.alignment!.x == 0.0):
-              this.alignment = Alignment(pos == 'left' ? -1.0 : 1.0, this.alignment!.y);
+              this.alignment =
+                  Alignment(pos == 'left' ? -1.0 : 1.0, this.alignment!.y);
               break;
             default:
               if (pos != 'center') {
@@ -309,7 +324,8 @@ class Menus {
       final tmpOffsets = <Offset>[];
       this.marginVertical = marginVertical;
       if (marginVertical.endsWith('%')) {
-        var percent = int.tryParse(marginVertical.substring(0, marginVertical.length - 1));
+        var percent = int.tryParse(
+            marginVertical.substring(0, marginVertical.length - 1));
         if (percent != null && percent > 0) {
           percent = percent > 100 ? 100 : percent;
           for (final size in screenSizes) {
@@ -325,7 +341,8 @@ class Menus {
       } else if (marginVertical != '_') {
         int? px;
         if (marginVertical.endsWith('px')) {
-          px = int.tryParse(marginVertical.substring(0, marginVertical.length - 2));
+          px = int.tryParse(
+              marginVertical.substring(0, marginVertical.length - 2));
         } else {
           px = int.tryParse(marginVertical);
         }
@@ -349,14 +366,16 @@ class Menus {
       final tmpOffsets = <Offset>[];
       this.marginHorizontal = marginHorizontal;
       if (marginHorizontal.endsWith('%')) {
-        var percent = int.tryParse(marginHorizontal.substring(0, marginHorizontal.length - 1));
+        var percent = int.tryParse(
+            marginHorizontal.substring(0, marginHorizontal.length - 1));
         if (percent != null && percent > 0) {
           percent = percent > 100 ? 100 : percent;
 
           for (var i = 0; i < screenSizes.length; i++) {
             final size = screenSizes[i];
             final h = size.width * (percent / 100);
-            tmpOffsets.add(Offset(h, this.marginVertical == '_' ? h : this.offsets[i].dy));
+            tmpOffsets.add(
+                Offset(h, this.marginVertical == '_' ? h : this.offsets[i].dy));
           }
         } else {
           this.marginHorizontal = conf_marginHorizontal;
@@ -366,13 +385,18 @@ class Menus {
       } else if (marginHorizontal != '_') {
         int? px;
         if (marginHorizontal.endsWith('px')) {
-          px = int.tryParse(marginHorizontal.substring(0, marginHorizontal.length - 2));
+          px = int.tryParse(
+              marginHorizontal.substring(0, marginHorizontal.length - 2));
         } else {
           px = int.tryParse(marginHorizontal);
         }
         if (px != null) {
           for (var i = 0; i < screenSizes.length; i++) {
-            tmpOffsets.add(Offset(px.toDouble(), this.marginVertical == '_' ? px.toDouble() : this.offsets[i].dy));
+            tmpOffsets.add(Offset(
+                px.toDouble(),
+                this.marginVertical == '_'
+                    ? px.toDouble()
+                    : this.offsets[i].dy));
           }
         } else {
           this.marginHorizontal = conf_marginHorizontal;
@@ -399,7 +423,10 @@ class Menus {
     if (json case {'items': List items}) {
       this.items = <Items>[];
       items.forEach((v) {
-        this.items.add(new Items.fromJson(v, this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'", iconDatas));
+        this.items.add(new Items.fromJson(
+            v,
+            this.name.isEmpty ? 'Menu #${index + 1}' : "'${this.name}'",
+            iconDatas));
       });
     } else {
       _warnings.add(
@@ -442,7 +469,8 @@ class Items {
 
   Items();
 
-  Items.fromJson(Map<String, dynamic> json, String menuName, HashMap<String, dynamic> iconDatas) {
+  Items.fromJson(Map<String, dynamic> json, String menuName,
+      HashMap<String, dynamic> iconDatas) {
     if (json case {'name': String name}) {
       this.name = name;
     }
@@ -453,7 +481,10 @@ class Items {
       if (plugin == 'menu') {
         _isPluginAvailable = (true, ['menu name']);
       } else if (plugin == 'run') {
-        _isPluginAvailable = (true, ['command', 'arguments', 'environment variables', 'run in shell']);
+        _isPluginAvailable = (
+          true,
+          ['command', 'arguments', 'environment variables', 'run in shell']
+        );
       } else {
         _isPluginAvailable = _checkPlugin(plugin);
       }
@@ -462,7 +493,8 @@ class Items {
             'The <plugin> named "${plugin}" on item \'${name}\' in menu ${menuName} is not available, plugin will be ignored');
       }
     } else {
-      _warnings.add('item on ${menuName} has null or empty <plugin> property, plugin will be ignored');
+      _warnings.add(
+          'item on ${menuName} has null or empty <plugin> property, plugin will be ignored');
     }
 
     if (json case {'description': String description}) {
@@ -487,7 +519,8 @@ class Items {
         final iconData = _getIconData(icon);
         iconDatas[icon] = iconData;
         if (iconData == null && icon.isNotEmpty) {
-          _warnings.add('item on ${menuName} has a wrong <icon> property as "$icon". The icon not found.');
+          _warnings.add(
+              'item on ${menuName} has a wrong <icon> property as "$icon". The icon not found.');
         }
       }
     }
@@ -523,11 +556,21 @@ class Items {
   }
 }
 
-const supportedIconImageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.wbmp', '.ico', '.icon'];
+const supportedIconImageExtensions = [
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.bmp',
+  '.wbmp',
+  '.ico',
+  '.icon'
+];
 
 dynamic _getIconData(String icon) {
   if (supportedIconImageExtensions.contains(extension(icon))) {
-    final path = dirname(icon) != '.' ? icon : getAppDirs(application: 'puppet').config + '/icons/' + icon;
+    final path = dirname(icon) != '.' ? icon : PathManager().icons + icon;
     final file = File(path);
     if (!file.existsSync()) {
       return null;
@@ -541,7 +584,8 @@ dynamic _getIconData(String icon) {
     return IconData(int.parse(icon.split(':')[0], radix: 16),
         fontFamily: icon.split(':')[1], fontPackage: icon.split(':')[2]);
   }
-  if (int.tryParse(icon, radix: 16) != null && int.parse(icon, radix: 16) <= 1114111) {
+  if (int.tryParse(icon, radix: 16) != null &&
+      int.parse(icon, radix: 16) <= 1114111) {
     return IconData(
       int.parse(icon, radix: 16),
       fontFamily: 'FontAwesomeSolid',
@@ -552,7 +596,7 @@ dynamic _getIconData(String icon) {
 }
 
 (bool, List<String>) _checkPlugin(String name) {
-  final directory = Directory(dirname(getAppDirs(application: 'puppet').config) + '/plugins');
+  final directory = Directory(PathManager().plugins);
   if (!directory.existsSync()) {
     return (false, []);
   }
@@ -567,7 +611,8 @@ dynamic _getIconData(String icon) {
         if (manifestJson case {'name': String pluginName}) {
           if (pluginName == name) {
             var args = <String>[];
-            if (manifestJson case {'pluginArgs': List<Map<String, String>> pluginArgs}) {
+            if (manifestJson
+                case {'pluginArgs': List<Map<String, String>> pluginArgs}) {
               for (final arg in pluginArgs) {
                 if (arg case {'name': String name}) {
                   args.add(name);

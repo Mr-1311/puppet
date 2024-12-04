@@ -1,13 +1,12 @@
 name: puppet
 description: A new Flutter project.
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: '>=3.1.0-155.0.dev <4.0.0'
+  sdk: ">=3.1.0-155.0.dev <4.0.0"
 
 dependencies:
-  app_dirs: ^0.2.0
   args: ^2.4.2
   auto_size_text: ^3.0.0
   file_picker: ^8.1.2
