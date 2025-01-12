@@ -22,15 +22,11 @@ class ListMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(itemsProvider);
     final theme = ref.watch(currentThemeProvider);
-
-    return switch (theme) {
-      AsyncData(:final value) => _ListContainer(
-          items: items,
-          theme: value[menuName],
-          menuName: menuName,
-        ),
-      _ => const Center(child: CircularProgressIndicator()),
-    };
+    return _ListContainer(
+      items: items,
+      theme: theme,
+      menuName: menuName,
+    );
   }
 }
 
