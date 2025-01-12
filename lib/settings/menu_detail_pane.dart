@@ -15,7 +15,8 @@ class MenuDetailPane extends ConsumerWidget {
     final conf = ref.watch(configProvider);
     final menuName = ref.watch(menuDetailProvider);
     final menuId = conf.when(
-      data: (value) => value.menus.indexWhere((element) => element.name == menuName),
+      data: (value) =>
+          value.menus.indexWhere((element) => element.name == menuName),
       error: (o, e) => 0,
       loading: () => 0,
     );
@@ -44,12 +45,17 @@ class MenuDetailPane extends ConsumerWidget {
               Stack(
                 children: [
                   ReorderableListView.builder(
-                    onReorder: (oldIndex, newIndex) =>
-                        ref.read(configProvider.notifier).reorderMenuItem(oldIndex, newIndex, menuId),
+                    onReorder: (oldIndex, newIndex) => ref
+                        .read(configProvider.notifier)
+                        .reorderMenuItem(oldIndex, newIndex, menuId),
                     itemCount: conf.value!.menus[menuId].items.length,
                     padding: const EdgeInsets.only(bottom: 85.0),
                     itemBuilder: (BuildContext context, int i) {
-                      return MenuItemElement(conf: conf.value!, menuId: menuId, itemId: i, key: ValueKey(i));
+                      return MenuItemElement(
+                          conf: conf.value!,
+                          menuId: menuId,
+                          itemId: i,
+                          key: ValueKey(i));
                     },
                   ),
                   Container(
@@ -58,7 +64,9 @@ class MenuDetailPane extends ConsumerWidget {
                       child: FloatingActionButton.extended(
                         onPressed: () {
                           conf.value!.menus[menuId].items.add(Items());
-                          ref.read(configProvider.notifier).updateConfig(conf.value!);
+                          ref
+                              .read(configProvider.notifier)
+                              .updateConfig(conf.value!);
                         },
                         icon: Icon(Icons.add),
                         label: Text('Add new plugin'),
@@ -67,18 +75,42 @@ class MenuDetailPane extends ConsumerWidget {
               ),
               ListView(
                 children: [
-                  SettingsElement(conf: conf.value!, field: Fields.name, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.type, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.menuHotkey, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.theme, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.colorScheme, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.width, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.height, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.position, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.marginVertical, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.marginHorizontal, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.monitor, menuId: menuId),
-                  SettingsElement(conf: conf.value!, field: Fields.maxElement, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.name, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.type, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.menuHotkey,
+                      menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.theme, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.colorScheme,
+                      menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.width, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.height, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.position,
+                      menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.marginVertical,
+                      menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.marginHorizontal,
+                      menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!, field: Fields.monitor, menuId: menuId),
+                  SettingsElement(
+                      conf: conf.value!,
+                      field: Fields.maxElement,
+                      menuId: menuId),
                 ],
               ),
             ],

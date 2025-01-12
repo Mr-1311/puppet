@@ -10,10 +10,13 @@ import 'package:puppet/config/config.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/error_page.dart';
 import 'package:puppet/settings/settings_page.dart';
+import 'package:puppet/src/rust/api/simple.dart';
+import 'package:puppet/src/rust/frb_generated.dart';
 import 'package:puppet/wheel.dart';
 import 'package:tray_manager/tray_manager.dart' as tray;
 import 'package:window_manager/window_manager.dart';
 import 'package:collection/collection.dart';
+import 'package:puppet/list.dart';
 
 void _setWindowMode(bool isSettings) {
   if (isSettings) {
@@ -50,6 +53,7 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   await hotKeyManager.unregisterAll();
+  await RustLib.init();
 
   final argParser = ArgParser();
   argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
@@ -149,7 +153,7 @@ class _MainAppState extends ConsumerState<MainApp>
     // menu.whenData((value) {
     //   print(value.toString());
     // });
-
+    print(greet(name: 'rust'));
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
@@ -285,8 +289,9 @@ class _MenuState extends ConsumerState<Menu> {
     return switch (widget.menu) {
       Menus(menuType: MenuType.wheel) =>
         Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
-      Menus(menuType: MenuType.list) => CircularProgressIndicator(),
-      Menus(menuType: MenuType.canvas) => CircularProgressIndicator(),
+      Menus(menuType: MenuType.list) => ListMenu(
+          maxElement: widget.menu.maxElement, menuName: widget.menu.name),
+      Menus(menuType: MenuType.canvas) => const CircularProgressIndicator(),
     };
   }
 }

@@ -23,7 +23,9 @@ class ThemesPane extends ConsumerWidget {
                 children: [
                   for (final themeName in theme.keys)
                     InkWell(
-                      onTap: () => (ref.read(themeDetailProvider.notifier).state = themeName),
+                      onTap: () => (ref
+                          .read(themeDetailProvider.notifier)
+                          .state = themeName),
                       child: Card(
                         child: Container(
                           height: elementHeight,
@@ -33,12 +35,15 @@ class ThemesPane extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       themeName,
-                                      style: Theme.of(context).textTheme.titleLarge,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
@@ -48,9 +53,13 @@ class ThemesPane extends ConsumerWidget {
                                 children: [
                                   IconButton(
                                       onPressed: () {
-                                        _deleteConfirmationDialogBuilder(context, themeName).then((value) {
+                                        _deleteConfirmationDialogBuilder(
+                                                context, themeName)
+                                            .then((value) {
                                           if (value == true) {
-                                            ref.read(themeProvider.notifier).deleteTheme(themeName);
+                                            ref
+                                                .read(themeProvider.notifier)
+                                                .deleteTheme(themeName);
                                           }
                                         });
                                       },
@@ -89,7 +98,8 @@ class ThemesPane extends ConsumerWidget {
     }
   }
 
-  Future<bool?> _deleteConfirmationDialogBuilder(BuildContext context, String themeName) {
+  Future<bool?> _deleteConfirmationDialogBuilder(
+      BuildContext context, String themeName) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

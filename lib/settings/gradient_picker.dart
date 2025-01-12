@@ -59,17 +59,20 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
     };
 
     currentColor = switch (widget.initial) {
-      t.ThemeColorGradient() => (widget.initial as t.ThemeColorGradient).value.colors.isEmpty
-          ? Colors.black
-          : (widget.initial as t.ThemeColorGradient).value.colors.first,
+      t.ThemeColorGradient() =>
+        (widget.initial as t.ThemeColorGradient).value.colors.isEmpty
+            ? Colors.black
+            : (widget.initial as t.ThemeColorGradient).value.colors.first,
       t.ThemeColorSolid() => (widget.initial as t.ThemeColorSolid).value,
     };
 
     if (widget.initial is t.ThemeColorGradient) {
       final gre = (widget.initial as t.ThemeColorGradient).value;
       for (int i = 0; i < gre.colors.length; i++) {
-        indicators.add(
-            SliderIndicator.withVal(gre.stops?[i] ?? (i / (gre.colors.length - 1)), multiSliderWidth, gre.colors[i]));
+        indicators.add(SliderIndicator.withVal(
+            gre.stops?[i] ?? (i / (gre.colors.length - 1)),
+            multiSliderWidth,
+            gre.colors[i]));
       }
     }
 
@@ -165,17 +168,23 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
                       child: ThemeColorIndicator(
                         width: 70,
                         height: 70,
-                        radius: sgmntBtnGradient.first == 'radial' ? BorderRadius.circular(35) : null,
+                        radius: sgmntBtnGradient.first == 'radial'
+                            ? BorderRadius.circular(35)
+                            : null,
                         linearGradient: sgmntBtnGradient.first == 'linear'
                             ? LinearGradient(
-                                colors: indicators.map((e) => e.indicator.color!).toList(),
+                                colors: indicators
+                                    .map((e) => e.indicator.color!)
+                                    .toList(),
                                 stops: indicators.map((e) => e.val).toList(),
                                 begin: linearBegin,
                                 end: linearEnd,
                               )
                             : null,
                         radialGradient: RadialGradient(
-                          colors: indicators.map((e) => e.indicator.color!).toList(),
+                          colors: indicators
+                              .map((e) => e.indicator.color!)
+                              .toList(),
                           stops: indicators.map((e) => e.val).toList(),
                           center: radialCenter,
                         ),
@@ -227,7 +236,8 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
             padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: lastSelected == i ? Theme.of(context).highlightColor : null,
+              color:
+                  lastSelected == i ? Theme.of(context).highlightColor : null,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -312,10 +322,11 @@ class _ThemeColorPickerState extends State<ThemeColorPicker> {
           _ => t.ThemeColorSolid('#FFFFFF'),
         };
       default:
-        return t.ThemeColorSolid(currentColor.red.toRadixString(16).padLeft(2, '0') +
-            currentColor.green.toRadixString(16).padLeft(2, '0') +
-            currentColor.blue.toRadixString(16).padLeft(2, '0') +
-            currentColor.alpha.toRadixString(16).padLeft(2, '0'));
+        return t.ThemeColorSolid(
+            currentColor.red.toRadixString(16).padLeft(2, '0') +
+                currentColor.green.toRadixString(16).padLeft(2, '0') +
+                currentColor.blue.toRadixString(16).padLeft(2, '0') +
+                currentColor.alpha.toRadixString(16).padLeft(2, '0'));
     }
   }
 }
@@ -342,10 +353,12 @@ class LinearGradientDirectionSelector extends StatefulWidget {
   final Function(AlignmentGeometry)? onEndChanged;
 
   @override
-  State<LinearGradientDirectionSelector> createState() => _LinearGradientDirectionSelectorState();
+  State<LinearGradientDirectionSelector> createState() =>
+      _LinearGradientDirectionSelectorState();
 }
 
-class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectionSelector> {
+class _LinearGradientDirectionSelectorState
+    extends State<LinearGradientDirectionSelector> {
   late double outerSize;
   late double innerSize;
   late double pivot;
@@ -375,10 +388,18 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
     this.innerSize = widget.size;
     this.pivot = (outerSize / 2) - (widget.cursorSize / 2);
 
-    this.beginX = widget.begin != null ? widget.begin!.resolve(null).x * innerSize / 2 + pivot : pivot - innerSize / 2;
-    this.beginY = widget.begin != null ? widget.begin!.resolve(null).y * innerSize / 2 + pivot : pivot;
-    this.endX = widget.end != null ? widget.end!.resolve(null).x * innerSize / 2 + pivot : pivot + innerSize / 2;
-    this.endY = widget.end != null ? widget.end!.resolve(null).y * innerSize / 2 + pivot : pivot;
+    this.beginX = widget.begin != null
+        ? widget.begin!.resolve(null).x * innerSize / 2 + pivot
+        : pivot - innerSize / 2;
+    this.beginY = widget.begin != null
+        ? widget.begin!.resolve(null).y * innerSize / 2 + pivot
+        : pivot;
+    this.endX = widget.end != null
+        ? widget.end!.resolve(null).x * innerSize / 2 + pivot
+        : pivot + innerSize / 2;
+    this.endY = widget.end != null
+        ? widget.end!.resolve(null).y * innerSize / 2 + pivot
+        : pivot;
 
     this.beginXStart = beginX;
     this.beginYStart = beginY;
@@ -422,7 +443,8 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Theme.of(context).colorScheme.primary),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.primary),
                   ),
                   width: innerSize,
                   height: innerSize,
@@ -436,11 +458,18 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       setState(() {
-                        endX = _checkBoundary(endXStart + details.localPosition.dx - widget.cursorSize / 2);
-                        endXController.text = _posToValue(endX).toStringAsFixed(2);
-                        endY = _checkBoundary(endYStart + details.localPosition.dy - widget.cursorSize / 2);
-                        endYController.text = _posToValue(endY).toStringAsFixed(2);
-                        widget.onEndChanged?.call(Alignment(_posToValue(endX), _posToValue(endY)));
+                        endX = _checkBoundary(endXStart +
+                            details.localPosition.dx -
+                            widget.cursorSize / 2);
+                        endXController.text =
+                            _posToValue(endX).toStringAsFixed(2);
+                        endY = _checkBoundary(endYStart +
+                            details.localPosition.dy -
+                            widget.cursorSize / 2);
+                        endYController.text =
+                            _posToValue(endY).toStringAsFixed(2);
+                        widget.onEndChanged?.call(
+                            Alignment(_posToValue(endX), _posToValue(endY)));
                       });
                     },
                     onPanEnd: (_) {
@@ -466,11 +495,18 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       setState(() {
-                        beginX = _checkBoundary(beginXStart + details.localPosition.dx - widget.cursorSize / 2);
-                        beginXController.text = _posToValue(beginX).toStringAsFixed(2);
-                        beginY = _checkBoundary(beginYStart + details.localPosition.dy - widget.cursorSize / 2);
-                        beginYController.text = _posToValue(beginY).toStringAsFixed(2);
-                        widget.onBeginChanged?.call(Alignment(_posToValue(beginX), _posToValue(beginY)));
+                        beginX = _checkBoundary(beginXStart +
+                            details.localPosition.dx -
+                            widget.cursorSize / 2);
+                        beginXController.text =
+                            _posToValue(beginX).toStringAsFixed(2);
+                        beginY = _checkBoundary(beginYStart +
+                            details.localPosition.dy -
+                            widget.cursorSize / 2);
+                        beginYController.text =
+                            _posToValue(beginY).toStringAsFixed(2);
+                        widget.onBeginChanged?.call(Alignment(
+                            _posToValue(beginX), _posToValue(beginY)));
                       });
                     },
                     onPanEnd: (_) {
@@ -506,7 +542,8 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                         setState(() {
                           beginX = _checkBoundary(_valueToPos(parsed));
                           beginXStart = beginX;
-                          widget.onBeginChanged?.call(Alignment(_posToValue(beginX), _posToValue(beginY)));
+                          widget.onBeginChanged?.call(Alignment(
+                              _posToValue(beginX), _posToValue(beginY)));
                         });
                       }
                     },
@@ -530,7 +567,8 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                         setState(() {
                           beginY = _checkBoundary(_valueToPos(parsed));
                           beginYStart = beginY;
-                          widget.onBeginChanged?.call(Alignment(_posToValue(beginX), _posToValue(beginY)));
+                          widget.onBeginChanged?.call(Alignment(
+                              _posToValue(beginX), _posToValue(beginY)));
                         });
                       }
                     },
@@ -558,7 +596,8 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                         setState(() {
                           endX = _checkBoundary(_valueToPos(parsed));
                           endXStart = endX;
-                          widget.onEndChanged?.call(Alignment(_posToValue(endX), _posToValue(endY)));
+                          widget.onEndChanged?.call(
+                              Alignment(_posToValue(endX), _posToValue(endY)));
                         });
                       }
                     },
@@ -582,7 +621,8 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
                         setState(() {
                           endY = _checkBoundary(_valueToPos(parsed));
                           endYStart = endY;
-                          widget.onEndChanged?.call(Alignment(_posToValue(endX), _posToValue(endY)));
+                          widget.onEndChanged?.call(
+                              Alignment(_posToValue(endX), _posToValue(endY)));
                         });
                       }
                     },
@@ -602,13 +642,16 @@ class _LinearGradientDirectionSelectorState extends State<LinearGradientDirectio
   double _checkBoundary(double pos) {
     final snapMin = pivot - innerSize / 2;
     final snapMax = pivot + innerSize / 2;
-    if (pos > snapMin - widget.snapAssistance && pos < snapMin + widget.snapAssistance) {
+    if (pos > snapMin - widget.snapAssistance &&
+        pos < snapMin + widget.snapAssistance) {
       return snapMin;
     }
-    if (pos > snapMax - widget.snapAssistance && pos < snapMax + widget.snapAssistance) {
+    if (pos > snapMax - widget.snapAssistance &&
+        pos < snapMax + widget.snapAssistance) {
       return snapMax;
     }
-    if (pos > pivot - widget.snapAssistance && pos < pivot + widget.snapAssistance) {
+    if (pos > pivot - widget.snapAssistance &&
+        pos < pivot + widget.snapAssistance) {
       return pivot;
     }
     return pos.clamp(boundaryMin, boundaryMax);
@@ -641,10 +684,12 @@ class RadialGradientDirectionSelector extends StatefulWidget {
   final Function(AlignmentGeometry)? onCenterChanged;
 
   @override
-  State<RadialGradientDirectionSelector> createState() => _RadialGradientDirectionSelectorState();
+  State<RadialGradientDirectionSelector> createState() =>
+      _RadialGradientDirectionSelectorState();
 }
 
-class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectionSelector> {
+class _RadialGradientDirectionSelectorState
+    extends State<RadialGradientDirectionSelector> {
   late double outerSize;
   late double innerSize;
   late double pivot;
@@ -668,8 +713,12 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
     this.innerSize = widget.size;
     this.pivot = (outerSize / 2) - (widget.cursorSize / 2);
 
-    this.centerX = widget.center != null ? widget.center!.resolve(null).x * innerSize / 2 + pivot : pivot;
-    this.centerY = widget.center != null ? widget.center!.resolve(null).y * innerSize / 2 + pivot : pivot;
+    this.centerX = widget.center != null
+        ? widget.center!.resolve(null).x * innerSize / 2 + pivot
+        : pivot;
+    this.centerY = widget.center != null
+        ? widget.center!.resolve(null).y * innerSize / 2 + pivot
+        : pivot;
 
     this.centerXStart = centerX;
     this.centerYStart = centerY;
@@ -707,7 +756,8 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(innerSize / 2),
-                    border: Border.all(color: Theme.of(context).colorScheme.primary),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.primary),
                   ),
                   width: innerSize,
                   height: innerSize,
@@ -721,11 +771,18 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       setState(() {
-                        centerX = _checkBoundary(centerXStart + details.localPosition.dx - widget.cursorSize / 2);
-                        centerXController.text = _posToValue(centerX).toStringAsFixed(2);
-                        centerY = _checkBoundary(centerYStart + details.localPosition.dy - widget.cursorSize / 2);
-                        centerYController.text = _posToValue(centerY).toStringAsFixed(2);
-                        widget.onCenterChanged?.call(Alignment(_posToValue(centerX), _posToValue(centerY)));
+                        centerX = _checkBoundary(centerXStart +
+                            details.localPosition.dx -
+                            widget.cursorSize / 2);
+                        centerXController.text =
+                            _posToValue(centerX).toStringAsFixed(2);
+                        centerY = _checkBoundary(centerYStart +
+                            details.localPosition.dy -
+                            widget.cursorSize / 2);
+                        centerYController.text =
+                            _posToValue(centerY).toStringAsFixed(2);
+                        widget.onCenterChanged?.call(Alignment(
+                            _posToValue(centerX), _posToValue(centerY)));
                       });
                     },
                     onPanEnd: (_) {
@@ -761,7 +818,8 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
                         setState(() {
                           centerX = _checkBoundary(_valueToPos(parsed));
                           centerXStart = centerX;
-                          widget.onCenterChanged?.call(Alignment(_posToValue(centerX), _posToValue(centerY)));
+                          widget.onCenterChanged?.call(Alignment(
+                              _posToValue(centerX), _posToValue(centerY)));
                         });
                       }
                     },
@@ -785,7 +843,8 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
                         setState(() {
                           centerY = _checkBoundary(_valueToPos(parsed));
                           centerYStart = centerY;
-                          widget.onCenterChanged?.call(Alignment(_posToValue(centerX), _posToValue(centerY)));
+                          widget.onCenterChanged?.call(Alignment(
+                              _posToValue(centerX), _posToValue(centerY)));
                         });
                       }
                     },
@@ -805,13 +864,16 @@ class _RadialGradientDirectionSelectorState extends State<RadialGradientDirectio
   double _checkBoundary(double pos) {
     final snapMin = pivot - innerSize / 2;
     final snapMax = pivot + innerSize / 2;
-    if (pos > snapMin - widget.snapAssistance && pos < snapMin + widget.snapAssistance) {
+    if (pos > snapMin - widget.snapAssistance &&
+        pos < snapMin + widget.snapAssistance) {
       return snapMin;
     }
-    if (pos > snapMax - widget.snapAssistance && pos < snapMax + widget.snapAssistance) {
+    if (pos > snapMax - widget.snapAssistance &&
+        pos < snapMax + widget.snapAssistance) {
       return snapMax;
     }
-    if (pos > pivot - widget.snapAssistance && pos < pivot + widget.snapAssistance) {
+    if (pos > pivot - widget.snapAssistance &&
+        pos < pivot + widget.snapAssistance) {
       return pivot;
     }
     return pos.clamp(boundaryMin, boundaryMax);
@@ -857,20 +919,28 @@ class ThemeColorIndicator extends StatefulWidget {
     this.radius = radius ?? BorderRadius.circular(12);
   }
 
-  ThemeColorIndicator.random({this.width = 100, this.height = 100, BorderRadius? radius})
+  ThemeColorIndicator.random(
+      {this.width = 100, this.height = 100, BorderRadius? radius})
       : color = null,
         linearGradient = random,
         radialGradient = null,
         this.radius = radius ?? BorderRadius.circular(12);
 
   ThemeColorIndicator.fromThemeColor(
-      {this.width = 100, this.height = 100, BorderRadius? radius, required t.ThemeColor themeColor})
+      {this.width = 100,
+      this.height = 100,
+      BorderRadius? radius,
+      required t.ThemeColor themeColor})
       : color = themeColor is t.ThemeColorSolid ? themeColor.value : null,
         linearGradient = themeColor is t.ThemeColorGradient
-            ? (themeColor.value is LinearGradient ? themeColor.value as LinearGradient : null)
+            ? (themeColor.value is LinearGradient
+                ? themeColor.value as LinearGradient
+                : null)
             : null,
         radialGradient = themeColor is t.ThemeColorGradient
-            ? (themeColor.value is RadialGradient ? themeColor.value as RadialGradient : null)
+            ? (themeColor.value is RadialGradient
+                ? themeColor.value as RadialGradient
+                : null)
             : null,
         this.radius = radius ?? BorderRadius.circular(12);
 
@@ -909,7 +979,8 @@ class _ThemeColorIndicatorState extends State<ThemeColorIndicator> {
           image: AssetImage('assets/transparent_bg.png'),
           fit: BoxFit.cover,
         ),
-        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
+        border:
+            Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
       ),
       child: Stack(
         children: [
@@ -965,13 +1036,17 @@ class _MultiSliderState extends State<MultiSlider> {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(
-              horizontal: indicatorWidth / 2, vertical: max((indicatorHeight - widget.height) / 2, 0)),
+              horizontal: indicatorWidth / 2,
+              vertical: max((indicatorHeight - widget.height) / 2, 0)),
           child: GestureDetector(
             onDoubleTapDown: (details) => setState(() {
               widget.indicators.add(SliderIndicator.withVal(
-                  _toVal(details.localPosition.dx), widget.width, widget.lastSelected?.indicator.color));
+                  _toVal(details.localPosition.dx),
+                  widget.width,
+                  widget.lastSelected?.indicator.color));
               widget.indicators.sort((a, b) => a.pos.compareTo(b.pos));
-              widget.lastSelected = widget.indicators.firstWhere((i) => i.val == _toVal(details.localPosition.dx));
+              widget.lastSelected = widget.indicators
+                  .firstWhere((i) => i.val == _toVal(details.localPosition.dx));
               widget.onSelectedChanged?.call(widget.lastSelected!);
               widget.onValueChanged?.call(widget.indicators);
             }),
@@ -1012,7 +1087,9 @@ class _MultiSliderState extends State<MultiSlider> {
                   widget.indicators.remove(i);
                   widget.onValueChanged?.call(widget.indicators);
                 }),
-                child: Transform.scale(scale: widget.lastSelected == i ? 1.2 : 1, child: i.indicator),
+                child: Transform.scale(
+                    scale: widget.lastSelected == i ? 1.2 : 1,
+                    child: i.indicator),
               ))
       ],
     );

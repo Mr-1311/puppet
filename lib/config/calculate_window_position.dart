@@ -10,7 +10,8 @@ Future<Offset> calculateWindowPosition(
     String display = '1'}) async {
   Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
   if (alignment == null) {
-    return Offset(cursorScreenPoint.dx - windowSize.width * 0.5, cursorScreenPoint.dy - windowSize.height * 0.5);
+    return Offset(cursorScreenPoint.dx - windowSize.width * 0.5,
+        cursorScreenPoint.dy - windowSize.height * 0.5);
   }
 
   Display primaryDisplay = await screenRetriever.getPrimaryDisplay();
@@ -29,10 +30,14 @@ Future<Offset> calculateWindowPosition(
         display.size.height,
       ).contains(cursorScreenPoint),
     );
-    currentDisplay = currentDisplayIndex == -1 ? primaryDisplay : allDisplays[currentDisplayIndex];
+    currentDisplay = currentDisplayIndex == -1
+        ? primaryDisplay
+        : allDisplays[currentDisplayIndex];
     displayIndex = currentDisplayIndex == -1 ? 1 : currentDisplayIndex + 1;
   } else {
-    currentDisplay = allDisplays.length >= displayIndex ? allDisplays[displayIndex - 1] : primaryDisplay;
+    currentDisplay = allDisplays.length >= displayIndex
+        ? allDisplays[displayIndex - 1]
+        : primaryDisplay;
   }
 
   num visibleWidth = currentDisplay.size.width;
@@ -114,5 +119,6 @@ Future<Offset> calculateWindowPosition(
 
 Future<Offset> getWindowOffsetOnMouse(Size windowSize) async {
   Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
-  return Offset(cursorScreenPoint.dx - windowSize.width * 0.5, cursorScreenPoint.dy - windowSize.height * 0.5);
+  return Offset(cursorScreenPoint.dx - windowSize.width * 0.5,
+      cursorScreenPoint.dy - windowSize.height * 0.5);
 }

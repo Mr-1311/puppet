@@ -7,7 +7,11 @@ import 'package:puppet/settings/settings_element.dart';
 import 'package:collection/collection.dart';
 
 class MenuItemElement extends ConsumerWidget {
-  MenuItemElement({required this.conf, required this.menuId, required this.itemId, super.key});
+  MenuItemElement(
+      {required this.conf,
+      required this.menuId,
+      required this.itemId,
+      super.key});
 
   final Config conf;
   final int menuId;
@@ -18,7 +22,9 @@ class MenuItemElement extends ConsumerWidget {
     final plugins = ref.watch(pluginProvider);
 
     return InkWell(
-      onTap: () => {_itemDetails(context, conf.menus[menuId].items[itemId].name, plugins)},
+      onTap: () => {
+        _itemDetails(context, conf.menus[menuId].items[itemId].name, plugins)
+      },
       child: Card(
         child: Container(
           height: elementHeight,
@@ -30,7 +36,9 @@ class MenuItemElement extends ConsumerWidget {
               Text(conf.menus[menuId].items[itemId].name),
               IconButton(
                 onPressed: () {
-                  _deleteConfirmationDialogBuilder(context, conf.menus[menuId].items[itemId].name).then((value) {
+                  _deleteConfirmationDialogBuilder(
+                          context, conf.menus[menuId].items[itemId].name)
+                      .then((value) {
                     if (value == true) {
                       conf.menus[menuId].items.removeAt(itemId);
                       ref.read(configProvider.notifier).updateConfig(conf);
@@ -46,7 +54,8 @@ class MenuItemElement extends ConsumerWidget {
     );
   }
 
-  Future<bool?> _deleteConfirmationDialogBuilder(BuildContext context, String itemName) {
+  Future<bool?> _deleteConfirmationDialogBuilder(
+      BuildContext context, String itemName) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -78,7 +87,8 @@ class MenuItemElement extends ConsumerWidget {
     );
   }
 
-  Future _itemDetails(BuildContext context, String itemName, List<Plugin> plugins) {
+  Future _itemDetails(
+      BuildContext context, String itemName, List<Plugin> plugins) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -87,26 +97,56 @@ class MenuItemElement extends ConsumerWidget {
           content: Consumer(
             builder: (BuildContext context, WidgetRef ref, Widget? child) {
               final pluginName = conf.menus[menuId].items[itemId].plugin;
-              final plugin = plugins.firstWhereOrNull((element) => element.name == pluginName);
+              final plugin = plugins
+                  .firstWhereOrNull((element) => element.name == pluginName);
               final pluginArgs = plugin?.args ?? [];
               return Container(
                 width: 630,
                 child: ListView(
                   children: [
-                    SettingsElement(conf: conf, field: Fields.itemName, menuId: menuId, itemId: itemId),
-                    SettingsElement(conf: conf, field: Fields.itemDescription, menuId: menuId, itemId: itemId),
-                    SettingsElement(conf: conf, field: Fields.itemRepeat, menuId: menuId, itemId: itemId),
-                    SettingsElement(conf: conf, field: Fields.itemShortcut, menuId: menuId, itemId: itemId),
-                    SettingsElement(conf: conf, field: Fields.itemIcon, menuId: menuId, itemId: itemId),
-                    SettingsElement(conf: conf, field: Fields.itemPlugin, menuId: menuId, itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemName,
+                        menuId: menuId,
+                        itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemDescription,
+                        menuId: menuId,
+                        itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemRepeat,
+                        menuId: menuId,
+                        itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemShortcut,
+                        menuId: menuId,
+                        itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemIcon,
+                        menuId: menuId,
+                        itemId: itemId),
+                    SettingsElement(
+                        conf: conf,
+                        field: Fields.itemPlugin,
+                        menuId: menuId,
+                        itemId: itemId),
                     if (pluginArgs.isNotEmpty) ...[
                       Divider(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32.0, vertical: 8.0),
                         child: Text('Plugin Arguments:'),
                       ),
                       ...pluginArgs.map((arg) => SettingsElement(
-                          conf: conf, field: Fields.itemPluginArg, menuId: menuId, itemId: itemId, pluginArg: arg)),
+                          conf: conf,
+                          field: Fields.itemPluginArg,
+                          menuId: menuId,
+                          itemId: itemId,
+                          pluginArg: arg)),
                     ],
                   ],
                 ),

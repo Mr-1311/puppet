@@ -19,7 +19,8 @@ const conf_shortcut = {
   "keyCode": "space",
   "modifiers": ["alt"]
 };
-final conf_hotkey = HotKey(key: LogicalKeyboardKey.space, modifiers: [HotKeyModifier.alt]);
+final conf_hotkey =
+    HotKey(key: LogicalKeyboardKey.space, modifiers: [HotKeyModifier.alt]);
 
 final conf_iconData = FontAwesomeIcons.terminal;
 

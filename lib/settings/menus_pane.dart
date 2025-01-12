@@ -28,7 +28,9 @@ class MenusPane extends ConsumerWidget {
                   Divider(),
                   for (final menu in conf.menus)
                     InkWell(
-                      onTap: () => (ref.read(menuDetailProvider.notifier).state = menu.name),
+                      onTap: () => (ref
+                          .read(menuDetailProvider.notifier)
+                          .state = menu.name),
                       child: Card(
                         child: Container(
                           height: elementHeight,
@@ -38,12 +40,15 @@ class MenusPane extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       menu.name,
-                                      style: Theme.of(context).textTheme.titleLarge,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Row(
@@ -52,13 +57,16 @@ class MenusPane extends ConsumerWidget {
                                           label: Row(
                                             children: [
                                               ImageIcon(
-                                                AssetImage('assets/icon_${menu.type}.png'),
+                                                AssetImage(
+                                                    'assets/icon_${menu.type}.png'),
                                                 size: 16,
                                               ),
                                               SizedBox(width: 6),
                                               Text(
                                                 menu.type,
-                                                style: Theme.of(context).textTheme.labelSmall,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall,
                                               ),
                                             ],
                                           ),
@@ -72,16 +80,23 @@ class MenusPane extends ConsumerWidget {
                                 children: [
                                   IconButton(
                                     onPressed: () {
-                                      _deleteConfirmationDialogBuilder(context, menu.name).then((value) {
+                                      _deleteConfirmationDialogBuilder(
+                                              context, menu.name)
+                                          .then((value) {
                                         if (value == true) {
-                                          conf.menus.removeWhere((element) => element.name == menu.name);
+                                          conf.menus.removeWhere((element) =>
+                                              element.name == menu.name);
                                           if (menu.name == conf.mainMenu) {
                                             conf.mainMenu = conf.menus[0].name;
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                              content: Text('Main menu changed to \'${conf.menus[0].name}\''),
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  'Main menu changed to \'${conf.menus[0].name}\''),
                                             ));
                                           }
-                                          ref.read(configProvider.notifier).updateConfig(conf);
+                                          ref
+                                              .read(configProvider.notifier)
+                                              .updateConfig(conf);
                                         }
                                       });
                                     },
@@ -108,7 +123,9 @@ class MenusPane extends ConsumerWidget {
                   onPressed: () {
                     var counter = 1;
                     var menuName = 'New Menu $counter';
-                    while (conf.menus.firstWhereOrNull((menu) => menu.name == menuName) != null) {
+                    while (conf.menus.firstWhereOrNull(
+                            (menu) => menu.name == menuName) !=
+                        null) {
                       counter++;
                       menuName = 'New Menu $counter';
                     }
@@ -129,7 +146,8 @@ class MenusPane extends ConsumerWidget {
     }
   }
 
-  Future<bool?> _deleteConfirmationDialogBuilder(BuildContext context, String menuName) {
+  Future<bool?> _deleteConfirmationDialogBuilder(
+      BuildContext context, String menuName) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

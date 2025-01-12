@@ -15,8 +15,11 @@ dependencies:
   flutter_colorpicker: ^1.0.3
   flutter_iconpicker: ^4.0.1
   flutter_riverpod: ^2.4.9
+  flutter_rust_bridge: 2.7.0
   font_awesome_flutter: ^10.6.0
   hotkey_manager: ^0.2.3
+  rust_lib_puppet:
+    path: rust_builder
   screen_retriever: ^0.2.0
   smooth_page_indicator: ^1.1.0
   system_fonts: ^1.0.1
@@ -29,6 +32,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   custom_lint: ^0.7.0
   riverpod_lint: ^2.3.7
+  integration_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true

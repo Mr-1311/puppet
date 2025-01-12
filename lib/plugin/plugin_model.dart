@@ -41,14 +41,26 @@ class PluginItem {
 Plugin? _parseManifest(String manifestJson) {
   final manifest = jsonDecode(manifestJson);
 
-  if (manifest case {'name': String name, 'description': String description, 'platforms': List<String> platforms}) {
-    if (platforms.length == 0 || !platforms.every((e) => e == 'windows' || e == 'macos' || e == 'linux')) {
+  if (manifest
+      case {
+        'name': String name,
+        'description': String description,
+        'platforms': List<String> platforms
+      }) {
+    if (platforms.length == 0 ||
+        !platforms
+            .every((e) => e == 'windows' || e == 'macos' || e == 'linux')) {
       return null;
     }
     final args = <PluginArg>[];
     if (manifest case {'args': List<Map<String, String>> pluginArgs}) {
       for (final arg in pluginArgs) {
-        if (arg case {'name': String name, 'description': String description, 'defaultValue': String defaultValue}) {
+        if (arg
+            case {
+              'name': String name,
+              'description': String description,
+              'defaultValue': String defaultValue
+            }) {
           args.add(PluginArg(name, description, defaultValue));
         }
       }
