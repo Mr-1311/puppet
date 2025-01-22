@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/config/path_manager.dart';
+import 'package:puppet/list.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:puppet/wheel.dart';
@@ -15,6 +16,8 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:puppet/config/calculate_window_position.dart';
 import 'package:collection/collection.dart';
+import 'package:puppet/config/theme.dart' as t;
+import 'dart:math' as math;
 
 import 'config/theme.dart';
 
@@ -189,14 +192,101 @@ class MenuNotifier extends AsyncNotifier<Menus> {
   }
 
   Future<void> _adjustWindow(Menus menu) async {
-    windowManager.setSize(menu.size);
+    var size = menu.size;
+    if (menu.menuType == MenuType.list &&
+        (menu.height.trim().isEmpty || menu.height == '_')) {
+      size = Size(size.width, _calculateListHeight(menu));
+    }
+    windowManager.setSize(size);
 
     final positionCoordinate = await calculateWindowPosition(
-        windowSize: menu.size,
+        windowSize: size,
         alignment: menu.alignment,
         offsets: menu.offsets,
         display: menu.monitor);
     windowManager.setPosition(positionCoordinate);
+  }
+
+  t.Theme _getCurrentTheme() {
+    final menu = state.valueOrNull;
+    final themes = ref.read(themeProvider).valueOrNull;
+
+    if (menu == null) return t.Theme();
+
+    final isLight = switch ((menu.systemBrightness, menu.themeColorScheme)) {
+      ('system', _) => menu.systemBrightness == 'light',
+      (_, _) => menu.themeColorScheme == 'light',
+    };
+
+    final tName = menu.getThemeName();
+    return themes?[tName] == null
+        ? t.Theme()
+        : (isLight ? themes![tName]!.light : themes![tName]!.dark);
+  }
+
+  double _calculateListHeight(Menus menu) {
+    final theme = _getCurrentTheme();
+
+    final itemNameStyle = TextStyle(
+      decoration: TextDecoration.none,
+      fontFamily: theme.itemNameFont.value,
+      fontSize: switch (theme.itemNameFontSize) {
+        t.AONAuto() => kDefaultItemNameFontSize,
+        t.AONInt(:final value) => value.toDouble(),
+      },
+    );
+
+    final descriptionStyle = TextStyle(
+      decoration: TextDecoration.none,
+      fontFamily: theme.descriptionFont.value,
+      fontSize: switch (theme.descriptionFontSize) {
+        t.AONAuto() => kDefaultDescriptionFontSize,
+        t.AONInt(:final value) => value.toDouble(),
+      },
+    );
+
+    final itemNameSize = (TextPainter(
+            text: TextSpan(text: 'L', style: itemNameStyle),
+            maxLines: 1,
+            textScaler: ref.watch(textScalerProvider),
+            textDirection: TextDirection.ltr)
+          ..layout())
+        .size;
+
+    final descriptionSize = (TextPainter(
+            text: TextSpan(text: 'L', style: descriptionStyle),
+            maxLines: 1,
+            textScaler: ref.watch(textScalerProvider),
+            textDirection: TextDirection.ltr)
+          ..layout())
+        .size;
+
+    final iconSize = switch (theme.iconSize) {
+      t.AONAuto() => kDefaultIconSize,
+      t.AONInt(:final value) => value.toDouble(),
+    };
+
+    final outlineThickness = switch (theme.outlineThickness) {
+          t.AONAuto() => kDefaultBorderWidth,
+          t.AONInt(:final value) => value.toDouble(),
+        } *
+        2;
+    final separatorThickness = switch (theme.separatorThickness) {
+      t.AONAuto() => kDefaultBorderWidth,
+      t.AONInt(:final value) => value.toDouble(),
+    };
+
+    final textHeight =
+        itemNameSize.height + descriptionSize.height + kTextLineSpacing;
+
+    final maxElement = menu.maxElement > menu.items.length
+        ? menu.items.length
+        : menu.maxElement;
+
+    return (math.max(iconSize, textHeight) +
+            (kItemVerticalPadding * 2) * maxElement) +
+        (separatorThickness * (maxElement - 1)) +
+        outlineThickness;
   }
 
   void clearHistory() {
@@ -528,6 +618,18 @@ final currentThemeBrightnessProvider = Provider<bool>((ref) {
       return true;
   }
 });
+
+class TextScalerNotifier extends Notifier<TextScaler> {
+  @override
+  TextScaler build() => TextScaler.noScaling;
+
+  void setTextScaler(TextScaler scaler) {
+    state = scaler;
+  }
+}
+
+final textScalerProvider =
+    NotifierProvider<TextScalerNotifier, TextScaler>(TextScalerNotifier.new);
 
 final pluginProvider =
     NotifierProvider<PluginNotifier, List<Plugin>>(PluginNotifier.new);

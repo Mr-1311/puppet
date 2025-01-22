@@ -151,9 +151,17 @@ class _MainAppState extends ConsumerState<MainApp>
     });
     final menu = ref.watch(menuProvider);
     // menu.whenData((value) {
-    //   print(value.toString());
+    //   print(value.height);
     // });
     print(greet(name: 'rust'));
+
+    // Set the text scaler from MediaQuery
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(textScalerProvider.notifier)
+          .setTextScaler(MediaQuery.textScalerOf(context));
+    });
+
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
@@ -290,7 +298,9 @@ class _MenuState extends ConsumerState<Menu> {
       Menus(menuType: MenuType.wheel) =>
         Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
       Menus(menuType: MenuType.list) => ListMenu(
-          maxElement: widget.menu.maxElement, menuName: widget.menu.name),
+          maxElement: widget.menu.maxElement,
+          menuName: widget.menu.name,
+          height: widget.menu.height),
       Menus(menuType: MenuType.canvas) => const CircularProgressIndicator(),
     };
   }
