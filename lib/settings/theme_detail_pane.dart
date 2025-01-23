@@ -106,9 +106,28 @@ class ThemeDetailPane extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  prop.label,
-                  style: m.Theme.of(context).textTheme.titleMedium,
+                Flexible(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        prop.label,
+                        style: m.Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Tooltip(
+                        message: prop.description,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text(
+                            prop.description,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 switch (prop.propType) {
                   AutoOrNum =>

@@ -30,7 +30,7 @@ class MenuDetailPane extends ConsumerWidget {
           tabs: [
             Tab(
               icon: FaIcon(FontAwesomeIcons.puzzlePiece),
-              text: 'Items',
+              text: 'Plugins',
             ),
             Tab(
               icon: FaIcon(FontAwesomeIcons.gear),
@@ -44,20 +44,64 @@ class MenuDetailPane extends ConsumerWidget {
             children: [
               Stack(
                 children: [
-                  ReorderableListView.builder(
-                    onReorder: (oldIndex, newIndex) => ref
-                        .read(configProvider.notifier)
-                        .reorderMenuItem(oldIndex, newIndex, menuId),
-                    itemCount: conf.value!.menus[menuId].items.length,
-                    padding: const EdgeInsets.only(bottom: 85.0),
-                    itemBuilder: (BuildContext context, int i) {
-                      return MenuItemElement(
-                          conf: conf.value!,
-                          menuId: menuId,
-                          itemId: i,
-                          key: ValueKey(i));
-                    },
-                  ),
+                  conf.value!.menus[menuId].items.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.playlist_add,
+                                size: 48,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No plugins in this menu',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.5),
+                                      // .withOpacity(0.5),
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Click the button below to add your first plugin to generate item(s)',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.5),
+                                      // .withOpacity(0.5),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ReorderableListView.builder(
+                          onReorder: (oldIndex, newIndex) => ref
+                              .read(configProvider.notifier)
+                              .reorderMenuItem(oldIndex, newIndex, menuId),
+                          itemCount: conf.value!.menus[menuId].items.length,
+                          padding: const EdgeInsets.only(bottom: 85.0),
+                          itemBuilder: (BuildContext context, int i) {
+                            return MenuItemElement(
+                                conf: conf.value!,
+                                menuId: menuId,
+                                itemId: i,
+                                key: ValueKey(i));
+                          },
+                        ),
                   Container(
                       alignment: Alignment.bottomCenter,
                       padding: const EdgeInsets.all(12.0),
