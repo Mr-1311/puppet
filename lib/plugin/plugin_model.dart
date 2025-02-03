@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:puppet/src/rust/api/plugin_manager.dart';
 
 class Plugin {
   final String name;

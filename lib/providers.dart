@@ -18,6 +18,7 @@ import 'package:puppet/config/calculate_window_position.dart';
 import 'package:collection/collection.dart';
 import 'package:puppet/config/theme.dart' as t;
 import 'dart:math' as math;
+import 'package:puppet/src/rust/api/plugin_manager.dart' as bridge;
 
 import 'config/theme.dart';
 
@@ -639,5 +640,27 @@ class PluginNotifier extends Notifier<List<Plugin>> {
   List<Plugin> build() {
     final pluginDirPath = PathManager().plugins;
     return getAvailablePlugins(pluginDirPath);
+  }
+
+  bridge.PluginConfig? getPluginConfig(
+      String name, Map<String, String> config) {
+    final plugin = state.firstWhereOrNull((p) => p.name == name);
+    if (plugin == null) return null;
+
+    final configWithDefaults = Map<String, String>.fromEntries(
+      plugin.args.map((arg) => MapEntry(
+            arg.name,
+            config[arg.name]?.isEmpty ?? true
+                ? arg.defaultValue
+                : config[arg.name]!,
+          )),
+    );
+
+    return bridge.PluginConfig(
+      allowedPaths: plugin.allowedPaths,
+      allowedHosts: plugin.allowedHosts,
+      enableWasi: plugin.wasi,
+      config: configWithDefaults.entries.map((e) => (e.key, e.value)).toList(),
+    );
   }
 }
