@@ -1,13 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:puppet/src/rust/api/plugin_manager.dart';
 
 class Plugin {
   final String name;
   final String description;
   final List<String> platforms;
   final List<PluginArg> args;
+  final List<String> allowedPaths;
+  final List<String> allowedHosts;
+  final bool wasi;
 
-  const Plugin(this.name, this.description, this.platforms, this.args);
+  const Plugin(
+    this.name,
+    this.description,
+    this.platforms,
+    this.args, {
+    this.allowedPaths = const [],
+    this.allowedHosts = const [],
+    this.wasi = false,
+  });
 }
 
 class PluginArg {
@@ -45,15 +57,19 @@ Plugin? _parseManifest(String manifestJson) {
       case {
         'name': String name,
         'description': String description,
-        'platforms': List<String> platforms
+        'platforms': List<String> platforms,
+        'allowedPaths': List<String> allowedPaths,
+        'allowedHosts': List<String> allowedHosts,
+        'wasi': bool wasi
       }) {
-    if (platforms.length == 0 ||
+    if (platforms.isEmpty ||
         !platforms
             .every((e) => e == 'windows' || e == 'macos' || e == 'linux')) {
       return null;
     }
+
     final args = <PluginArg>[];
-    if (manifest case {'args': List<Map<String, String>> pluginArgs}) {
+    if (manifest case {'pluginArgs': List<Map<String, String>> pluginArgs}) {
       for (final arg in pluginArgs) {
         if (arg
             case {
@@ -65,7 +81,16 @@ Plugin? _parseManifest(String manifestJson) {
         }
       }
     }
-    return Plugin(name, description, platforms, args);
+
+    return Plugin(
+      name,
+      description,
+      platforms,
+      args,
+      allowedPaths: allowedPaths,
+      allowedHosts: allowedHosts,
+      wasi: wasi,
+    );
   }
   return null;
 }
