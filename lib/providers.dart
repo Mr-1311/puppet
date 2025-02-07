@@ -328,7 +328,7 @@ class ItemsNotifier extends Notifier<List<PluginItem>> {
           item.repeat,
           item.pluginArgs,
         ));
-      }
+      } else {}
     }
     _cache[menu.name] = items;
     return items;
@@ -661,6 +661,36 @@ class PluginNotifier extends Notifier<List<Plugin>> {
       allowedHosts: plugin.allowedHosts,
       enableWasi: plugin.wasi,
       config: configWithDefaults.entries.map((e) => (e.key, e.value)).toList(),
+      wasmPath: plugin.wasmPath,
     );
+  }
+}
+
+final pluginManagerProvider =
+    AsyncNotifierProvider<PluginManagerNotifier, bridge.PluginManager>(
+        PluginManagerNotifier.new);
+
+class PluginManagerNotifier extends AsyncNotifier<bridge.PluginManager> {
+  @override
+  Future<bridge.PluginManager> build() async {
+    return await bridge.PluginManager.newInstance();
+  }
+
+  Future<List<bridge.PluginItem>> filterPlugin(
+      String name, List<(String, String)> config, String query) async {
+    final manager = await future;
+    return await manager.filterPlugin(name: name, config: config, query: query);
+  }
+
+  Future<List<bridge.PluginItem>> initPlugin(
+      String name, bridge.PluginConfig pluginConfig) async {
+    final manager = await future;
+    return await manager.initPlugin(name: name, pluginConfig: pluginConfig);
+  }
+
+  Future<void> select(
+      String name, List<(String, String)> config, String elementName) async {
+    final manager = await future;
+    await manager.select(name: name, config: config, elementName: elementName);
   }
 }

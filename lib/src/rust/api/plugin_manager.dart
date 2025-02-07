@@ -10,6 +10,23 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 // These types are ignored because they are not used by any `pub` functions: `PluginIdentifier`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `hash`
 
+/// Expands environment variables in the provided path.
+/// Returns a tuple where:
+/// - The first element is the string with environment variables replaced
+///   with their corresponding values.
+/// - The second element is the string with the '$' characters removed.
+///
+/// Examples:
+/// If HOME is set to "/users/user", then:
+///     expand_env_vars("$HOME/.config")
+/// returns ("/users/user/.config", "HOME/.config")
+///
+Future<(String, PathBuf)> expandEnvVars({required String path}) =>
+    RustLib.instance.api.crateApiPluginManagerExpandEnvVars(path: path);
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PathBuf>>
+abstract class PathBuf implements RustOpaqueInterface {}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PluginManager>>
 abstract class PluginManager implements RustOpaqueInterface {
   Future<List<PluginItem>> filterPlugin(
@@ -18,9 +35,7 @@ abstract class PluginManager implements RustOpaqueInterface {
       required String query});
 
   Future<List<PluginItem>> initPlugin(
-      {required String name,
-      required String wasmPath,
-      required PluginConfig pluginConfig});
+      {required String name, required PluginConfig pluginConfig});
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   static Future<PluginManager> newInstance() =>
@@ -33,12 +48,14 @@ abstract class PluginManager implements RustOpaqueInterface {
 }
 
 class PluginConfig {
+  final String wasmPath;
   final List<String> allowedPaths;
   final List<String> allowedHosts;
   final bool enableWasi;
   final List<(String, String)> config;
 
   const PluginConfig({
+    required this.wasmPath,
     required this.allowedPaths,
     required this.allowedHosts,
     required this.enableWasi,
@@ -47,6 +64,7 @@ class PluginConfig {
 
   @override
   int get hashCode =>
+      wasmPath.hashCode ^
       allowedPaths.hashCode ^
       allowedHosts.hashCode ^
       enableWasi.hashCode ^
@@ -57,6 +75,7 @@ class PluginConfig {
       identical(this, other) ||
       other is PluginConfig &&
           runtimeType == other.runtimeType &&
+          wasmPath == other.wasmPath &&
           allowedPaths == other.allowedPaths &&
           allowedHosts == other.allowedHosts &&
           enableWasi == other.enableWasi &&

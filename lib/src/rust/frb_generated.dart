@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.7.0';
 
   @override
-  int get rustContentHash => 1407500678;
+  int get rustContentHash => 158356657;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -89,7 +89,6 @@ abstract class RustLibApi extends BaseApi {
   Future<List<PluginItem>> crateApiPluginManagerPluginManagerInitPlugin(
       {required PluginManager that,
       required String name,
-      required String wasmPath,
       required PluginConfig pluginConfig});
 
   Future<PluginManager> crateApiPluginManagerPluginManagerNew();
@@ -100,9 +99,18 @@ abstract class RustLibApi extends BaseApi {
       required List<(String, String)> config,
       required String elementName});
 
+  Future<(String, PathBuf)> crateApiPluginManagerExpandEnvVars(
+      {required String path});
+
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
+
+  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_PathBuf;
+
+  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_PathBuf;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_PathBufPtr;
 
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_PluginManager;
@@ -159,7 +167,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<List<PluginItem>> crateApiPluginManagerPluginManagerInitPlugin(
       {required PluginManager that,
       required String name,
-      required String wasmPath,
       required PluginConfig pluginConfig}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
@@ -167,7 +174,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPluginManager(
             that, serializer);
         sse_encode_String(name, serializer);
-        sse_encode_String(wasmPath, serializer);
         sse_encode_box_autoadd_plugin_config(pluginConfig, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 2, port: port_);
@@ -177,7 +183,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiPluginManagerPluginManagerInitPluginConstMeta,
-      argValues: [that, name, wasmPath, pluginConfig],
+      argValues: [that, name, pluginConfig],
       apiImpl: this,
     ));
   }
@@ -185,7 +191,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiPluginManagerPluginManagerInitPluginConstMeta =>
       const TaskConstMeta(
         debugName: "PluginManager_init_plugin",
-        argNames: ["that", "name", "wasmPath", "pluginConfig"],
+        argNames: ["that", "name", "pluginConfig"],
       );
 
   @override
@@ -247,12 +253,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<(String, PathBuf)> crateApiPluginManagerExpandEnvVars(
+      {required String path}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(path, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 5, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData:
+            sse_decode_record_string_auto_owned_rust_opaque_flutter_rust_bridgefor_generated_rust_auto_opaque_inner_path_buf,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiPluginManagerExpandEnvVarsConstMeta,
+      argValues: [path],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiPluginManagerExpandEnvVarsConstMeta =>
+      const TaskConstMeta(
+        debugName: "expand_env_vars",
+        argNames: ["path"],
+      );
+
+  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -275,7 +308,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 6, port: port_);
+            funcId: 7, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -293,6 +326,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   RustArcIncrementStrongCountFnType
+      get rust_arc_increment_strong_count_PathBuf => wire
+          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf;
+
+  RustArcDecrementStrongCountFnType
+      get rust_arc_decrement_strong_count_PathBuf => wire
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf;
+
+  RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_PluginManager => wire
           .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPluginManager;
 
@@ -304,6 +345,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return AnyhowException(raw as String);
+  }
+
+  @protected
+  PathBuf
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PathBufImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -320,6 +369,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return PluginManagerImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  PathBuf
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PathBufImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -376,13 +433,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PluginConfig dco_decode_plugin_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
     return PluginConfig(
-      allowedPaths: dco_decode_list_String(arr[0]),
-      allowedHosts: dco_decode_list_String(arr[1]),
-      enableWasi: dco_decode_bool(arr[2]),
-      config: dco_decode_list_record_string_string(arr[3]),
+      wasmPath: dco_decode_String(arr[0]),
+      allowedPaths: dco_decode_list_String(arr[1]),
+      allowedHosts: dco_decode_list_String(arr[2]),
+      enableWasi: dco_decode_bool(arr[3]),
+      config: dco_decode_list_record_string_string(arr[4]),
     );
   }
 
@@ -396,6 +454,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       name: dco_decode_String(arr[0]),
       description: dco_decode_String(arr[1]),
       icon: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
+  (
+    String,
+    PathBuf
+  ) dco_decode_record_string_auto_owned_rust_opaque_flutter_rust_bridgefor_generated_rust_auto_opaque_inner_path_buf(
+      dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (
+      dco_decode_String(arr[0]),
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          arr[1]),
     );
   }
 
@@ -438,6 +514,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PathBuf
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PathBufImpl.frbInternalSseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
+  }
+
+  @protected
   PluginManager
       sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPluginManager(
           SseDeserializer deserializer) {
@@ -452,6 +537,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return PluginManagerImpl.frbInternalSseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  PathBuf
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return PathBufImpl.frbInternalSseDecode(
         sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
@@ -531,11 +625,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   PluginConfig sse_decode_plugin_config(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_wasmPath = sse_decode_String(deserializer);
     var var_allowedPaths = sse_decode_list_String(deserializer);
     var var_allowedHosts = sse_decode_list_String(deserializer);
     var var_enableWasi = sse_decode_bool(deserializer);
     var var_config = sse_decode_list_record_string_string(deserializer);
     return PluginConfig(
+        wasmPath: var_wasmPath,
         allowedPaths: var_allowedPaths,
         allowedHosts: var_allowedHosts,
         enableWasi: var_enableWasi,
@@ -550,6 +646,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_icon = sse_decode_String(deserializer);
     return PluginItem(
         name: var_name, description: var_description, icon: var_icon);
+  }
+
+  @protected
+  (
+    String,
+    PathBuf
+  ) sse_decode_record_string_auto_owned_rust_opaque_flutter_rust_bridgefor_generated_rust_auto_opaque_inner_path_buf(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 =
+        sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+            deserializer);
+    return (var_field0, var_field1);
   }
 
   @protected
@@ -593,6 +703,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          PathBuf self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+        (self as PathBufImpl).frbInternalSseEncode(move: true), serializer);
+  }
+
+  @protected
+  void
       sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPluginManager(
           PluginManager self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -609,6 +728,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_usize(
         (self as PluginManagerImpl).frbInternalSseEncode(move: false),
         serializer);
+  }
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+          PathBuf self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+        (self as PathBufImpl).frbInternalSseEncode(move: null), serializer);
   }
 
   @protected
@@ -680,6 +808,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_plugin_config(PluginConfig self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.wasmPath, serializer);
     sse_encode_list_String(self.allowedPaths, serializer);
     sse_encode_list_String(self.allowedHosts, serializer);
     sse_encode_bool(self.enableWasi, serializer);
@@ -692,6 +821,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.name, serializer);
     sse_encode_String(self.description, serializer);
     sse_encode_String(self.icon, serializer);
+  }
+
+  @protected
+  void
+      sse_encode_record_string_auto_owned_rust_opaque_flutter_rust_bridgefor_generated_rust_auto_opaque_inner_path_buf(
+          (String, PathBuf) self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPathBuf(
+        self.$2, serializer);
   }
 
   @protected
@@ -727,6 +866,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
+class PathBufImpl extends RustOpaque implements PathBuf {
+  // Not to be used by end users
+  PathBufImpl.frbInternalDcoDecode(List<dynamic> wire)
+      : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  PathBufImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_PathBuf,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PathBuf,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_PathBufPtr,
+  );
+}
+
+@sealed
 class PluginManagerImpl extends RustOpaque implements PluginManager {
   // Not to be used by end users
   PluginManagerImpl.frbInternalDcoDecode(List<dynamic> wire)
@@ -753,14 +912,9 @@ class PluginManagerImpl extends RustOpaque implements PluginManager {
           that: this, name: name, config: config, query: query);
 
   Future<List<PluginItem>> initPlugin(
-          {required String name,
-          required String wasmPath,
-          required PluginConfig pluginConfig}) =>
+          {required String name, required PluginConfig pluginConfig}) =>
       RustLib.instance.api.crateApiPluginManagerPluginManagerInitPlugin(
-          that: this,
-          name: name,
-          wasmPath: wasmPath,
-          pluginConfig: pluginConfig);
+          that: this, name: name, pluginConfig: pluginConfig);
 
   Future<void> select(
           {required String name,

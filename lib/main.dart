@@ -13,7 +13,6 @@ import 'package:puppet/settings/settings_page.dart';
 import 'package:puppet/src/rust/api/plugin_manager.dart';
 import 'package:puppet/src/rust/api/simple.dart';
 import 'package:puppet/src/rust/frb_generated.dart';
-import 'package:puppet/src/rust/lib.dart';
 import 'package:puppet/wheel.dart';
 import 'package:tray_manager/tray_manager.dart' as tray;
 import 'package:window_manager/window_manager.dart';
@@ -58,17 +57,15 @@ void main(List<String> args) async {
   await RustLib.init();
 
   PluginConfig config = PluginConfig(
+      wasmPath:
+          '/Users/mr1311/dev/plugins/test-plugin/target/wasm32-wasip1/release/plugin.wasm',
       allowedPaths: [],
       allowedHosts: [],
       enableWasi: true,
       config: [('key1', 'value1')]);
 
   var pm = await PluginManager.newInstance();
-  var items = await pm.initPlugin(
-      name: 'test_plugin',
-      wasmPath:
-          '/Users/mr1311/dev/plugins/test-plugin/target/wasm32-wasip1/release/test_plugin.wasm',
-      pluginConfig: config);
+  var items = await pm.initPlugin(name: 'test_plugin', pluginConfig: config);
 
   for (var item in items) {
     print(item.name);
