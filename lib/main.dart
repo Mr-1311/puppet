@@ -10,8 +10,6 @@ import 'package:puppet/config/config.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/error_page.dart';
 import 'package:puppet/settings/settings_page.dart';
-import 'package:puppet/src/rust/api/plugin_manager.dart';
-import 'package:puppet/src/rust/api/simple.dart';
 import 'package:puppet/src/rust/frb_generated.dart';
 import 'package:puppet/wheel.dart';
 import 'package:tray_manager/tray_manager.dart' as tray;
@@ -55,23 +53,6 @@ void main(List<String> args) async {
   await windowManager.ensureInitialized();
   await hotKeyManager.unregisterAll();
   await RustLib.init();
-
-  PluginConfig config = PluginConfig(
-      wasmPath:
-          '/Users/mr1311/dev/plugins/test-plugin/target/wasm32-wasip1/release/plugin.wasm',
-      allowedPaths: [],
-      allowedHosts: [],
-      enableWasi: true,
-      config: [('key1', 'value1')]);
-
-  var pm = await PluginManager.newInstance();
-  var items = await pm.initPlugin(name: 'test_plugin', pluginConfig: config);
-
-  for (var item in items) {
-    print(item.name);
-    print(item.description);
-    print(item.icon);
-  }
 
   final argParser = ArgParser();
   argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
@@ -171,7 +152,6 @@ class _MainAppState extends ConsumerState<MainApp>
     // menu.whenData((value) {
     //   print(value.height);
     // });
-    print(greet(name: 'rust'));
 
     // Set the text scaler from MediaQuery
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -232,7 +212,7 @@ class _MainAppState extends ConsumerState<MainApp>
         process.stdout.transform(utf8.decoder).listen((data) async {
           stdout.writeln('settings stdout: $data');
           if (data == 'config_updated') {
-            ref.read(itemsProvider.notifier).clearCache();
+            // ref.read(itemsProvider.notifier).clearCache();
             await ref.read(configProvider.notifier).rebuild();
           }
           if (data == 'theme_updated') {

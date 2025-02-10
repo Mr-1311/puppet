@@ -153,7 +153,6 @@ List<Plugin> getAvailablePlugins(String pluginDirPath) {
       final manifestFile = File('${file.path}/manifest.json');
       if (manifestFile.existsSync()) {
         final manifestContent = manifestFile.readAsStringSync();
-        print(manifestContent);
         final plugin = _parseManifest(manifestContent, file.path);
         if (plugin != null && _isCurrentPlatformSupported(plugin.platforms)) {
           plugins.add(plugin);

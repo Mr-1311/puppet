@@ -20,7 +20,7 @@ final currentItemsProvider =
 class CurrentItemsNotifier extends FamilyNotifier<List<PluginItem>, int> {
   @override
   List<PluginItem> build(int maxElement) {
-    final items = ref.watch(itemsProvider);
+    final items = ref.watch(itemsProvider).valueOrNull ?? [];
     final currentPage = ref.read(currentPageProvider);
 
     // set menu items to where it is when update config
@@ -38,7 +38,7 @@ class CurrentItemsNotifier extends FamilyNotifier<List<PluginItem>, int> {
   }
 
   void next(int maxElement) {
-    final allItems = ref.read(itemsProvider);
+    final allItems = ref.read(itemsProvider).valueOrNull ?? [];
     final nextPage = ref.read(currentPageProvider) + 1;
 
     if (allItems.length > maxElement * nextPage) {
@@ -51,7 +51,7 @@ class CurrentItemsNotifier extends FamilyNotifier<List<PluginItem>, int> {
   }
 
   void prev(int maxElement) {
-    final allItems = ref.read(itemsProvider);
+    final allItems = ref.read(itemsProvider).valueOrNull ?? [];
     final currentPage = ref.read(currentPageProvider) - 1;
 
     if (currentPage > -1) {
@@ -126,7 +126,8 @@ class Wheel extends ConsumerWidget {
     final currentItems = ref.watch(currentItemsProvider(maxElement));
     final double sectionAngle = 2 * pi / currentItems.length;
     final centerSize = size.shortestSide * 0.15;
-    final pageSize = (ref.watch(itemsProvider).length / maxElement).ceil();
+    final items = ref.watch(itemsProvider).valueOrNull ?? [];
+    final pageSize = (items.length / maxElement).ceil();
     final currentPage = ref.watch(currentPageProvider);
     final theme = ref.watch(currentThemeProvider);
     final themeBrightness = ref.watch(currentThemeBrightnessProvider);

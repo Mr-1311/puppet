@@ -516,7 +516,7 @@ class Items {
     if (json case {'icon': String icon}) {
       this.icon = icon;
       if (!iconDatas.containsKey(icon)) {
-        final iconData = _getIconData(icon);
+        final iconData = getIconData(icon);
         iconDatas[icon] = iconData;
         if (iconData == null && icon.isNotEmpty) {
           _warnings.add(
@@ -568,7 +568,7 @@ const supportedIconImageExtensions = [
   '.icon'
 ];
 
-dynamic _getIconData(String icon) {
+dynamic getIconData(String icon) {
   if (supportedIconImageExtensions.contains(extension(icon))) {
     final path = dirname(icon) != '.' ? icon : PathManager().icons + icon;
     final file = File(path);
@@ -601,7 +601,6 @@ dynamic _getIconData(String icon) {
     return (false, []);
   }
   final files = directory.listSync().toList();
-
   for (var file in files) {
     if (file is Directory) {
       final manifestFile = File('${file.path}/manifest.json');
@@ -611,8 +610,7 @@ dynamic _getIconData(String icon) {
         if (manifestJson case {'name': String pluginName}) {
           if (pluginName == name) {
             var args = <String>[];
-            if (manifestJson
-                case {'pluginArgs': List<Map<String, String>> pluginArgs}) {
+            if (manifestJson case {'pluginArgs': List pluginArgs}) {
               for (final arg in pluginArgs) {
                 if (arg case {'name': String name}) {
                   args.add(name);

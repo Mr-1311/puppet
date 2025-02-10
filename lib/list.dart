@@ -100,12 +100,18 @@ class ListMenu extends ConsumerWidget {
     final containerHeight =
         math.max(iconSize, textHeight) + (kItemVerticalPadding * 2);
 
-    return _ListContainer(
-      items: items,
-      theme: theme,
-      menuName: menuName,
-      maxElement: maxElement,
-      containerHeight: containerHeight,
+    return items.when(
+      data: (itemsList) => _ListContainer(
+        items: itemsList,
+        theme: theme,
+        menuName: menuName,
+        maxElement: maxElement,
+        containerHeight: containerHeight,
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Text('Error: $error'),
+      ),
     );
   }
 }

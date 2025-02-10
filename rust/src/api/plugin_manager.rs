@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use extism::{Plugin, Manifest, Wasm, Val};
+use extism::{Plugin, Manifest, Wasm};
 use flutter_rust_bridge::frb;
 use serde::{Serialize, Deserialize};
 use serde_json;
@@ -153,7 +153,7 @@ impl PluginManager {
 ///     expand_env_vars("$HOME/.config")
 /// returns ("/users/user/.config", "HOME/.config")
 ///
-pub fn expand_env_vars(path: &str) -> (String, PathBuf) {
+fn expand_env_vars(path: &str) -> (String, PathBuf) {
     // Regex that matches `$VAR`, where VAR starts with a letter or underscore
     // and is followed by letters, numbers, or underscores.
     let re = Regex::new(r"\$([A-Za-z_][A-Za-z0-9_]*)").unwrap();

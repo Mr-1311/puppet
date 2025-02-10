@@ -296,25 +296,22 @@ class MenuNotifier extends AsyncNotifier<Menus> {
 }
 
 final itemsProvider =
-    NotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
+    AsyncNotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
 
-class ItemsNotifier extends Notifier<List<PluginItem>> {
-  HashMap<String, List<PluginItem>> _cache =
-      HashMap<String, List<PluginItem>>();
+class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
+  // disable cache because of rust plugin manager has cache mechanism
+  // HashMap<String, List<PluginItem>> _cache =
+  //     HashMap<String, List<PluginItem>>();
   @override
-  List<PluginItem> build() {
-    final menu = ref.watch(menuProvider);
-
-    return switch (menu) {
-      AsyncData(:final value) => _getItems(value),
-      _ => [],
-    };
+  Future<List<PluginItem>> build() async {
+    final menu = await ref.watch(menuProvider.future);
+    return _getItems(menu);
   }
 
-  List<PluginItem> _getItems(Menus menu) {
-    if (_cache.containsKey(menu.name)) {
-      return _cache[menu.name]!;
-    }
+  Future<List<PluginItem>> _getItems(Menus menu) async {
+    // if (_cache.containsKey(menu.name)) {
+    //   return _cache[menu.name]!;
+    // }
     final List<PluginItem> items = [];
 
     for (Items item in menu.items) {
@@ -328,13 +325,36 @@ class ItemsNotifier extends Notifier<List<PluginItem>> {
           item.repeat,
           item.pluginArgs,
         ));
-      } else {}
+      } else {
+        // Handle other plugin types using pluginManager
+        final pluginManager = ref.watch(pluginManagerProvider).valueOrNull;
+        final pluginNotifier = ref.read(pluginProvider.notifier);
+        final pluginConfig = pluginNotifier.getPluginConfig(
+            item.plugin, Map<String, String>.from(item.pluginArgs));
+
+        if (pluginManager != null && pluginConfig != null) {
+          // Initialize plugin and add its items
+          final pluginItems = await pluginManager.initPlugin(
+              name: item.plugin, pluginConfig: pluginConfig);
+          for (var pluginItem in pluginItems) {
+            items.add(PluginItem(
+              pluginItem.name,
+              pluginItem.description,
+              pluginItem.icon,
+              item.plugin,
+              item.shortcut,
+              item.repeat,
+              item.pluginArgs,
+            ));
+          }
+        }
+      }
     }
-    _cache[menu.name] = items;
+    // _cache[menu.name] = items;
     return items;
   }
 
-  void onClick(PluginItem item) async {
+  Future<void> onClick(PluginItem item) async {
     if (item.plugin == 'menu') {
       final conf = ref.watch(configProvider).unwrapPrevious().valueOrNull;
 
@@ -371,6 +391,22 @@ class ItemsNotifier extends Notifier<List<PluginItem>> {
         runInShell: item.args['run in shell'] == 'true',
       );
       print(p.stdout);
+    } else {
+      // Handle other plugin types
+      final pluginManager = ref.read(pluginManagerProvider).valueOrNull;
+      if (pluginManager != null) {
+        final pluginNotifier = ref.read(pluginProvider.notifier);
+        final pluginConfig = pluginNotifier.getPluginConfig(
+            item.plugin, Map<String, String>.from(item.args));
+
+        if (pluginConfig != null) {
+          await pluginManager.select(
+            name: item.plugin,
+            config: pluginConfig.config,
+            elementName: item.name,
+          );
+        }
+      }
     }
 
     if (!item.repeat && item.plugin != 'menu') {
@@ -381,7 +417,7 @@ class ItemsNotifier extends Notifier<List<PluginItem>> {
     }
   }
 
-  void clearCache() => _cache.clear();
+  // void clearCache() => _cache.clear();
 }
 
 final themeProvider =

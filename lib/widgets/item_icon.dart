@@ -3,7 +3,12 @@ import 'package:puppet/config/config.dart';
 
 class ItemIcon extends StatelessWidget {
   ItemIcon({required String icon, required this.size, super.key}) {
-    iconData = iconDatas[icon];
+    if (iconDatas.containsKey(icon)) {
+      iconData = iconDatas[icon];
+    } else {
+      iconData = getIconData(icon);
+      iconDatas[icon] = iconData;
+    }
   }
 
   late final dynamic iconData;

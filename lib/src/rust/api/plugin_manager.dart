@@ -6,26 +6,9 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_map`
+// These functions are ignored because they are not marked as `pub`: `expand_env_vars`, `from_map`
 // These types are ignored because they are not used by any `pub` functions: `PluginIdentifier`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `hash`
-
-/// Expands environment variables in the provided path.
-/// Returns a tuple where:
-/// - The first element is the string with environment variables replaced
-///   with their corresponding values.
-/// - The second element is the string with the '$' characters removed.
-///
-/// Examples:
-/// If HOME is set to "/users/user", then:
-///     expand_env_vars("$HOME/.config")
-/// returns ("/users/user/.config", "HOME/.config")
-///
-Future<(String, PathBuf)> expandEnvVars({required String path}) =>
-    RustLib.instance.api.crateApiPluginManagerExpandEnvVars(path: path);
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PathBuf>>
-abstract class PathBuf implements RustOpaqueInterface {}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PluginManager>>
 abstract class PluginManager implements RustOpaqueInterface {
