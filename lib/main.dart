@@ -63,9 +63,9 @@ void main(List<String> args) async {
       negatable: false);
   final results = argParser.parse(args);
 
-  final bool isSettings = results['settings'];
+  final isSettings = true;
+  // final bool isSettings = results['settings'];
   isSettingsApp = isSettings;
-  // final isSettings = true;
 
   _setWindowMode(isSettings);
   // tray icon settings

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/settings/menus_pane.dart';
+import 'package:puppet/settings/plugins_pane.dart';
 import 'package:puppet/settings/themes_pane.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -131,7 +132,7 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
                             child: switch (index) {
                               0 => MenusPane(),
                               1 => ThemesPane(),
-                              2 => Text('Plugins'),
+                              2 => PluginsPane(),
                               _ => SingleChildScrollView(
                                   child: Column(
                                     children: [
@@ -160,12 +161,14 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
 Padding generatePanelHeader(WidgetRef ref, BuildContext context, int index) {
   final menuDetail = ref.watch(menuDetailProvider);
   final themeDetail = ref.watch(themeDetailProvider);
+  final pluginDetail = ref.watch(selectedPluginProvider);
   final title = switch (index) {
     0 when menuDetail == null => 'Menus',
     0 when menuDetail != null => menuDetail,
     1 when themeDetail == null => 'Themes',
     1 when themeDetail != null => themeDetail,
-    2 => 'Plugins',
+    2 when pluginDetail == null => 'Plugins',
+    2 when pluginDetail != null => pluginDetail,
     _ => 'Settings',
   };
   final style = Theme.of(context).textTheme.headlineMedium!;
@@ -180,6 +183,8 @@ Padding generatePanelHeader(WidgetRef ref, BuildContext context, int index) {
                   ref.read(menuDetailProvider.notifier).state = null,
               1 when themeDetail != null => () =>
                   ref.read(themeDetailProvider.notifier).state = null,
+              2 when pluginDetail != null => () =>
+                  ref.read(selectedPluginProvider.notifier).state = null,
               _ => null,
             },
             icon: FaIcon(
