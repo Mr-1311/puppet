@@ -63,8 +63,8 @@ void main(List<String> args) async {
       negatable: false);
   final results = argParser.parse(args);
 
-  final isSettings = true;
-  // final bool isSettings = results['settings'];
+  // final isSettings = true;
+  final bool isSettings = results['settings'];
   isSettingsApp = isSettings;
 
   _setWindowMode(isSettings);

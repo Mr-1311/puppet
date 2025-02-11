@@ -338,9 +338,11 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
               name: item.plugin, pluginConfig: pluginConfig);
           for (var pluginItem in pluginItems) {
             items.add(PluginItem(
-              pluginItem.name,
-              pluginItem.description,
-              pluginItem.icon,
+              pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
+              pluginItem.description.isNotEmpty
+                  ? pluginItem.description
+                  : item.description,
+              item.icon.isNotEmpty ? item.icon : pluginItem.icon,
               item.plugin,
               item.shortcut,
               item.repeat,
