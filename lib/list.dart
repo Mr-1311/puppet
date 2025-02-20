@@ -31,6 +31,29 @@ const Color kDarkShortcutLabelColor = Color.fromARGB(128, 0, 0, 0);
 const Color kLightShortcutLabelColor = Color.fromARGB(128, 255, 255, 255);
 
 final hoveredItemProvider = StateProvider<int>((ref) => -1);
+final searchHasFocusProvider = StateProvider<bool>((ref) => false);
+final searchFocusProvider = Provider((ref) {
+  final focusNode = FocusNode();
+
+  focusNode.addListener(() {
+    ref.read(searchHasFocusProvider.notifier).state = focusNode.hasFocus;
+  });
+
+  ref.onDispose(() => focusNode.dispose());
+  return focusNode;
+});
+final searchControllerProvider = Provider.autoDispose((ref) {
+  final controller = TextEditingController();
+
+  ref.listen(searchQueryProvider, (previous, next) {
+    if (next != controller.text) {
+      controller.text = next;
+    }
+  });
+
+  ref.onDispose(() => controller.dispose());
+  return controller;
+});
 
 class ListMenu extends ConsumerWidget {
   const ListMenu({
@@ -92,7 +115,6 @@ class ListMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(itemsProvider);
     final theme = ref.watch(currentThemeProvider);
 
     final textHeight = _calculateTextHeight(context, theme);
@@ -100,32 +122,23 @@ class ListMenu extends ConsumerWidget {
     final containerHeight =
         math.max(iconSize, textHeight) + (kItemVerticalPadding * 2);
 
-    return items.when(
-      data: (itemsList) => _ListContainer(
-        items: itemsList,
-        theme: theme,
-        menuName: menuName,
-        maxElement: maxElement,
-        containerHeight: containerHeight,
-      ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(
-        child: Text('Error: $error'),
-      ),
+    return _ListContainer(
+      theme: theme,
+      menuName: menuName,
+      maxElement: maxElement,
+      containerHeight: containerHeight,
     );
   }
 }
 
 class _ListContainer extends ConsumerWidget {
   const _ListContainer({
-    required this.items,
     required this.theme,
     required this.menuName,
     required this.maxElement,
     required this.containerHeight,
   });
 
-  final List<PluginItem> items;
   final t.Theme? theme;
   final String menuName;
   final int maxElement;
@@ -167,18 +180,145 @@ class _ListContainer extends ConsumerWidget {
           _ => null,
         },
       ),
-      child: ListView.separated(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(kItemVerticalPadding),
+            child: Material(
+              type: MaterialType.transparency,
+              child: TextField(
+                controller: ref.watch(searchControllerProvider),
+                focusNode: ref.read(searchFocusProvider),
+                onTapOutside: (event) =>
+                    ref.read(searchFocusProvider).previousFocus(),
+                onChanged: (value) =>
+                    ref.read(searchQueryProvider.notifier).state = value,
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: switch (theme?.itemFontColor) {
+                      t.ThemeColorSolid(:final value) => value,
+                      _ => null,
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kItemBorderRadius),
+                    borderSide: BorderSide(
+                      color: switch (theme?.outlineColor) {
+                        t.ThemeColorSolid(:final value) => value,
+                        _ => Colors.transparent,
+                      },
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kItemBorderRadius),
+                    borderSide: BorderSide(
+                      color: switch (theme?.outlineColor) {
+                        t.ThemeColorSolid(:final value) => value,
+                        _ => Colors.transparent,
+                      },
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(kItemBorderRadius),
+                    borderSide: BorderSide(
+                      color: switch (theme?.outlineColor) {
+                        t.ThemeColorSolid(:final value) => value,
+                        _ => Colors.transparent,
+                      },
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: kItemVerticalPadding,
+                    horizontal: kItemHorizontalPadding,
+                  ),
+                  fillColor: switch (theme?.backgroundColor) {
+                    t.ThemeColorSolid(:final value) => value.withOpacity(0.5),
+                    _ => null,
+                  },
+                  filled: true,
+                  hintStyle: TextStyle(
+                    decoration: TextDecoration.none,
+                    fontFamily: theme?.itemNameFont.value,
+                    color: switch (theme?.itemFontColor) {
+                      t.ThemeColorSolid(:final value) => value.withOpacity(0.5),
+                      _ => null,
+                    },
+                    fontSize: switch (theme?.itemNameFontSize) {
+                      t.AONAuto() => kDefaultItemNameFontSize,
+                      t.AONInt(:final value) => value.toDouble(),
+                      _ => kDefaultItemNameFontSize,
+                    },
+                  ),
+                ),
+                style: TextStyle(
+                  decoration: TextDecoration.none,
+                  fontFamily: theme?.itemNameFont.value,
+                  color: switch (theme?.itemFontColor) {
+                    t.ThemeColorSolid(:final value) => value,
+                    _ => null,
+                  },
+                  fontSize: switch (theme?.itemNameFontSize) {
+                    t.AONAuto() => kDefaultItemNameFontSize,
+                    t.AONInt(:final value) => value.toDouble(),
+                    _ => kDefaultItemNameFontSize,
+                  },
+                ),
+                cursorColor: switch (theme?.itemFontColor) {
+                  t.ThemeColorSolid(:final value) => value,
+                  _ => null,
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: _ItemsList(
+              theme: theme,
+              maxElement: maxElement,
+              containerHeight: containerHeight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemsList extends ConsumerWidget {
+  const _ItemsList({
+    required this.theme,
+    required this.maxElement,
+    required this.containerHeight,
+  });
+
+  final t.Theme? theme;
+  final int maxElement;
+  final double containerHeight;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(itemsProvider);
+    final hoveredIndex = ref.watch(hoveredItemProvider);
+
+    return items.when(
+      data: (itemsList) => ListView.separated(
         padding: EdgeInsets.all(kItemVerticalPadding),
-        itemCount: items.length,
+        itemCount: itemsList.length,
         separatorBuilder: (_, __) => _Separator(theme: theme),
         itemBuilder: (_, index) => _ListItem(
-          item: items[index],
+          item: itemsList[index],
           index: index,
           isHovered: index == hoveredIndex,
           theme: theme,
           maxElement: maxElement,
           containerHeight: containerHeight,
         ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Text('Error: $error'),
       ),
     );
   }
@@ -242,7 +382,10 @@ class _ListItem extends ConsumerWidget {
       onEnter: (_) => ref.read(hoveredItemProvider.notifier).state = index,
       onExit: (_) => ref.read(hoveredItemProvider.notifier).state = -1,
       child: GestureDetector(
-        onTap: () => ref.read(itemsProvider.notifier).onClick(item),
+        onTap: () {
+          ref.read(searchQueryProvider.notifier).state = '';
+          ref.read(itemsProvider.notifier).onClick(item);
+        },
         child: Container(
           height: containerHeight,
           decoration: BoxDecoration(
@@ -398,7 +541,7 @@ class _ItemContent extends ConsumerWidget {
   }
 }
 
-class _ShortcutLabel extends StatelessWidget {
+class _ShortcutLabel extends ConsumerWidget {
   const _ShortcutLabel({
     required this.item,
     required this.index,
@@ -412,8 +555,11 @@ class _ShortcutLabel extends StatelessWidget {
   final bool themeBrightness;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (item.shortcut == null && index >= 9) return const SizedBox.shrink();
+
+    final hasFocus = ref.watch(searchHasFocusProvider);
+    final shortcutPrefix = hasFocus ? 'Ctrl ' : '';
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -422,8 +568,8 @@ class _ShortcutLabel extends StatelessWidget {
       ),
       child: Text(
         item.shortcut?.isNotEmpty == true
-            ? '${item.shortcut}${index < 9 ? ' | ${index + 1}' : ''}'
-            : '${index + 1}',
+            ? '$shortcutPrefix${item.shortcut}${index < 9 ? ' | ${index + 1}' : ''}'
+            : '$shortcutPrefix${index + 1}',
         style: TextStyle(
           color: themeBrightness
               ? kDarkShortcutLabelColor

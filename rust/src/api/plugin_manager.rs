@@ -64,6 +64,11 @@ impl PluginManager {
     ) -> Result<Vec<PluginItem>> {
         let identifier = PluginIdentifier::from_map(name.clone(), &plugin_config.config);
 
+        // Check if plugin is already initialized and return cached items if available
+        if let Some(cached_items) = self.cache.get(&identifier) {
+            return Ok(cached_items.clone());
+        }
+
         // Create manifest with proper permissions
         let wasm = Wasm::file(&plugin_config.wasm_path);
         let manifest = Manifest::new([wasm])
@@ -108,20 +113,31 @@ impl PluginManager {
             .ok_or_else(|| anyhow!("Plugin not found"))?;
 
         // Call filter function and handle JSON serialization manually
-        let result = plugin.call::<String, String>("filter", query)?;
-        let items: Option<Vec<PluginItem>> = if result.is_empty() {
-            None
-        } else {
-            Some(serde_json::from_str(&result)?)
-        };
+        let result = plugin.call::<String, String>("filter", query.clone())?;
+        let items: Option<Vec<PluginItem>> = serde_json::from_str(&result).unwrap_or(None);
 
-        // Return cached results if filter returns null
-        match items {
-            Some(items) => Ok(items),
-            None => Ok(self.cache.get(&identifier)
-                .cloned()
-                .unwrap_or_default()),
+        // If filter returns items, use those
+        if let Some(items) = items {
+            if (!items.is_empty()) {
+                return Ok(items);
+            }
         }
+
+        // If no items returned from filter, get cached items and filter them manually
+        if let Some(cached_items) = self.cache.get(&identifier) {
+            let filtered_items: Vec<PluginItem> = cached_items
+                .iter()
+                .filter(|item| {
+                    item.name.to_lowercase().contains(&query.to_lowercase()) ||
+                    item.description.to_lowercase().contains(&query.to_lowercase())
+                })
+                .cloned()
+                .collect();
+            return Ok(filtered_items);
+        }
+
+        // If no cached items found, return empty vector
+        Ok(Vec::new())
     }
 
     pub fn select(

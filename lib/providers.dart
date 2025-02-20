@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -299,24 +298,19 @@ final itemsProvider =
     AsyncNotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
 
 class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
-  // disable cache because of rust plugin manager has cache mechanism
-  // HashMap<String, List<PluginItem>> _cache =
-  //     HashMap<String, List<PluginItem>>();
   @override
   Future<List<PluginItem>> build() async {
     final menu = await ref.watch(menuProvider.future);
-    return _getItems(menu);
+    final searchQuery = ref.watch(searchQueryProvider);
+    return _getItems(menu, searchQuery);
   }
 
-  Future<List<PluginItem>> _getItems(Menus menu) async {
-    // if (_cache.containsKey(menu.name)) {
-    //   return _cache[menu.name]!;
-    // }
+  Future<List<PluginItem>> _getItems(Menus menu, String searchQuery) async {
     final List<PluginItem> items = [];
 
     for (Items item in menu.items) {
       if (item.plugin == 'menu' || item.plugin == 'run') {
-        items.add(PluginItem(
+        final pluginItem = PluginItem(
           item.name,
           item.description,
           item.icon,
@@ -324,7 +318,16 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
           item.shortcut,
           item.repeat,
           item.pluginArgs,
-        ));
+        );
+
+        // For menu and run plugins, filter locally if there's a search query
+        if (searchQuery.isEmpty ||
+            pluginItem.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            pluginItem.description
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase())) {
+          items.add(pluginItem);
+        }
       } else {
         // Handle other plugin types using pluginManager
         final pluginManager = ref.watch(pluginManagerProvider).valueOrNull;
@@ -333,26 +336,48 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
             item.plugin, Map<String, String>.from(item.pluginArgs));
 
         if (pluginManager != null && pluginConfig != null) {
-          // Initialize plugin and add its items
-          final pluginItems = await pluginManager.initPlugin(
-              name: item.plugin, pluginConfig: pluginConfig);
-          for (var pluginItem in pluginItems) {
-            items.add(PluginItem(
-              pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
-              pluginItem.description.isNotEmpty
-                  ? pluginItem.description
-                  : item.description,
-              item.icon.isNotEmpty ? item.icon : pluginItem.icon,
-              item.plugin,
-              item.shortcut,
-              item.repeat,
-              item.pluginArgs,
-            ));
+          if (searchQuery.isEmpty) {
+            // If no search query, just initialize the plugin
+            final pluginItems = await pluginManager.initPlugin(
+                name: item.plugin, pluginConfig: pluginConfig);
+            for (var pluginItem in pluginItems) {
+              items.add(PluginItem(
+                pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
+                pluginItem.description.isNotEmpty
+                    ? pluginItem.description
+                    : item.description,
+                item.icon.isNotEmpty ? item.icon : pluginItem.icon,
+                item.plugin,
+                item.shortcut,
+                item.repeat,
+                item.pluginArgs,
+              ));
+            }
+          } else {
+            // If there's a search query, use filter_plugin
+            final filteredItems = await pluginManager.filterPlugin(
+              name: item.plugin,
+              config: pluginConfig.config,
+              query: searchQuery,
+            );
+            for (var pluginItem in filteredItems) {
+              items.add(PluginItem(
+                pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
+                pluginItem.description.isNotEmpty
+                    ? pluginItem.description
+                    : item.description,
+                item.icon.isNotEmpty ? item.icon : pluginItem.icon,
+                item.plugin,
+                item.shortcut,
+                item.repeat,
+                item.pluginArgs,
+              ));
+            }
           }
         }
       }
     }
-    // _cache[menu.name] = items;
+
     return items;
   }
 
@@ -669,6 +694,8 @@ class TextScalerNotifier extends Notifier<TextScaler> {
 
 final textScalerProvider =
     NotifierProvider<TextScalerNotifier, TextScaler>(TextScalerNotifier.new);
+
+final searchQueryProvider = StateProvider<String>((ref) => '');
 
 final pluginProvider =
     NotifierProvider<PluginNotifier, List<Plugin>>(PluginNotifier.new);

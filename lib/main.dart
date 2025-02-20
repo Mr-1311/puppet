@@ -171,16 +171,30 @@ class _MainAppState extends ConsumerState<MainApp>
                     const SingleActivator(
                       LogicalKeyboardKey.escape,
                     ): () {
-                      ref.read(menuProvider.notifier).clearHistory();
-                      ref.invalidate(menuProvider);
-                      ref.invalidate(currentPageProvider);
-                      windowManager.hide();
+                      final searchQuery = ref.read(searchQueryProvider);
+                      if (searchQuery.isNotEmpty) {
+                        ref.read(searchQueryProvider.notifier).state = '';
+                        ref.read(searchFocusProvider).previousFocus();
+                      } else {
+                        ref.read(menuProvider.notifier).clearHistory();
+                        ref.invalidate(menuProvider);
+                        ref.invalidate(currentPageProvider);
+                        windowManager.hide();
+                      }
                     },
-                    const SingleActivator(
-                      LogicalKeyboardKey.backspace,
-                    ): () {
-                      ref.read(menuProvider.notifier).back();
-                    },
+                    // const SingleActivator(
+                    //   LogicalKeyboardKey.backspace,
+                    // ): () {
+                    //   final searchQuery = ref.read(searchQueryProvider);
+                    //   if (searchQuery.isNotEmpty) {
+                    //     print('backspace');
+                    //     DoNothingAction();
+                    //     // ref.read(searchQueryProvider.notifier).state =
+                    //     //     searchQuery.substring(0, searchQuery.length - 1);
+                    //   } else {
+                    //     ref.read(menuProvider.notifier).back();
+                    //   }
+                    // },
                   },
                   child: Focus(
                     autofocus: true,
@@ -255,6 +269,18 @@ class _MenuState extends ConsumerState<Menu> {
     final items = ref.watch(currentItemsProvider(widget.menu.maxElement));
 
     if (event is KeyUpEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.backspace) {
+        if (!ref.read(searchFocusProvider).hasFocus) {
+          ref.read(menuProvider.notifier).back();
+          return true;
+        }
+      }
+
+      if (ref.read(searchFocusProvider).hasFocus &&
+          !HardwareKeyboard.instance.isControlPressed) {
+        return false;
+      }
+
       final key = event.logicalKey.keyLabel;
       var item =
           items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
@@ -268,6 +294,7 @@ class _MenuState extends ConsumerState<Menu> {
         ;
       }
       if (item != null) {
+        ref.read(searchQueryProvider.notifier).state = '';
         ref.read(itemsProvider.notifier).onClick(item);
         return true;
       }
