@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puppet/config/path_manager.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
 final selectedPluginProvider = StateProvider<String?>((ref) => null);
@@ -55,19 +56,13 @@ class PluginsPane extends ConsumerWidget {
                     FaIcon(
                       FontAwesomeIcons.wandMagicSparkles,
                       size: 48,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                     ),
                     SizedBox(height: 16),
                     Text(
                       'Plugin marketplace coming soon...',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.5),
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                           ),
                     ),
                   ],
@@ -95,8 +90,7 @@ class InstalledPluginsView extends ConsumerWidget {
         final plugin = plugins[index];
         return Card(
           child: InkWell(
-            onTap: () =>
-                ref.read(selectedPluginProvider.notifier).state = plugin.name,
+            onTap: () => ref.read(selectedPluginProvider.notifier).state = plugin.name,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
@@ -128,8 +122,7 @@ class InstalledPluginsView extends ConsumerWidget {
                                   SizedBox(width: 6),
                                   Text(
                                     plugin.platforms.join(', '),
-                                    style:
-                                        Theme.of(context).textTheme.labelSmall,
+                                    style: Theme.of(context).textTheme.labelSmall,
                                   ),
                                 ],
                               ),
@@ -172,6 +165,22 @@ class PluginDetailPane extends ConsumerWidget {
     return null;
   }
 
+  bool _isValidUrl(String text) {
+    try {
+      final uri = Uri.parse(text);
+      return uri.scheme.startsWith('http');
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final uri = Uri.parse(urlString);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pluginName = ref.watch(selectedPluginProvider);
@@ -186,7 +195,6 @@ class PluginDetailPane extends ConsumerWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              // asdf
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -202,6 +210,40 @@ class PluginDetailPane extends ConsumerWidget {
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        FaIcon(FontAwesomeIcons.user, size: 14),
+                        SizedBox(width: 8),
+                        Text(
+                          plugin.author,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        FaIcon(FontAwesomeIcons.code, size: 14),
+                        SizedBox(width: 8),
+                        if (_isValidUrl(plugin.source))
+                          InkWell(
+                            onTap: () => _launchUrl(plugin.source),
+                            child: Text(
+                              plugin.source,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                            ),
+                          )
+                        else
+                          Text(
+                            plugin.source,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                      ],
+                    ),
                     SizedBox(height: 16),
                     Expanded(
                       child: SingleChildScrollView(
@@ -217,8 +259,7 @@ class PluginDetailPane extends ConsumerWidget {
                                   label: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      FaIcon(FontAwesomeIcons.computer,
-                                          size: 12),
+                                      FaIcon(FontAwesomeIcons.computer, size: 12),
                                       SizedBox(width: 6),
                                       Text(plugin.platforms.join(', ')),
                                     ],
@@ -229,8 +270,7 @@ class PluginDetailPane extends ConsumerWidget {
                                     label: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        FaIcon(FontAwesomeIcons.microchip,
-                                            size: 12),
+                                        FaIcon(FontAwesomeIcons.microchip, size: 12),
                                         SizedBox(width: 6),
                                         Text('WASI'),
                                       ],
@@ -253,8 +293,7 @@ class PluginDetailPane extends ConsumerWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            FaIcon(FontAwesomeIcons.folder,
-                                                size: 12),
+                                            FaIcon(FontAwesomeIcons.folder, size: 12),
                                             SizedBox(width: 6),
                                             Text(path),
                                           ],
@@ -279,8 +318,7 @@ class PluginDetailPane extends ConsumerWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            FaIcon(FontAwesomeIcons.globe,
-                                                size: 12),
+                                            FaIcon(FontAwesomeIcons.globe, size: 12),
                                             SizedBox(width: 6),
                                             Text(host),
                                           ],
@@ -303,35 +341,25 @@ class PluginDetailPane extends ConsumerWidget {
                                   child: Padding(
                                     padding: const EdgeInsets.all(12.0),
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Chip(
                                               label: Text(arg.name),
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .primaryContainer,
+                                              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                                             ),
-                                            if (arg
-                                                .defaultValue.isNotEmpty) ...[
+                                            if (arg.defaultValue.isNotEmpty) ...[
                                               SizedBox(width: 8),
                                               Text(
                                                 'default:',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall,
+                                                style: Theme.of(context).textTheme.bodySmall,
                                               ),
                                               SizedBox(width: 4),
                                               Text(
                                                 arg.defaultValue,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                      fontWeight: FontWeight.bold,
                                                     ),
                                               ),
                                             ],
@@ -341,9 +369,7 @@ class PluginDetailPane extends ConsumerWidget {
                                         if (arg.description.isNotEmpty)
                                           Text(
                                             arg.description,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium,
+                                            style: Theme.of(context).textTheme.bodyMedium,
                                           ),
                                       ],
                                     ),

@@ -4,6 +4,8 @@ import 'dart:io';
 class Plugin {
   final String name;
   final String description;
+  final String author;
+  final String source;
   final List<String> platforms;
   final List<PluginArg> args;
   final List<String> allowedPaths;
@@ -14,6 +16,8 @@ class Plugin {
   Plugin(
     this.name,
     this.description,
+    this.author,
+    this.source,
     this.platforms,
     this.args,
     this.wasmPath, {
@@ -43,8 +47,7 @@ class Plugin {
     } else if (File(genericPath).existsSync()) {
       return genericPath;
     } else {
-      print(
-          'Error: WASM file not found at $platformSpecificPath or $genericPath');
+      print('Error: WASM file not found at $platformSpecificPath or $genericPath');
       return null;
     }
   }
@@ -84,6 +87,8 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
       case {
         'name': String name,
         'description': String description,
+        'author': String author,
+        'source': String source,
         'platforms': List platforms,
         'allowedPaths': List allowedPaths,
         'allowedHosts': List allowedHosts,
@@ -97,9 +102,7 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
       return null;
     }
 
-    if (platforms.isEmpty ||
-        !platforms
-            .every((e) => e == 'windows' || e == 'macos' || e == 'linux')) {
+    if (platforms.isEmpty || !platforms.every((e) => e == 'windows' || e == 'macos' || e == 'linux')) {
       return null;
     }
 
@@ -130,6 +133,8 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
     return Plugin(
       name,
       description,
+      author,
+      source,
       platforms.cast<String>(),
       args,
       wasmPath,
@@ -174,6 +179,8 @@ final _builtInPlugins = [
   Plugin(
       'menu',
       'open different menu',
+      'Puppet',
+      'built-in',
       ['windows', 'macos', 'linux'],
       [
         PluginArg('menu name', 'name of the menu to open', ''),
@@ -182,6 +189,8 @@ final _builtInPlugins = [
   Plugin(
       'run',
       'run a command',
+      'Puppet',
+      'built-in',
       ['windows', 'macos', 'linux'],
       [
         PluginArg('command', 'command to run', ''),
