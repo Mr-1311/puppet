@@ -22,13 +22,13 @@ class ThemeVariants {
 }
 
 class Theme {
-  ThemeColor backgroundColor = thm_backgroundColor;
-  ThemeColor separatorColor = thm_separatorColor;
-  ThemeColor outlineColor = thm_outlineColor;
-  ThemeColor centerColor = thm_centerColor;
-  ThemeColor hoveredBackgroundColor = thm_hoveredBackgroundColor;
-  ThemeColor hoveredSeparatorColor = thm_hoveredSeparatorColor;
-  ThemeColor hoveredOutlineColor = thm_hoveredOutlineColor;
+  ThemeColor backgroundColor = thm_light_backgroundColor;
+  ThemeColor separatorColor = thm_light_separatorColor;
+  ThemeColor outlineColor = thm_light_outlineColor;
+  ThemeColor centerColor = thm_light_centerColor;
+  ThemeColor hoveredBackgroundColor = thm_light_hoveredBackgroundColor;
+  ThemeColor hoveredSeparatorColor = thm_light_hoveredSeparatorColor;
+  ThemeColor hoveredOutlineColor = thm_light_hoveredOutlineColor;
   AutoOrNum separatorThickness = thm_separatorThickness;
   AutoOrNum outlineThickness = thm_outlineThickness;
   Font itemNameFont = thm_itemNameFont;
@@ -38,13 +38,58 @@ class Theme {
   AutoOrNum descriptionFontSize = thm_descriptionFontSize;
   AutoOrNum menuNameFontSize = thm_menuNameFontSize;
   AutoOrNum iconSize = thm_iconSize;
-  ThemeColor itemFontColor = thm_itemFontColor;
-  ThemeColor menuFontColor = thm_menuFontColor;
-  ThemeColor descriptionFontColor = thm_descriptionFontColor;
-  ThemeColorSolid pageIndicatorActiveColor = thm_pageIndicatorActiveColor;
-  ThemeColorSolid pageIndicatorPassiveColor = thm_pageIndicatorPassiveColor;
+  ThemeColor itemFontColor = thm_light_itemFontColor;
+  ThemeColor menuFontColor = thm_light_menuFontColor;
+  ThemeColor descriptionFontColor = thm_light_descriptionFontColor;
+  ThemeColorSolid pageIndicatorActiveColor = thm_light_pageIndicatorActiveColor;
+  ThemeColorSolid pageIndicatorPassiveColor = thm_light_pageIndicatorPassiveColor;
 
-  Theme();
+  Theme()
+      : backgroundColor = thm_light_backgroundColor,
+        separatorColor = thm_light_separatorColor,
+        outlineColor = thm_light_outlineColor,
+        centerColor = thm_light_centerColor,
+        hoveredBackgroundColor = thm_light_hoveredBackgroundColor,
+        hoveredSeparatorColor = thm_light_hoveredSeparatorColor,
+        hoveredOutlineColor = thm_light_hoveredOutlineColor,
+        separatorThickness = thm_separatorThickness,
+        outlineThickness = thm_outlineThickness,
+        itemNameFont = thm_itemNameFont,
+        menuNameFont = thm_menuNameFont,
+        descriptionFont = thm_descriptionFont,
+        itemNameFontSize = thm_itemNameFontSize,
+        menuNameFontSize = thm_menuNameFontSize,
+        iconSize = thm_iconSize,
+        itemFontColor = thm_light_itemFontColor,
+        menuFontColor = thm_light_menuFontColor,
+        descriptionFontColor = thm_light_descriptionFontColor,
+        descriptionFontSize = thm_descriptionFontSize,
+        pageIndicatorActiveColor = thm_light_pageIndicatorActiveColor,
+        pageIndicatorPassiveColor = thm_light_pageIndicatorPassiveColor;
+
+  Theme.dark()
+      : backgroundColor = thm_dark_backgroundColor,
+        separatorColor = thm_dark_separatorColor,
+        outlineColor = thm_dark_outlineColor,
+        centerColor = thm_dark_centerColor,
+        hoveredBackgroundColor = thm_dark_hoveredBackgroundColor,
+        hoveredSeparatorColor = thm_dark_hoveredSeparatorColor,
+        hoveredOutlineColor = thm_dark_hoveredOutlineColor,
+        separatorThickness = thm_separatorThickness,
+        outlineThickness = thm_outlineThickness,
+        itemNameFont = thm_itemNameFont,
+        menuNameFont = thm_menuNameFont,
+        descriptionFont = thm_descriptionFont,
+        itemNameFontSize = thm_itemNameFontSize,
+        menuNameFontSize = thm_menuNameFontSize,
+        iconSize = thm_iconSize,
+        itemFontColor = thm_dark_itemFontColor,
+        menuFontColor = thm_dark_menuFontColor,
+        descriptionFontColor = thm_dark_descriptionFontColor,
+        descriptionFontSize = thm_descriptionFontSize,
+        pageIndicatorActiveColor = thm_dark_pageIndicatorActiveColor,
+        pageIndicatorPassiveColor = thm_dark_pageIndicatorPassiveColor;
+
   Theme.fromJson(Map<String, dynamic> json) {
     for (final prop in ThemeProps.values) {
       if (json.containsKey(prop.propName)) {
@@ -137,8 +182,7 @@ class Theme {
   void _setPropValue(ThemeProps prop, dynamic value) {
     final propVal = switch (prop.propType) {
       AutoOrNum => switch (value) {
-          String intVal when (int.tryParse(value) != null) =>
-            AONInt(int.parse(intVal)),
+          String intVal when (int.tryParse(value) != null) => AONInt(int.parse(intVal)),
           (String strVal) => switch (strVal) {
               'auto' => AONAuto(),
               _ => null,
@@ -154,8 +198,7 @@ class Theme {
           _ => null,
         },
       ThemeColor => switch (value) {
-          String strVal when strVal.startsWith('{"type":') =>
-            ThemeColorGradient(strVal),
+          String strVal when strVal.startsWith('{"type":') => ThemeColorGradient(strVal),
           String strVal => ThemeColorSolid(strVal),
           _ => null,
         },
@@ -292,76 +335,46 @@ class Theme {
 //------ types
 
 enum ThemeProps {
-  backgroundColor('backgroundColor', ThemeColor, 'Background Color',
-      'Background color of the menu', ['wheel', 'list']),
-  separatorColor('separatorColor', ThemeColor, 'Separator Color',
-      'Color of dividing lines between menu items', ['wheel', 'list']),
-  outlineColor('outlineColor', ThemeColor, 'Outline Color',
-      'Border color around the entire menu', ['wheel', 'list']),
-  centerColor('centerColor', ThemeColor, 'Center Color',
-      'Color of the central circle (wheel menu only)', ['wheel']),
-  hoveredBackgroundColor(
-      'hoveredBackgroundColor',
-      ThemeColor,
-      'Background Color on Hover',
-      'Background color when hovering over menu items',
-      ['wheel', 'list']),
+  backgroundColor('backgroundColor', ThemeColor, 'Background Color', 'Background color of the menu', ['wheel', 'list']),
+  separatorColor(
+      'separatorColor', ThemeColor, 'Separator Color', 'Color of dividing lines between menu items', ['wheel', 'list']),
+  outlineColor('outlineColor', ThemeColor, 'Outline Color', 'Border color around the entire menu', ['wheel', 'list']),
+  centerColor('centerColor', ThemeColor, 'Center Color', 'Color of the central circle (wheel menu only)', ['wheel']),
+  hoveredBackgroundColor('hoveredBackgroundColor', ThemeColor, 'Background Color on Hover',
+      'Background color when hovering over menu items', ['wheel', 'list']),
   // hoveredSeparatorColor('hoveredSeparatorColor', ThemeColor, 'Separator Color on Hover',
   //     'Separator Color of hovered menu items', ['wheel']),
   // hoveredOutlineColor(
   //     'hoveredOutlineColor', ThemeColor, 'Outline Color on Hover', 'Outline Color of hovered menus', ['wheel']),
-  separatorThickness(
-      'separatorThickness',
-      AutoOrNum,
-      'Separator Thickness',
-      'Width of dividing lines between menu items (auto or pixels)',
+  separatorThickness('separatorThickness', AutoOrNum, 'Separator Thickness',
+      'Width of dividing lines between menu items (auto or pixels)', ['wheel', 'list']),
+  outlineThickness('outlineThickness', AutoOrNum, 'Outline Thickness',
+      'Width of the border around the menu (auto or pixels)', ['wheel', 'list']),
+  itemNameFont('itemNameFont', Font, 'Item Name Font', 'Font family used for menu item names', ['wheel', 'list']),
+  menuNameFont('menuNameFont', Font, 'Menu Name Font',
+      'Font family used for the menu title in the center (wheel menu only)', ['wheel']),
+  descriptionFont(
+      'descriptionFont', Font, 'Description Font', 'Font family used for item descriptions', ['wheel', 'list']),
+  itemNameFontSize('itemNameFontSize', AutoOrNum, 'Item Name Font Size', 'Size of menu item names (auto or pixels)',
       ['wheel', 'list']),
-  outlineThickness(
-      'outlineThickness',
-      AutoOrNum,
-      'Outline Thickness',
-      'Width of the border around the menu (auto or pixels)',
-      ['wheel', 'list']),
-  itemNameFont('itemNameFont', Font, 'Item Name Font',
-      'Font family used for menu item names', ['wheel', 'list']),
-  menuNameFont(
-      'menuNameFont',
-      Font,
-      'Menu Name Font',
-      'Font family used for the menu title in the center (wheel menu only)',
-      ['wheel']),
-  descriptionFont('descriptionFont', Font, 'Description Font',
-      'Font family used for item descriptions', ['wheel', 'list']),
-  itemNameFontSize('itemNameFontSize', AutoOrNum, 'Item Name Font Size',
-      'Size of menu item names (auto or pixels)', ['wheel', 'list']),
   menuNameFontSize('menuNameFontSize', AutoOrNum, 'Menu Name Font Size',
       'Size of the menu title (wheel menu only, auto or pixels)', ['wheel']),
-  iconSize('iconSize', AutoOrNum, 'Icon Size',
-      'Size of menu item icons (auto or pixels)', ['wheel', 'list']),
-  descFontSize('descriptionFontSize', AutoOrNum, 'Description Font Size',
-      'Size of item descriptions (auto or pixels)', ['wheel', 'list']),
-  itemFontColor('itemFontColor', ThemeColor, 'Item Name Font Color',
-      'Text color for menu item names', ['wheel', 'list']),
-  menuFontColor('menuFontColor', ThemeColor, 'Menu Name Font Color',
-      'Text color for the menu title (wheel menu only)', ['wheel']),
-  descFontColor('descFontColor', ThemeColor, 'Description Font Color',
-      'Text color for item descriptions', ['wheel', 'list']),
-  pageIndicatorActiveColor(
-      'pageIndicatorActiveColor',
-      ThemeColorSolid,
-      'Page Indicator Active Color',
-      'Color of the dot indicating the current active page (wheel menu only)',
+  iconSize('iconSize', AutoOrNum, 'Icon Size', 'Size of menu item icons (auto or pixels)', ['wheel', 'list']),
+  descFontSize('descriptionFontSize', AutoOrNum, 'Description Font Size', 'Size of item descriptions (auto or pixels)',
+      ['wheel', 'list']),
+  itemFontColor(
+      'itemFontColor', ThemeColor, 'Item Name Font Color', 'Text color for menu item names', ['wheel', 'list']),
+  menuFontColor('menuFontColor', ThemeColor, 'Menu Name Font Color', 'Text color for the menu title (wheel menu only)',
       ['wheel']),
-  pageIndicatorPassiveColor(
-      'pageIndicatorPassiveColor',
-      ThemeColorSolid,
-      'Page Indicator Inactive Color',
-      'Color of the dots representing inactive pages (wheel menu only)',
-      ['wheel']),
+  descFontColor(
+      'descFontColor', ThemeColor, 'Description Font Color', 'Text color for item descriptions', ['wheel', 'list']),
+  pageIndicatorActiveColor('pageIndicatorActiveColor', ThemeColorSolid, 'Page Indicator Active Color',
+      'Color of the dot indicating the current active page (wheel menu only)', ['wheel']),
+  pageIndicatorPassiveColor('pageIndicatorPassiveColor', ThemeColorSolid, 'Page Indicator Inactive Color',
+      'Color of the dots representing inactive pages (wheel menu only)', ['wheel']),
   ;
 
-  const ThemeProps(this.propName, this.propType, this.label, this.description,
-      this.availableMenuTypes);
+  const ThemeProps(this.propName, this.propType, this.label, this.description, this.availableMenuTypes);
   final String propName;
   final dynamic propType;
   final String label;
@@ -515,14 +528,9 @@ class ThemeColorGradient extends ThemeColor {
   ThemeColorGradient.fromGradient(Gradient value) {
     this.value = value;
 
-    this.linearStart = value is LinearGradient
-        ? value.begin.resolve(null)
-        : Alignment.centerLeft;
-    this.linearEnd = value is LinearGradient
-        ? value.end.resolve(null)
-        : Alignment.centerRight;
-    this.radialCenter =
-        value is RadialGradient ? value.center.resolve(null) : Alignment.center;
+    this.linearStart = value is LinearGradient ? value.begin.resolve(null) : Alignment.centerLeft;
+    this.linearEnd = value is LinearGradient ? value.end.resolve(null) : Alignment.centerRight;
+    this.radialCenter = value is RadialGradient ? value.center.resolve(null) : Alignment.center;
   }
 
   ThemeColorGradient(String jsonString) {
@@ -530,15 +538,10 @@ class ThemeColorGradient extends ThemeColor {
 
     if (map case {'type': 'linear'}) {
       this.value = LinearGradient(
-        colors: (map['colors']
-                .map((e) => Color(int.parse(e, radix: 16)))
-                .toList() as List)
-            .cast<Color>(),
+        colors: (map['colors'].map((e) => Color(int.parse(e, radix: 16))).toList() as List).cast<Color>(),
         stops: (map['stops'] as List).cast<double>(),
-        begin: Alignment(double.parse(map['begin'].split(',')[0]),
-            double.parse(map['begin'].split(',')[1])),
-        end: Alignment(double.parse(map['end'].split(',')[0]),
-            double.parse(map['end'].split(',')[1])),
+        begin: Alignment(double.parse(map['begin'].split(',')[0]), double.parse(map['begin'].split(',')[1])),
+        end: Alignment(double.parse(map['end'].split(',')[0]), double.parse(map['end'].split(',')[1])),
       );
 
       this.linearStart = (this.value as LinearGradient).begin.resolve(null);
@@ -546,13 +549,9 @@ class ThemeColorGradient extends ThemeColor {
       this.radialCenter = Alignment.center;
     } else if (map case {'type': 'radial'}) {
       this.value = RadialGradient(
-        colors: (map['colors']
-                .map((e) => Color(int.parse(e, radix: 16)))
-                .toList() as List)
-            .cast<Color>(),
+        colors: (map['colors'].map((e) => Color(int.parse(e, radix: 16))).toList() as List).cast<Color>(),
         stops: (map['stops'] as List).cast<double>(),
-        center: Alignment(double.parse(map['center'].split(',')[0]),
-            double.parse(map['center'].split(',')[1])),
+        center: Alignment(double.parse(map['center'].split(',')[0]), double.parse(map['center'].split(',')[1])),
       );
 
       this.linearStart = Alignment.centerLeft;
@@ -568,18 +567,11 @@ class ThemeColorGradient extends ThemeColor {
       'type': type,
       'colors': value.colors.isEmpty
           ? [Colors.black.value.toRadixString(16).padLeft(8, '0')]
-          : value.colors
-              .map((e) => e.value.toRadixString(16).padLeft(8, '0'))
-              .toList(),
+          : value.colors.map((e) => e.value.toRadixString(16).padLeft(8, '0')).toList(),
       'stops': (value.stops?.isEmpty ?? true) ? [0.0] : value.stops,
-      if (type == 'linear')
-        'begin':
-            '${linearStart.resolve(null).x},${linearStart.resolve(null).y}',
-      if (type == 'linear')
-        'end': '${linearEnd.resolve(null).x},${linearEnd.resolve(null).y}',
-      if (type == 'radial')
-        'center':
-            '${radialCenter.resolve(null).x},${radialCenter.resolve(null).y}',
+      if (type == 'linear') 'begin': '${linearStart.resolve(null).x},${linearStart.resolve(null).y}',
+      if (type == 'linear') 'end': '${linearEnd.resolve(null).x},${linearEnd.resolve(null).y}',
+      if (type == 'radial') 'center': '${radialCenter.resolve(null).x},${radialCenter.resolve(null).y}',
     });
   }
 }

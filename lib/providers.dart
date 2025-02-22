@@ -52,8 +52,7 @@ void _hotkeyHandler(Config conf, Ref ref) async {
   }
 }
 
-final configProvider =
-    AsyncNotifierProvider<ConfigNotifier, Config>(ConfigNotifier.new);
+final configProvider = AsyncNotifierProvider<ConfigNotifier, Config>(ConfigNotifier.new);
 
 class ConfigNotifier extends AsyncNotifier<Config> {
   @override
@@ -70,8 +69,7 @@ class ConfigNotifier extends AsyncNotifier<Config> {
     final configString = await confFile.readAsString();
     final displays = await screenRetriever.getAllDisplays();
     final systemBrightness = ref.watch(systemBrightnessNotifierProvider);
-    final config = Config.fromJson(
-        jsonDecode(configString), displays.map((e) => e.size).toList(),
+    final config = Config.fromJson(jsonDecode(configString), displays.map((e) => e.size).toList(),
         systemBrightness: systemBrightness);
 
     _hotkeyHandler(config, ref);
@@ -85,17 +83,15 @@ class ConfigNotifier extends AsyncNotifier<Config> {
 
     final configString = await confFile.readAsString();
     final displays = await screenRetriever.getAllDisplays();
-    state = AsyncData(Config.fromJson(
-        jsonDecode(configString), displays.map((e) => e.size).toList(),
-        mainMenuFromArgs: name));
+    state = AsyncData(
+        Config.fromJson(jsonDecode(configString), displays.map((e) => e.size).toList(), mainMenuFromArgs: name));
   }
 
   Future<void> updateConfig(Config config) async {
     final configPath = PathManager().config;
     final File confFile = File('$configPath/config.json');
 
-    await confFile.writeAsString(
-        JsonEncoder.withIndent(' ' * 4).convert(config.toJson()));
+    await confFile.writeAsString(JsonEncoder.withIndent(' ' * 4).convert(config.toJson()));
     state = AsyncData(config);
     stdout.write('config_updated');
   }
@@ -106,8 +102,7 @@ class ConfigNotifier extends AsyncNotifier<Config> {
 
     final configString = await confFile.readAsString();
     final displays = await screenRetriever.getAllDisplays();
-    final config = Config.fromJson(
-        jsonDecode(configString), displays.map((e) => e.size).toList());
+    final config = Config.fromJson(jsonDecode(configString), displays.map((e) => e.size).toList());
 
     _hotkeyHandler(config, ref);
 
@@ -141,8 +136,7 @@ class ConfigNotifier extends AsyncNotifier<Config> {
   }
 }
 
-final menuProvider =
-    AsyncNotifierProvider<MenuNotifier, Menus>(MenuNotifier.new);
+final menuProvider = AsyncNotifierProvider<MenuNotifier, Menus>(MenuNotifier.new);
 
 class MenuNotifier extends AsyncNotifier<Menus> {
   var _menuHistory = <Menus>[];
@@ -158,8 +152,7 @@ class MenuNotifier extends AsyncNotifier<Menus> {
       return _menuHistory.last;
     }
 
-    final mainMenu =
-        conf.menus.firstWhere((element) => element.name == conf.mainMenu);
+    final mainMenu = conf.menus.firstWhere((element) => element.name == conf.mainMenu);
     _adjustWindow(mainMenu);
     _menuHistory = [mainMenu];
 
@@ -193,17 +186,13 @@ class MenuNotifier extends AsyncNotifier<Menus> {
 
   Future<void> _adjustWindow(Menus menu) async {
     var size = menu.size;
-    if (menu.menuType == MenuType.list &&
-        (menu.height.trim().isEmpty || menu.height == '_')) {
+    if (menu.menuType == MenuType.list && (menu.height.trim().isEmpty || menu.height == '_')) {
       size = Size(size.width, _calculateListHeight(menu));
     }
     windowManager.setSize(size);
 
     final positionCoordinate = await calculateWindowPosition(
-        windowSize: size,
-        alignment: menu.alignment,
-        offsets: menu.offsets,
-        display: menu.monitor);
+        windowSize: size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
     windowManager.setPosition(positionCoordinate);
   }
 
@@ -219,9 +208,7 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     };
 
     final tName = menu.getThemeName();
-    return themes?[tName] == null
-        ? t.Theme()
-        : (isLight ? themes![tName]!.light : themes![tName]!.dark);
+    return themes?[tName] == null ? t.Theme() : (isLight ? themes![tName]!.light : themes![tName]!.dark);
   }
 
   double _calculateListHeight(Menus menu) {
@@ -276,15 +263,11 @@ class MenuNotifier extends AsyncNotifier<Menus> {
       t.AONInt(:final value) => value.toDouble(),
     };
 
-    final textHeight =
-        itemNameSize.height + descriptionSize.height + kTextLineSpacing;
+    final textHeight = itemNameSize.height + descriptionSize.height + kTextLineSpacing;
 
-    final maxElement = menu.maxElement > menu.items.length
-        ? menu.items.length
-        : menu.maxElement;
+    final maxElement = menu.maxElement > menu.items.length ? menu.items.length : menu.maxElement;
 
-    return (math.max(iconSize, textHeight) +
-            (kItemVerticalPadding * 2) * maxElement) +
+    return (math.max(iconSize, textHeight) + (kItemVerticalPadding * 2) * maxElement) +
         (separatorThickness * (maxElement - 1)) +
         outlineThickness;
   }
@@ -294,8 +277,7 @@ class MenuNotifier extends AsyncNotifier<Menus> {
   }
 }
 
-final itemsProvider =
-    AsyncNotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
+final itemsProvider = AsyncNotifierProvider<ItemsNotifier, List<PluginItem>>(ItemsNotifier.new);
 
 class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
   @override
@@ -323,29 +305,23 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
         // For menu and run plugins, filter locally if there's a search query
         if (searchQuery.isEmpty ||
             pluginItem.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            pluginItem.description
-                .toLowerCase()
-                .contains(searchQuery.toLowerCase())) {
+            pluginItem.description.toLowerCase().contains(searchQuery.toLowerCase())) {
           items.add(pluginItem);
         }
       } else {
         // Handle other plugin types using pluginManager
         final pluginManager = ref.watch(pluginManagerProvider).valueOrNull;
         final pluginNotifier = ref.read(pluginProvider.notifier);
-        final pluginConfig = pluginNotifier.getPluginConfig(
-            item.plugin, Map<String, String>.from(item.pluginArgs));
+        final pluginConfig = pluginNotifier.getPluginConfig(item.plugin, Map<String, String>.from(item.pluginArgs));
 
         if (pluginManager != null && pluginConfig != null) {
           if (searchQuery.isEmpty) {
             // If no search query, just initialize the plugin
-            final pluginItems = await pluginManager.initPlugin(
-                name: item.plugin, pluginConfig: pluginConfig);
+            final pluginItems = await pluginManager.initPlugin(name: item.plugin, pluginConfig: pluginConfig);
             for (var pluginItem in pluginItems) {
               items.add(PluginItem(
                 pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
-                pluginItem.description.isNotEmpty
-                    ? pluginItem.description
-                    : item.description,
+                pluginItem.description.isNotEmpty ? pluginItem.description : item.description,
                 item.icon.isNotEmpty ? item.icon : pluginItem.icon,
                 item.plugin,
                 item.shortcut,
@@ -363,9 +339,7 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
             for (var pluginItem in filteredItems) {
               items.add(PluginItem(
                 pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
-                pluginItem.description.isNotEmpty
-                    ? pluginItem.description
-                    : item.description,
+                pluginItem.description.isNotEmpty ? pluginItem.description : item.description,
                 item.icon.isNotEmpty ? item.icon : pluginItem.icon,
                 item.plugin,
                 item.shortcut,
@@ -385,13 +359,12 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
     if (item.plugin == 'menu') {
       final conf = ref.watch(configProvider).unwrapPrevious().valueOrNull;
 
-      if (conf == null ||
-          conf.menus.indexWhere((el) => el.name == item.args['menu name']) < 0)
-        return;
+      if (conf == null || conf.menus.indexWhere((el) => el.name == item.args['menu name']) < 0) return;
 
       ref.read(currentPageProvider.notifier).state = 0;
-      ref.read(menuProvider.notifier).changeMenu(conf.menus
-          .firstWhere((element) => element.name == item.args['menu name']));
+      ref
+          .read(menuProvider.notifier)
+          .changeMenu(conf.menus.firstWhere((element) => element.name == item.args['menu name']));
     } else if (item.plugin == 'run') {
       final regExp = RegExp(r'("[^"]+"|\S+)');
       final args = regExp.allMatches(item.args['arguments']).map((match) {
@@ -404,10 +377,8 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
       }).toList();
       var env = <String, String>{};
       try {
-        final Map<String, dynamic> decodedMap =
-            jsonDecode(item.args['environment variables']);
-        env.addAll(
-            decodedMap.map((key, value) => MapEntry(key, value.toString())));
+        final Map<String, dynamic> decodedMap = jsonDecode(item.args['environment variables']);
+        env.addAll(decodedMap.map((key, value) => MapEntry(key, value.toString())));
       } catch (e) {
         env = {};
       }
@@ -423,8 +394,7 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
       final pluginManager = ref.read(pluginManagerProvider).valueOrNull;
       if (pluginManager != null) {
         final pluginNotifier = ref.read(pluginProvider.notifier);
-        final pluginConfig = pluginNotifier.getPluginConfig(
-            item.plugin, Map<String, String>.from(item.args));
+        final pluginConfig = pluginNotifier.getPluginConfig(item.plugin, Map<String, String>.from(item.args));
 
         if (pluginConfig != null) {
           await pluginManager.select(
@@ -447,9 +417,7 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
   // void clearCache() => _cache.clear();
 }
 
-final themeProvider =
-    AsyncNotifierProvider<ThemeNotifier, Map<String, ThemeVariants>>(
-        ThemeNotifier.new);
+final themeProvider = AsyncNotifierProvider<ThemeNotifier, Map<String, ThemeVariants>>(ThemeNotifier.new);
 
 class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
   @override
@@ -486,15 +454,13 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
           themeMap[fileName] = ThemeVariants(light: t, dark: t);
           break;
         case (Theme lightTheme, null):
-          themeMap[fileName] =
-              ThemeVariants(light: lightTheme, dark: lightTheme);
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: lightTheme);
           break;
         case (null, Theme darkTheme):
           themeMap[fileName] = ThemeVariants(light: darkTheme, dark: darkTheme);
           break;
         case (Theme lightTheme, Theme darkTheme):
-          themeMap[fileName] =
-              ThemeVariants(light: lightTheme, dark: darkTheme);
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: darkTheme);
           break;
       }
     }
@@ -531,15 +497,13 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
           themeMap[fileName] = ThemeVariants(light: t, dark: t);
           break;
         case (Theme lightTheme, null):
-          themeMap[fileName] =
-              ThemeVariants(light: lightTheme, dark: lightTheme);
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: lightTheme);
           break;
         case (null, Theme darkTheme):
           themeMap[fileName] = ThemeVariants(light: darkTheme, dark: darkTheme);
           break;
         case (Theme lightTheme, Theme darkTheme):
-          themeMap[fileName] =
-              ThemeVariants(light: lightTheme, dark: darkTheme);
+          themeMap[fileName] = ThemeVariants(light: lightTheme, dark: darkTheme);
           break;
       }
     }
@@ -551,15 +515,13 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
     await update((oldState) {
       var counter = 0;
       var newThemeName = 'New Theme';
-      while (oldState.keys.firstWhereOrNull((name) => name == newThemeName) !=
-          null) {
+      while (oldState.keys.firstWhereOrNull((name) => name == newThemeName) != null) {
         counter++;
         newThemeName = 'New Theme $counter';
       }
-      Theme lightTheme = Theme();
-      Theme darkTheme = Theme();
-      oldState[newThemeName] =
-          ThemeVariants(light: lightTheme, dark: darkTheme);
+      Theme lightTheme = Theme(); // Default light theme
+      Theme darkTheme = Theme.dark(); // Default dark theme
+      oldState[newThemeName] = ThemeVariants(light: lightTheme, dark: darkTheme);
       _saveToDisk(oldState[newThemeName]!, newThemeName);
       return oldState;
     });
@@ -619,8 +581,7 @@ class ThemeNotifier extends AsyncNotifier<Map<String, ThemeVariants>> {
       file.createSync(recursive: true);
     }
 
-    await file
-        .writeAsString(JsonEncoder.withIndent(' ' * 4).convert(theme.toJson()));
+    await file.writeAsString(JsonEncoder.withIndent(' ' * 4).convert(theme.toJson()));
   }
 }
 
@@ -630,16 +591,13 @@ class SystemBrightnessNotifier extends Notifier<String> {
 
   void setSystemTheme(BuildContext context) {
     Future.delayed(const Duration(milliseconds: 500), () {
-      state = MediaQuery.platformBrightnessOf(context) == Brightness.dark
-          ? 'dark'
-          : 'light';
+      state = MediaQuery.platformBrightnessOf(context) == Brightness.dark ? 'dark' : 'light';
     });
   }
 }
 
 final systemBrightnessNotifierProvider =
-    NotifierProvider<SystemBrightnessNotifier, String>(
-        SystemBrightnessNotifier.new);
+    NotifierProvider<SystemBrightnessNotifier, String>(SystemBrightnessNotifier.new);
 
 final currentThemeProvider = Provider<Theme>((ref) {
   final menu = ref.watch(menuProvider);
@@ -648,17 +606,16 @@ final currentThemeProvider = Provider<Theme>((ref) {
   switch (menu) {
     case AsyncData(:final value):
       {
-        final isLight =
-            switch ((value.systemBrightness, value.themeColorScheme)) {
+        final isLight = switch ((value.systemBrightness, value.themeColorScheme)) {
           ('system', _) => value.systemBrightness == 'light',
           (_, _) => value.themeColorScheme == 'light',
         };
         final tName = value.getThemeName();
         return switch (themes) {
           AsyncData(:final value) => value[tName] == null
-              ? Theme()
+              ? (isLight ? Theme() : Theme.dark())
               : (isLight ? value[tName]!.light : value[tName]!.dark),
-          _ => Theme(),
+          _ => isLight ? Theme() : Theme.dark(),
         };
       }
     default:
@@ -692,13 +649,11 @@ class TextScalerNotifier extends Notifier<TextScaler> {
   }
 }
 
-final textScalerProvider =
-    NotifierProvider<TextScalerNotifier, TextScaler>(TextScalerNotifier.new);
+final textScalerProvider = NotifierProvider<TextScalerNotifier, TextScaler>(TextScalerNotifier.new);
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
-final pluginProvider =
-    NotifierProvider<PluginNotifier, List<Plugin>>(PluginNotifier.new);
+final pluginProvider = NotifierProvider<PluginNotifier, List<Plugin>>(PluginNotifier.new);
 
 class PluginNotifier extends Notifier<List<Plugin>> {
   @override
@@ -707,17 +662,14 @@ class PluginNotifier extends Notifier<List<Plugin>> {
     return getAvailablePlugins(pluginDirPath);
   }
 
-  bridge.PluginConfig? getPluginConfig(
-      String name, Map<String, String> config) {
+  bridge.PluginConfig? getPluginConfig(String name, Map<String, String> config) {
     final plugin = state.firstWhereOrNull((p) => p.name == name);
     if (plugin == null) return null;
 
     final configWithDefaults = Map<String, String>.fromEntries(
       plugin.args.map((arg) => MapEntry(
             arg.name,
-            config[arg.name]?.isEmpty ?? true
-                ? arg.defaultValue
-                : config[arg.name]!,
+            config[arg.name]?.isEmpty ?? true ? arg.defaultValue : config[arg.name]!,
           )),
     );
 
@@ -732,8 +684,7 @@ class PluginNotifier extends Notifier<List<Plugin>> {
 }
 
 final pluginManagerProvider =
-    AsyncNotifierProvider<PluginManagerNotifier, bridge.PluginManager>(
-        PluginManagerNotifier.new);
+    AsyncNotifierProvider<PluginManagerNotifier, bridge.PluginManager>(PluginManagerNotifier.new);
 
 class PluginManagerNotifier extends AsyncNotifier<bridge.PluginManager> {
   @override
@@ -741,20 +692,17 @@ class PluginManagerNotifier extends AsyncNotifier<bridge.PluginManager> {
     return await bridge.PluginManager.newInstance();
   }
 
-  Future<List<bridge.PluginItem>> filterPlugin(
-      String name, List<(String, String)> config, String query) async {
+  Future<List<bridge.PluginItem>> filterPlugin(String name, List<(String, String)> config, String query) async {
     final manager = await future;
     return await manager.filterPlugin(name: name, config: config, query: query);
   }
 
-  Future<List<bridge.PluginItem>> initPlugin(
-      String name, bridge.PluginConfig pluginConfig) async {
+  Future<List<bridge.PluginItem>> initPlugin(String name, bridge.PluginConfig pluginConfig) async {
     final manager = await future;
     return await manager.initPlugin(name: name, pluginConfig: pluginConfig);
   }
 
-  Future<void> select(
-      String name, List<(String, String)> config, String elementName) async {
+  Future<void> select(String name, List<(String, String)> config, String elementName) async {
     final manager = await future;
     await manager.select(name: name, config: config, elementName: elementName);
   }

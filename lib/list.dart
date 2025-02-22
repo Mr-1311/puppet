@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gradient_borders/gradient_borders.dart';
+import 'package:puppet/config/config_defaults.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/providers.dart';
 import 'package:puppet/widgets/item_icon.dart';
@@ -119,8 +120,7 @@ class ListMenu extends ConsumerWidget {
 
     final textHeight = _calculateTextHeight(context, theme);
     final iconSize = _calculateIconSize(theme);
-    final containerHeight =
-        math.max(iconSize, textHeight) + (kItemVerticalPadding * 2);
+    final containerHeight = math.max(iconSize, textHeight) + (kItemVerticalPadding * 2);
 
     return _ListContainer(
       theme: theme,
@@ -189,10 +189,8 @@ class _ListContainer extends ConsumerWidget {
               child: TextField(
                 controller: ref.watch(searchControllerProvider),
                 focusNode: ref.read(searchFocusProvider),
-                onTapOutside: (event) =>
-                    ref.read(searchFocusProvider).previousFocus(),
-                onChanged: (value) =>
-                    ref.read(searchQueryProvider.notifier).state = value,
+                onTapOutside: (event) => ref.read(searchFocusProvider).previousFocus(),
+                onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,
                 decoration: InputDecoration(
                   hintText: 'Search...',
                   prefixIcon: Icon(
@@ -452,6 +450,10 @@ class _ItemIcon extends StatelessWidget {
         t.AONInt(:final value) => value.toDouble(),
         _ => kDefaultIconSize,
       },
+      color: switch (theme?.itemFontColor) {
+        t.ThemeColorSolid(:final value) => value,
+        _ => conf_defaultIconColor,
+      },
     );
   }
 }
@@ -571,9 +573,7 @@ class _ShortcutLabel extends ConsumerWidget {
             ? '$shortcutPrefix${item.shortcut}${index < 9 ? ' | ${index + 1}' : ''}'
             : '$shortcutPrefix${index + 1}',
         style: TextStyle(
-          color: themeBrightness
-              ? kDarkShortcutLabelColor
-              : kLightShortcutLabelColor,
+          color: themeBrightness ? kDarkShortcutLabelColor : kLightShortcutLabelColor,
           letterSpacing: 2,
           decoration: TextDecoration.none,
           fontSize: kShortcutLabelFontSize,
