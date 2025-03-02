@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:puppet/config/path_manager.dart';
+
 class Plugin {
   final String name;
   final String description;
@@ -12,6 +14,7 @@ class Plugin {
   final List<String> allowedHosts;
   final bool wasi;
   final String wasmPath;
+  final bool cli;
 
   Plugin(
     this.name,
@@ -24,6 +27,7 @@ class Plugin {
     this.allowedPaths = const [],
     this.allowedHosts = const [],
     this.wasi = false,
+    this.cli = false,
   });
 
   static String? _findWasmPath(String pluginFolder) {
@@ -93,6 +97,7 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
         'allowedPaths': List allowedPaths,
         'allowedHosts': List allowedHosts,
         'wasi': bool wasi,
+        'cli': bool cli,
       }) {
     // Check that all list entries are strings.
     if (!platforms.every((e) => e is String) ||
@@ -141,6 +146,7 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
       allowedPaths: allowedPaths.cast<String>(),
       allowedHosts: allowedHosts.cast<String>(),
       wasi: wasi,
+      cli: cli,
     );
   }
   return null;
@@ -173,6 +179,16 @@ bool _isCurrentPlatformSupported(List<String> platforms) {
   if (Platform.isMacOS) return platforms.contains('macos');
   if (Platform.isLinux) return platforms.contains('linux');
   return false;
+}
+
+String getPluginDataDir(String pluginName) {
+  final path = '${PathManager().plugins}$pluginName/data';
+  final pluginDir = Directory(path);
+  // create the data directory if it doesn't exist
+  if (!pluginDir.existsSync()) {
+    pluginDir.createSync(recursive: true);
+  }
+  return pluginDir.path;
 }
 
 final _builtInPlugins = [

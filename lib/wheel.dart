@@ -468,8 +468,7 @@ List<Positioned> getMenuItems(
     }
     if (i < 10) {
       shortcutText += shortcutText.isEmpty ? '$i' : '❘$i';
-    }
-    if (i == items.length) {
+    } else if (i == items.length) {
       shortcutText += shortcutText.isEmpty ? '0' : '';
     }
 

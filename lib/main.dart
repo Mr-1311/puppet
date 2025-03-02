@@ -20,8 +20,7 @@ import 'package:puppet/list.dart';
 void _setWindowMode(bool isSettings) {
   if (isSettings) {
     windowManager.setTitle('Settings');
-    windowManager.setIcon(
-        Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
+    windowManager.setIcon(Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
     windowManager.setSize(Size(940, 640));
     windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
@@ -56,11 +55,7 @@ void main(List<String> args) async {
 
   final argParser = ArgParser();
   argParser.addOption('menu', abbr: 'm', help: 'set the menu to show on start');
-  argParser.addFlag('settings',
-      abbr: 's',
-      defaultsTo: false,
-      help: 'open settings window',
-      negatable: false);
+  argParser.addFlag('settings', abbr: 's', defaultsTo: false, help: 'open settings window', negatable: false);
   final results = argParser.parse(args);
 
   // final isSettings = true;
@@ -108,9 +103,7 @@ void main(List<String> args) async {
           : Consumer(
               builder: (BuildContext context, WidgetRef ref, Widget? child) {
                 if (results['menu'] != null) {
-                  ref
-                      .read(configProvider.notifier)
-                      .setMainMenu(results['menu']);
+                  ref.read(configProvider.notifier).setMainMenu(results['menu']);
                 }
                 return MainApp();
               },
@@ -124,8 +117,7 @@ class MainApp extends ConsumerStatefulWidget {
   ConsumerState<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends ConsumerState<MainApp>
-    with tray.TrayListener, WindowListener {
+class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, WindowListener {
   @override
   void initState() {
     super.initState();
@@ -155,16 +147,13 @@ class _MainAppState extends ConsumerState<MainApp>
 
     // Set the text scaler from MediaQuery
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(textScalerProvider.notifier)
-          .setTextScaler(MediaQuery.textScalerOf(context));
+      ref.read(textScalerProvider.notifier).setTextScaler(MediaQuery.textScalerOf(context));
     });
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (conf) {
-          AsyncData(value: final conf) when conf.errors.isNotEmpty =>
-            ErrorPage(conf.errors),
+          AsyncData(value: final conf) when conf.errors.isNotEmpty => ErrorPage(conf.errors),
           _ => switch (menu) {
               AsyncData(:final value) => CallbackShortcuts(
                   bindings: {
@@ -266,7 +255,9 @@ class Menu extends ConsumerStatefulWidget {
 
 class _MenuState extends ConsumerState<Menu> {
   bool _onKey(KeyEvent event) {
-    final items = ref.watch(currentItemsProvider(widget.menu.maxElement));
+    final items = widget.menu.menuType == MenuType.wheel
+        ? ref.watch(currentItemsProvider(widget.menu.maxElement))
+        : ref.watch(itemsProvider).valueOrNull ?? [];
 
     if (event is KeyUpEvent) {
       if (event.logicalKey == LogicalKeyboardKey.backspace) {
@@ -276,14 +267,12 @@ class _MenuState extends ConsumerState<Menu> {
         }
       }
 
-      if (ref.read(searchFocusProvider).hasFocus &&
-          !HardwareKeyboard.instance.isControlPressed) {
+      if (ref.read(searchFocusProvider).hasFocus && !HardwareKeyboard.instance.isControlPressed) {
         return false;
       }
 
       final key = event.logicalKey.keyLabel;
-      var item =
-          items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
+      var item = items.firstWhereOrNull((item) => item.shortcut?.toUpperCase() == key);
       if (item == null) {
         final num = int.tryParse(key);
         if (num == 0) {
@@ -298,8 +287,6 @@ class _MenuState extends ConsumerState<Menu> {
         ref.read(itemsProvider.notifier).onClick(item);
         return true;
       }
-
-      // "Key down: $key, alt: ${HardwareKeyboard.instance.isAltPressed}, shift: ${HardwareKeyboard.instance.isShiftPressed}, ctrl: ${HardwareKeyboard.instance.isControlPressed}");
     }
 
     return false;
@@ -320,12 +307,9 @@ class _MenuState extends ConsumerState<Menu> {
   @override
   Widget build(BuildContext context) {
     return switch (widget.menu) {
-      Menus(menuType: MenuType.wheel) =>
-        Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
-      Menus(menuType: MenuType.list) => ListMenu(
-          maxElement: widget.menu.maxElement,
-          menuName: widget.menu.name,
-          height: widget.menu.height),
+      Menus(menuType: MenuType.wheel) => Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
+      Menus(menuType: MenuType.list) =>
+        ListMenu(maxElement: widget.menu.maxElement, menuName: widget.menu.name, height: widget.menu.height),
       Menus(menuType: MenuType.canvas) => const CircularProgressIndicator(),
     };
   }

@@ -266,23 +266,45 @@ class PluginDetailPane extends ConsumerWidget {
                                   ),
                                 ),
                                 if (plugin.wasi)
-                                  Chip(
-                                    label: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        FaIcon(FontAwesomeIcons.microchip, size: 12),
-                                        SizedBox(width: 6),
-                                        Text('WASI'),
-                                      ],
+                                  Tooltip(
+                                    message:
+                                        'WebAssembly System Interface - Allows the plugin to access system resources',
+                                    child: Chip(
+                                      label: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          FaIcon(FontAwesomeIcons.microchip, size: 12),
+                                          SizedBox(width: 6),
+                                          Text('WASI'),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                if (plugin.cli)
+                                  Tooltip(
+                                    message:
+                                        'Command Line Interface - Plugin can execute any command or program, including shell scripts\n Be careful with this plugin!, all commands this plugin executes will be logged to the console',
+                                    child: Chip(
+                                      label: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          FaIcon(FontAwesomeIcons.terminal, size: 12),
+                                          SizedBox(width: 6),
+                                          Text('CLI'),
+                                        ],
+                                      ),
                                     ),
                                   ),
                               ],
                             ),
                             if (plugin.allowedPaths.isNotEmpty) ...[
                               SizedBox(height: 8),
-                              Text(
-                                'Allowed Paths',
-                                style: Theme.of(context).textTheme.titleSmall,
+                              Tooltip(
+                                message: 'File system paths this plugin has permission to access',
+                                child: Text(
+                                  'Allowed Paths',
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
                               ),
                               Wrap(
                                 spacing: 8,
@@ -305,9 +327,12 @@ class PluginDetailPane extends ConsumerWidget {
                             ],
                             if (plugin.allowedHosts.isNotEmpty) ...[
                               SizedBox(height: 8),
-                              Text(
-                                'Allowed Hosts',
-                                style: Theme.of(context).textTheme.titleSmall,
+                              Tooltip(
+                                message: 'Network hosts this plugin has permission to connect to',
+                                child: Text(
+                                  'Allowed Hosts',
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
                               ),
                               Wrap(
                                 spacing: 8,

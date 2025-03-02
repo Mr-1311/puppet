@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `expand_env_vars`, `from_map`
+// These functions are ignored because they are not marked as `pub`: `add_newline`, `cli_run`, `expand_env_vars`, `from_map`
 // These types are ignored because they are not used by any `pub` functions: `PluginIdentifier`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `hash`
 
@@ -18,7 +18,9 @@ abstract class PluginManager implements RustOpaqueInterface {
       required String query});
 
   Future<List<PluginItem>> initPlugin(
-      {required String name, required PluginConfig pluginConfig});
+      {required String name,
+      required PluginConfig pluginConfig,
+      required String dataDirPath});
 
   // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
   static Future<PluginManager> newInstance() =>
@@ -35,6 +37,7 @@ class PluginConfig {
   final List<String> allowedPaths;
   final List<String> allowedHosts;
   final bool enableWasi;
+  final bool cli;
   final List<(String, String)> config;
 
   const PluginConfig({
@@ -42,6 +45,7 @@ class PluginConfig {
     required this.allowedPaths,
     required this.allowedHosts,
     required this.enableWasi,
+    required this.cli,
     required this.config,
   });
 
@@ -51,6 +55,7 @@ class PluginConfig {
       allowedPaths.hashCode ^
       allowedHosts.hashCode ^
       enableWasi.hashCode ^
+      cli.hashCode ^
       config.hashCode;
 
   @override
@@ -62,6 +67,7 @@ class PluginConfig {
           allowedPaths == other.allowedPaths &&
           allowedHosts == other.allowedHosts &&
           enableWasi == other.enableWasi &&
+          cli == other.cli &&
           config == other.config;
 }
 

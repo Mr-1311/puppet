@@ -4,7 +4,6 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/plugin_manager.dart';
-import 'api/simple.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -57,9 +56,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
       RustLibWire.fromExternalLibrary;
 
   @override
-  Future<void> executeRustInitializers() async {
-    await api.crateApiSimpleInitApp();
-  }
+  Future<void> executeRustInitializers() async {}
 
   @override
   ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig =>
@@ -69,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.7.0';
 
   @override
-  int get rustContentHash => 1407500678;
+  int get rustContentHash => -503702991;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -89,7 +86,8 @@ abstract class RustLibApi extends BaseApi {
   Future<List<PluginItem>> crateApiPluginManagerPluginManagerInitPlugin(
       {required PluginManager that,
       required String name,
-      required PluginConfig pluginConfig});
+      required PluginConfig pluginConfig,
+      required String dataDirPath});
 
   Future<PluginManager> crateApiPluginManagerPluginManagerNew();
 
@@ -98,10 +96,6 @@ abstract class RustLibApi extends BaseApi {
       required String name,
       required List<(String, String)> config,
       required String elementName});
-
-  String crateApiSimpleGreet({required String name});
-
-  Future<void> crateApiSimpleInitApp();
 
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_PluginManager;
@@ -158,7 +152,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<List<PluginItem>> crateApiPluginManagerPluginManagerInitPlugin(
       {required PluginManager that,
       required String name,
-      required PluginConfig pluginConfig}) {
+      required PluginConfig pluginConfig,
+      required String dataDirPath}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
@@ -166,6 +161,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that, serializer);
         sse_encode_String(name, serializer);
         sse_encode_box_autoadd_plugin_config(pluginConfig, serializer);
+        sse_encode_String(dataDirPath, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 2, port: port_);
       },
@@ -174,7 +170,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiPluginManagerPluginManagerInitPluginConstMeta,
-      argValues: [that, name, pluginConfig],
+      argValues: [that, name, pluginConfig, dataDirPath],
       apiImpl: this,
     ));
   }
@@ -182,7 +178,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiPluginManagerPluginManagerInitPluginConstMeta =>
       const TaskConstMeta(
         debugName: "PluginManager_init_plugin",
-        argNames: ["that", "name", "pluginConfig"],
+        argNames: ["that", "name", "pluginConfig", "dataDirPath"],
       );
 
   @override
@@ -241,52 +237,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "PluginManager_select",
         argNames: ["that", "name", "config", "elementName"],
-      );
-
-  @override
-  String crateApiSimpleGreet({required String name}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_String,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiSimpleGreetConstMeta,
-      argValues: [name],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiSimpleGreetConstMeta => const TaskConstMeta(
-        debugName: "greet",
-        argNames: ["name"],
-      );
-
-  @override
-  Future<void> crateApiSimpleInitApp() {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 6, port: port_);
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiSimpleInitAppConstMeta,
-      argValues: [],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiSimpleInitAppConstMeta => const TaskConstMeta(
-        debugName: "init_app",
-        argNames: [],
       );
 
   RustArcIncrementStrongCountFnType
@@ -373,14 +323,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PluginConfig dco_decode_plugin_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return PluginConfig(
       wasmPath: dco_decode_String(arr[0]),
       allowedPaths: dco_decode_list_String(arr[1]),
       allowedHosts: dco_decode_list_String(arr[2]),
       enableWasi: dco_decode_bool(arr[3]),
-      config: dco_decode_list_record_string_string(arr[4]),
+      cli: dco_decode_bool(arr[4]),
+      config: dco_decode_list_record_string_string(arr[5]),
     );
   }
 
@@ -533,12 +484,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_allowedPaths = sse_decode_list_String(deserializer);
     var var_allowedHosts = sse_decode_list_String(deserializer);
     var var_enableWasi = sse_decode_bool(deserializer);
+    var var_cli = sse_decode_bool(deserializer);
     var var_config = sse_decode_list_record_string_string(deserializer);
     return PluginConfig(
         wasmPath: var_wasmPath,
         allowedPaths: var_allowedPaths,
         allowedHosts: var_allowedHosts,
         enableWasi: var_enableWasi,
+        cli: var_cli,
         config: var_config);
   }
 
@@ -684,6 +637,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_list_String(self.allowedPaths, serializer);
     sse_encode_list_String(self.allowedHosts, serializer);
     sse_encode_bool(self.enableWasi, serializer);
+    sse_encode_bool(self.cli, serializer);
     sse_encode_list_record_string_string(self.config, serializer);
   }
 
@@ -754,9 +708,14 @@ class PluginManagerImpl extends RustOpaque implements PluginManager {
           that: this, name: name, config: config, query: query);
 
   Future<List<PluginItem>> initPlugin(
-          {required String name, required PluginConfig pluginConfig}) =>
+          {required String name,
+          required PluginConfig pluginConfig,
+          required String dataDirPath}) =>
       RustLib.instance.api.crateApiPluginManagerPluginManagerInitPlugin(
-          that: this, name: name, pluginConfig: pluginConfig);
+          that: this,
+          name: name,
+          pluginConfig: pluginConfig,
+          dataDirPath: dataDirPath);
 
   Future<void> select(
           {required String name,

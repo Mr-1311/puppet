@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, process::Command};
 use std::path::PathBuf;
-use extism::{Plugin, Manifest, Wasm};
+use extism::{host_fn, Function, Manifest, Plugin, Wasm, PTR};
 use flutter_rust_bridge::frb;
 use serde::{Serialize, Deserialize};
 use serde_json;
@@ -39,6 +39,7 @@ pub struct PluginConfig {
     pub allowed_paths: Vec<String>,
     pub allowed_hosts: Vec<String>,
     pub enable_wasi: bool,
+    pub cli: bool,
     pub config: Vec<(String, String)>,
 }
 
@@ -49,8 +50,37 @@ pub struct PluginManager {
     cache: HashMap<PluginIdentifier, Vec<PluginItem>>,
 }
 
+host_fn!(add_newline(_user_data: (); a: String) -> String { 
+    Ok(a + "\n") 
+});
+
+host_fn!(cli_run(is_cli: bool; program: String, args: String) -> Result<String> {
+    let cli_enabled = is_cli.get()?;
+    let cli_enabled = cli_enabled.lock().unwrap();
+    if !*cli_enabled {
+        return Err(anyhow!("CLI functionality is disabled in manifest"));
+    }
+    
+    let args: Vec<String> = serde_json::from_str(&args)
+        .map_err(|e| anyhow!("Failed to parse args as JSON array: {}", e))?;
+
+    let output = Command::new(program)
+        .args(args)
+        .output()
+        .map_err(|e| anyhow!("Failed to execute command: {}", e))?;
+
+    if output.status.success() {
+        String::from_utf8(output.stdout)
+            .map_err(|e| anyhow!("Invalid UTF-8 output: {}", e))
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(anyhow!("Command failed: {}", stderr))
+    }
+});
+
 impl PluginManager {
     pub fn new() -> Self {
+        unsafe { extism::sdk::extism_log_file("stdout\0".as_ptr() as *const i8, "info\0".as_ptr() as *const i8); }
         Self {
             plugins: HashMap::new(),
             cache: HashMap::new(),
@@ -61,6 +91,7 @@ impl PluginManager {
         &mut self,
         name: String,
         plugin_config: PluginConfig,
+        data_dir_path: String,
     ) -> Result<Vec<PluginItem>> {
         let identifier = PluginIdentifier::from_map(name.clone(), &plugin_config.config);
 
@@ -75,12 +106,15 @@ impl PluginManager {
             .with_allowed_paths(
                 plugin_config.allowed_paths.iter()
                     .map(|p| expand_env_vars(p))
-            )
+            ).with_allowed_path(data_dir_path, PathBuf::from("data")) // allow access to <plugin_path>/data
             .with_allowed_hosts(plugin_config.allowed_hosts.iter().cloned())
-            .with_config(plugin_config.config.iter().cloned());
+            .with_config(plugin_config.config.iter().cloned())
+            .with_config_key("platform", std::env::consts::OS); // add platform key to config - "linux" "windows" "macos"
+
+        let host_function = Function::new("cli_run", [PTR, PTR], [PTR], extism::UserData::new(plugin_config.cli), cli_run);
 
         // Create plugin with WASI enabled if configured
-        let mut plugin = Plugin::new(&manifest, [], plugin_config.enable_wasi)?;
+        let mut plugin = Plugin::new(&manifest, [host_function], plugin_config.enable_wasi)?;
 
         // Call init function
         let result = plugin.call::<(), String>("init", ())?;
@@ -118,7 +152,7 @@ impl PluginManager {
 
         // If filter returns items, use those
         if let Some(items) = items {
-            if (!items.is_empty()) {
+            if !items.is_empty() {
                 return Ok(items);
             }
         }

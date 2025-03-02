@@ -317,7 +317,8 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
         if (pluginManager != null && pluginConfig != null) {
           if (searchQuery.isEmpty) {
             // If no search query, just initialize the plugin
-            final pluginItems = await pluginManager.initPlugin(name: item.plugin, pluginConfig: pluginConfig);
+            final pluginItems = await pluginManager.initPlugin(
+                name: item.plugin, pluginConfig: pluginConfig, dataDirPath: getPluginDataDir(item.plugin));
             for (var pluginItem in pluginItems) {
               items.add(PluginItem(
                 pluginItem.name.isNotEmpty ? pluginItem.name : item.name,
@@ -679,6 +680,7 @@ class PluginNotifier extends Notifier<List<Plugin>> {
       enableWasi: plugin.wasi,
       config: configWithDefaults.entries.map((e) => (e.key, e.value)).toList(),
       wasmPath: plugin.wasmPath,
+      cli: plugin.cli,
     );
   }
 }
@@ -692,18 +694,18 @@ class PluginManagerNotifier extends AsyncNotifier<bridge.PluginManager> {
     return await bridge.PluginManager.newInstance();
   }
 
-  Future<List<bridge.PluginItem>> filterPlugin(String name, List<(String, String)> config, String query) async {
-    final manager = await future;
-    return await manager.filterPlugin(name: name, config: config, query: query);
-  }
+  // Future<List<bridge.PluginItem>> filterPlugin(String name, List<(String, String)> config, String query) async {
+  //   final manager = await future;
+  //   return await manager.filterPlugin(name: name, config: config, query: query);
+  // }
 
-  Future<List<bridge.PluginItem>> initPlugin(String name, bridge.PluginConfig pluginConfig) async {
-    final manager = await future;
-    return await manager.initPlugin(name: name, pluginConfig: pluginConfig);
-  }
+  // Future<List<bridge.PluginItem>> initPlugin(String name, bridge.PluginConfig pluginConfig) async {
+  //   final manager = await future;
+  //   return await manager.initPlugin(name: name, pluginConfig: pluginConfig);
+  // }
 
-  Future<void> select(String name, List<(String, String)> config, String elementName) async {
-    final manager = await future;
-    await manager.select(name: name, config: config, elementName: elementName);
-  }
+  // Future<void> select(String name, List<(String, String)> config, String elementName) async {
+  //   final manager = await future;
+  //   await manager.select(name: name, config: config, elementName: elementName);
+  // }
 }
