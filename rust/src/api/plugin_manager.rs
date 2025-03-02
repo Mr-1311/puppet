@@ -7,12 +7,20 @@ use serde_json;
 use anyhow::{Result, anyhow};
 use std::env;
 use regex::Regex;
+use chrono;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluginItem {
     pub name: String,
     pub description: String,
     pub icon: String,
+}
+
+#[derive(Debug, Clone)]
+struct CliConfig {
+    enabled: bool,
+    plugin_name: String,
+    data_dir_path: String,
 }
 
 // We can't derive Hash for HashMap, so we'll store config as a sorted Vec of tuples
@@ -54,17 +62,32 @@ host_fn!(add_newline(_user_data: (); a: String) -> String {
     Ok(a + "\n") 
 });
 
-host_fn!(cli_run(is_cli: bool; program: String, args: String) -> Result<String> {
-    let cli_enabled = is_cli.get()?;
-    let cli_enabled = cli_enabled.lock().unwrap();
-    if !*cli_enabled {
-        return Err(anyhow!("CLI functionality is disabled in manifest"));
+host_fn!(cli_run(config: CliConfig; command: String, args: String) -> Result<String> {
+    let config_ref = config.get()?;
+    let config_guard = config_ref.lock().unwrap();
+    if !config_guard.enabled {
+        return Ok(format!("[plugin:{}] [cli_run] CLI functionality is disabled in the manifest", config_guard.plugin_name));
     }
     
     let args: Vec<String> = serde_json::from_str(&args)
         .map_err(|e| anyhow!("Failed to parse args as JSON array: {}", e))?;
 
-    let output = Command::new(program)
+    println!("[{}] [plugin:{}] [cli_run] Command: {} {:?}", 
+        chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+        config_guard.plugin_name,
+        command,
+        args
+    );
+    
+    let command_path = if command.starts_with("/data/") {
+        // If path starts with /data/, resolve it relative to data_dir_path
+        let relative_path = command.strip_prefix("/data/").unwrap();
+        format!("{}/{}", config_guard.data_dir_path, relative_path)
+    } else {
+        command
+    };
+
+    let output = Command::new(command_path)
         .args(args)
         .output()
         .map_err(|e| anyhow!("Failed to execute command: {}", e))?;
@@ -106,12 +129,24 @@ impl PluginManager {
             .with_allowed_paths(
                 plugin_config.allowed_paths.iter()
                     .map(|p| expand_env_vars(p))
-            ).with_allowed_path(data_dir_path, PathBuf::from("data")) // allow access to <plugin_path>/data
+            ).with_allowed_path(data_dir_path.clone(), PathBuf::from("data")) // allow access to <plugin_path>/data
             .with_allowed_hosts(plugin_config.allowed_hosts.iter().cloned())
             .with_config(plugin_config.config.iter().cloned())
             .with_config_key("platform", std::env::consts::OS); // add platform key to config - "linux" "windows" "macos"
 
-        let host_function = Function::new("cli_run", [PTR, PTR], [PTR], extism::UserData::new(plugin_config.cli), cli_run);
+        let cli_config = CliConfig {
+            enabled: plugin_config.cli,
+            plugin_name: name.clone(),
+            data_dir_path: data_dir_path.clone(),
+        };
+
+        let host_function = Function::new(
+            "cli_run", 
+            [PTR, PTR], 
+            [PTR], 
+            extism::UserData::new(cli_config), 
+            cli_run
+        );
 
         // Create plugin with WASI enabled if configured
         let mut plugin = Plugin::new(&manifest, [host_function], plugin_config.enable_wasi)?;
