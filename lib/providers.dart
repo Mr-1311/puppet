@@ -62,7 +62,16 @@ class ConfigNotifier extends AsyncNotifier<Config> {
 
     if (!confFile.existsSync()) {
       confFile.createSync(recursive: true);
-      final defaultConfig = await rootBundle.loadString('assets/config.json');
+
+      // Load platform-specific config
+      final configFileName = switch (Platform.operatingSystem) {
+        'linux' => 'config_linux.json',
+        'macos' => 'config_macos.json',
+        'windows' => 'config_windows.json',
+        _ => throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}'),
+      };
+
+      final defaultConfig = await rootBundle.loadString('assets/$configFileName');
       confFile.writeAsStringSync(defaultConfig);
     }
 
