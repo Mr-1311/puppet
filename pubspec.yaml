@@ -41,7 +41,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/config.json
+    - assets/config_macos.json
+    - assets/config_linux.json
+    - assets/config_windows.json
     - assets/logo.png
     - assets/logo_64.png
     - assets/logo_32.ico
