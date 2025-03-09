@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:puppet/config/path_manager.dart';
+import 'package:http/http.dart' as http;
 
 class Plugin {
   final String name;
@@ -15,6 +16,44 @@ class Plugin {
   final bool wasi;
   final String wasmPath;
   final bool cli;
+
+  Future<String?> getLatestVersion() async {
+    if (source.startsWith('built-in')) return null;
+
+    final uri = Uri.parse(source);
+    final pathSegments = uri.pathSegments;
+    if (pathSegments.length < 2) {
+      print('Invalid GitHub URL: $source');
+      return null;
+    }
+
+    final repoPath = '${pathSegments[0]}/${pathSegments[1]}';
+    final apiUrl = 'https://api.github.com/repos/$repoPath/releases/latest';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode != 200) return null;
+
+      final release = jsonDecode(response.body);
+      return release['tag_name'] as String;
+    } catch (e) {
+      print('Error fetching latest version: $e');
+      return null;
+    }
+  }
+
+  Future<bool> hasUpdate() async {
+    if (source.startsWith('built-in')) return false;
+
+    final versionFile = File('${PathManager().plugins}$name/.version');
+    if (!versionFile.existsSync()) return false;
+
+    final currentVersion = versionFile.readAsStringSync().trim();
+    final latestVersion = await getLatestVersion();
+    if (latestVersion == null) return false;
+
+    return currentVersion != latestVersion;
+  }
 
   Plugin(
     this.name,
@@ -153,7 +192,7 @@ Plugin? _parseManifest(String manifestJson, String pluginPath) {
 }
 
 List<Plugin> getAvailablePlugins(String pluginDirPath) {
-  final plugins = _builtInPlugins;
+  final plugins = List<Plugin>.from(_builtInPlugins);
   final directory = Directory(pluginDirPath);
   if (!directory.existsSync()) {
     return plugins;
@@ -165,7 +204,7 @@ List<Plugin> getAvailablePlugins(String pluginDirPath) {
       if (manifestFile.existsSync()) {
         final manifestContent = manifestFile.readAsStringSync();
         final plugin = _parseManifest(manifestContent, file.path);
-        if (plugin != null && _isCurrentPlatformSupported(plugin.platforms)) {
+        if (plugin != null && isCurrentPlatformSupported(plugin.platforms)) {
           plugins.add(plugin);
         }
       }
@@ -174,7 +213,7 @@ List<Plugin> getAvailablePlugins(String pluginDirPath) {
   return plugins;
 }
 
-bool _isCurrentPlatformSupported(List<String> platforms) {
+bool isCurrentPlatformSupported(List<String> platforms) {
   if (Platform.isWindows) return platforms.contains('windows');
   if (Platform.isMacOS) return platforms.contains('macos');
   if (Platform.isLinux) return platforms.contains('linux');

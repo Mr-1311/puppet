@@ -142,7 +142,6 @@ class Wheel extends ConsumerWidget {
       child: Listener(
         onPointerHover: (event) => _updateHoverSection(event, size, sectionAngle, centerSize, ref),
         onPointerUp: (event) {
-          print(ref.read(hoveredSectionProvider));
           _updateHoverSection(event, size, sectionAngle, centerSize, ref);
           ref.read(searchQueryProvider.notifier).state = '';
           ref.read(itemsProvider.notifier).onClick(currentItems[ref.read(hoveredSectionProvider) - 1]);

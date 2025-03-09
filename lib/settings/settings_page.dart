@@ -18,15 +18,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget build(BuildContext context) {
     final config = ref.watch(configProvider);
     final themeData = ThemeData(colorSchemeSeed: Colors.blue);
-    final darkThemeData =
-        ThemeData(colorSchemeSeed: Colors.blue, brightness: Brightness.dark);
+    final darkThemeData = ThemeData(colorSchemeSeed: Colors.blue, brightness: Brightness.dark);
     return MaterialApp(
       theme: themeData,
       darkTheme: darkThemeData,
       themeMode: config.whenOrNull(data: (conf) {
-            switch (conf.menus
-                .firstWhere((element) => element.name == conf.mainMenu)
-                .themeColorScheme) {
+            switch (conf.menus.firstWhere((element) => element.name == conf.mainMenu).themeColorScheme) {
               case 'light':
                 return ThemeMode.light;
               case 'dark':
@@ -54,15 +51,10 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
   Widget build(BuildContext context) {
     // ref.read(systemBrightnessProvider.notifier).state =
     //     MediaQuery.of(context).platformBrightness == Brightness.dark ? 'dark' : 'light';
-    ref
-        .watch(systemBrightnessNotifierProvider.notifier)
-        .setSystemTheme(context);
+    ref.watch(systemBrightnessNotifierProvider.notifier).setSystemTheme(context);
 
-    final surfaceColor = Color.alphaBlend(
-        Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
-        Theme.of(context).brightness == Brightness.dark
-            ? Colors.black
-            : Colors.white);
+    final surfaceColor = Color.alphaBlend(Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
+        Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white);
 
     final conf = ref.watch(configProvider).whenOrNull(data: (value) => value);
     return Scaffold(
@@ -121,8 +113,7 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
                 child: Scaffold(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
                   body: Column(
                     children: [
                       generatePanelHeader(ref, context, index),
@@ -167,8 +158,8 @@ Padding generatePanelHeader(WidgetRef ref, BuildContext context, int index) {
     0 when menuDetail != null => menuDetail,
     1 when themeDetail == null => 'Themes',
     1 when themeDetail != null => themeDetail,
-    2 when pluginDetail == null => 'Plugins',
-    2 when pluginDetail != null => pluginDetail,
+    2 when pluginDetail.$1 == null => 'Plugins',
+    2 when pluginDetail.$1 != null => pluginDetail.$1 ?? 'Plugins',
     _ => 'Settings',
   };
   final style = Theme.of(context).textTheme.headlineMedium!;
@@ -179,12 +170,9 @@ Padding generatePanelHeader(WidgetRef ref, BuildContext context, int index) {
       children: [
         IconButton(
             onPressed: switch (index) {
-              0 when menuDetail != null => () =>
-                  ref.read(menuDetailProvider.notifier).state = null,
-              1 when themeDetail != null => () =>
-                  ref.read(themeDetailProvider.notifier).state = null,
-              2 when pluginDetail != null => () =>
-                  ref.read(selectedPluginProvider.notifier).state = null,
+              0 when menuDetail != null => () => ref.read(menuDetailProvider.notifier).state = null,
+              1 when themeDetail != null => () => ref.read(themeDetailProvider.notifier).state = null,
+              2 when pluginDetail.$1 != null => () => ref.read(selectedPluginProvider.notifier).state = (null, false),
               _ => null,
             },
             icon: FaIcon(

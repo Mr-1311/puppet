@@ -3,15 +3,14 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:puppet/config/path_manager.dart';
 import 'package:puppet/plugin/plugin_model.dart';
+import 'package:puppet/plugin/marketplace.dart';
+import 'package:puppet/settings/marketplace_detail.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:puppet/providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
-final selectedPluginProvider = StateProvider<String?>((ref) => null);
-
-final availablePluginsProvider = Provider<List<Plugin>>((ref) {
-  return getAvailablePlugins(PathManager().plugins);
-});
+final selectedPluginProvider = StateProvider<(String?, bool)>((ref) => (null, false));
 
 class PluginsPane extends ConsumerWidget {
   const PluginsPane({super.key});
@@ -20,8 +19,10 @@ class PluginsPane extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedPlugin = ref.watch(selectedPluginProvider);
 
-    if (selectedPlugin != null) {
+    if (selectedPlugin.$1 != null && !selectedPlugin.$2) {
       return PluginDetailPane();
+    } else if (selectedPlugin.$2) {
+      return MarketplacePluginDetailPane();
     }
 
     return DefaultTabController(
@@ -46,28 +47,8 @@ class PluginsPane extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: TabBarView(
             children: [
-              // Installed plugins tab
               InstalledPluginsView(),
-              // Explore tab (to be implemented)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.wandMagicSparkles,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Plugin marketplace coming soon...',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                          ),
-                    ),
-                  ],
-                ),
-              ),
+              _ExplorePluginsView(),
             ],
           ),
         ),
@@ -81,7 +62,7 @@ class InstalledPluginsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plugins = ref.watch(availablePluginsProvider);
+    final plugins = ref.watch(pluginProvider);
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 85.0),
@@ -90,7 +71,7 @@ class InstalledPluginsView extends ConsumerWidget {
         final plugin = plugins[index];
         return Card(
           child: InkWell(
-            onTap: () => ref.read(selectedPluginProvider.notifier).state = plugin.name,
+            onTap: () => ref.read(selectedPluginProvider.notifier).state = (plugin.name, false),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
@@ -132,9 +113,54 @@ class InstalledPluginsView extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  FaIcon(
-                    FontAwesomeIcons.chevronRight,
-                    size: 14,
+                  Row(
+                    children: [
+                      if (!plugin.source.startsWith('built-in'))
+                        IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Delete Plugin'),
+                                content: Text('Are you sure you want to delete ${plugin.name}?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text('Cancel'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () {
+                                      try {
+                                        final dir = Directory('${PathManager().plugins}${plugin.name}');
+                                        if (dir.existsSync()) {
+                                          dir.deleteSync(recursive: true);
+                                          ref.invalidate(pluginProvider);
+                                          ref.read(selectedPluginProvider.notifier).state = (null, false);
+                                          Navigator.pop(context);
+                                        }
+                                      } catch (e) {
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Failed to delete plugin')),
+                                        );
+                                      }
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: Theme.of(context).colorScheme.error,
+                                    ),
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.delete),
+                        ),
+                      FaIcon(
+                        FontAwesomeIcons.chevronRight,
+                        size: 18,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -142,6 +168,207 @@ class InstalledPluginsView extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ExplorePluginsView extends ConsumerStatefulWidget {
+  const _ExplorePluginsView();
+
+  @override
+  ConsumerState<_ExplorePluginsView> createState() => _ExplorePluginsViewState();
+}
+
+class _ExplorePluginsViewState extends ConsumerState<_ExplorePluginsView> {
+  final searchController = TextEditingController();
+  String searchQuery = '';
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesSearch(MarketplacePlugin plugin) {
+    if (searchQuery.isEmpty) return true;
+
+    final query = searchQuery.toLowerCase();
+    return plugin.name.toLowerCase().contains(query) ||
+        plugin.description.toLowerCase().contains(query) ||
+        plugin.author.toLowerCase().contains(query);
+  }
+
+  Widget _buildPluginItem(BuildContext context, MarketplacePlugin plugin) {
+    return Card(
+      child: InkWell(
+        onTap: () {
+          ref.read(selectedMarketplacePluginProvider.notifier).state = plugin.name;
+          ref.read(selectedPluginProvider.notifier).state = (plugin.name, true);
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      plugin.name,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      plugin.description,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Chip(
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FaIcon(FontAwesomeIcons.computer, size: 12),
+                              SizedBox(width: 6),
+                              Text(
+                                plugin.platforms.join(', '),
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Chip(
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FaIcon(FontAwesomeIcons.user, size: 12),
+                              SizedBox(width: 6),
+                              Text(
+                                plugin.author,
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Builder(
+                builder: (context) {
+                  if (!isCurrentPlatformSupported(plugin.platforms)) {
+                    return Chip(
+                      label: Text('Not Supported'),
+                      backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                    );
+                  } else if (plugin.isInstalled) {
+                    return Chip(
+                      label: Text('Installed'),
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    );
+                  } else if (plugin.isInstalling) {
+                    return SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    );
+                  } else {
+                    return FilledButton.icon(
+                      onPressed: () async {
+                        final notifier = ref.read(marketplacePluginsProvider.notifier);
+                        notifier.setPluginInstalling(plugin.name, true);
+                        final success = await notifier.installPlugin(plugin);
+                        if (success) {
+                          ref.invalidate(pluginProvider);
+                        } else {
+                          notifier.setPluginInstalling(plugin.name, false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to install plugin')),
+                          );
+                        }
+                      },
+                      icon: FaIcon(FontAwesomeIcons.download, size: 14),
+                      label: Text('Install'),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final plugins = ref.watch(marketplacePluginsProvider);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: 'Search plugins...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onChanged: (value) => setState(() => searchQuery = value),
+          ),
+        ),
+        Expanded(
+          child: plugins.when(
+            data: (plugins) {
+              final filteredPlugins = plugins.where(_matchesSearch).toList();
+              return ListView.builder(
+                padding: const EdgeInsets.only(bottom: 85.0),
+                itemCount: filteredPlugins.length,
+                itemBuilder: (context, index) => _buildPluginItem(context, filteredPlugins[index]),
+              );
+            },
+            loading: () => Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.circleExclamation,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Failed to load plugins',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -183,8 +410,9 @@ class PluginDetailPane extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pluginName = ref.watch(selectedPluginProvider);
-    final plugins = ref.watch(availablePluginsProvider);
+    final selected = ref.watch(selectedPluginProvider);
+    final pluginName = selected.$1;
+    final plugins = ref.watch(pluginProvider);
     final plugin = plugins.firstWhere((p) => p.name == pluginName);
     final readmeContent = _findReadmeContent(plugin.name);
 

@@ -135,15 +135,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
   @override
   Widget build(BuildContext context) {
     final conf = ref.watch(configProvider);
-    conf.whenData((value) {
-      // print(value.toString());
-      // print('errors: ${value.errors}');
-      // print('warnings: ${value.warnings}');
-    });
     final menu = ref.watch(menuProvider);
-    // menu.whenData((value) {
-    //   print(value.height);
-    // });
 
     // Set the text scaler from MediaQuery
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -171,19 +163,6 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
                         windowManager.hide();
                       }
                     },
-                    // const SingleActivator(
-                    //   LogicalKeyboardKey.backspace,
-                    // ): () {
-                    //   final searchQuery = ref.read(searchQueryProvider);
-                    //   if (searchQuery.isNotEmpty) {
-                    //     print('backspace');
-                    //     DoNothingAction();
-                    //     // ref.read(searchQueryProvider.notifier).state =
-                    //     //     searchQuery.substring(0, searchQuery.length - 1);
-                    //   } else {
-                    //     ref.read(menuProvider.notifier).back();
-                    //   }
-                    // },
                   },
                   child: Focus(
                     autofocus: true,

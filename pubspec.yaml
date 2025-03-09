@@ -20,6 +20,7 @@ dependencies:
   font_awesome_flutter: ^10.6.0
   gradient_borders: ^1.0.1
   hotkey_manager: ^0.2.3
+  http: ^1.3.0
   rust_lib_puppet:
     path: rust_builder
   screen_retriever: ^0.2.0
