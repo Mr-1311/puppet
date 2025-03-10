@@ -235,6 +235,7 @@ class MarketplacePluginsNotifier extends AsyncNotifier<List<MarketplacePlugin>> 
             p
       ]);
 
+      stdout.write('config_updated');
       return true;
     } catch (e) {
       print('Error installing plugin: $e');
@@ -336,6 +337,7 @@ Future<bool> updatePlugin(Plugin plugin) async {
     }
 
     await Directory(backupDir).delete(recursive: true);
+    stdout.write('config_updated');
     return true;
   } catch (e) {
     print('Error installing plugin: $e');

@@ -96,14 +96,14 @@ class _SettingsScaffoldState extends ConsumerState<SettingsScaffold> {
                 label: Text('Plugins'),
                 icon: FaIcon(FontAwesomeIcons.puzzlePiece),
               ),
-              ...(conf != null && conf.warnings.isNotEmpty)
-                  ? [
-                      NavigationDrawerDestination(
-                        label: Text('Warnings'),
-                        icon: FaIcon(FontAwesomeIcons.triangleExclamation),
-                      ),
-                    ]
-                  : [],
+              // ...(conf != null && conf.warnings.isNotEmpty)
+              //     ? [
+              //         NavigationDrawerDestination(
+              //           label: Text('Warnings'),
+              //           icon: FaIcon(FontAwesomeIcons.triangleExclamation),
+              //         ),
+              //       ]
+              //     : [],
             ],
           ),
           // Right panel

@@ -19,12 +19,12 @@ class ThemeDetailPane extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final themeName = ref.watch(themeDetailProvider);
     final ThemeVariants? themeVariants = theme.when(
-      data: (value) =>
-          value.entries.firstWhere((element) => element.key == themeName).value,
+      data: (value) => value.entries.firstWhere((element) => element.key == themeName).value,
       error: (o, e) => null,
       loading: () => null,
     );
-    var nameValue = themeName.toString();
+    // var nameValue = themeName.toString();
+    var nameValue = themeName ?? '';
     return themeVariants != null
         ? (ListView(
             children: [
@@ -48,19 +48,12 @@ class ThemeDetailPane extends ConsumerWidget {
                           ),
                           onFocusChange: (value) {
                             if (!value) {
-                              if (nameValue != themeName &&
-                                  !ref
-                                      .read(themeProvider.notifier)
-                                      .isNameUnique(nameValue)) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
+                              if (nameValue != themeName && !ref.read(themeProvider.notifier).isNameUnique(nameValue)) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                   content: Text('Name must be unique'),
                                 ));
-                              } else if (nameValue != themeName &&
-                                  nameValue.isNotEmpty) {
-                                ref
-                                    .read(themeProvider.notifier)
-                                    .changeName(themeName!, nameValue);
+                              } else if (nameValue != themeName && nameValue.isNotEmpty) {
+                                ref.read(themeProvider.notifier).changeName(themeName!, nameValue);
                               }
                             }
                           },
@@ -78,8 +71,7 @@ class ThemeDetailPane extends ConsumerWidget {
                   style: m.Theme.of(context).textTheme.titleLarge,
                 ),
               ),
-              ..._getThemeProps(
-                  context, themeVariants.light, themeName, true, ref),
+              ..._getThemeProps(context, themeVariants.light, themeName, true, ref),
               Divider(),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -88,15 +80,13 @@ class ThemeDetailPane extends ConsumerWidget {
                   style: m.Theme.of(context).textTheme.titleLarge,
                 ),
               ),
-              ..._getThemeProps(
-                  context, themeVariants.dark, themeName, false, ref),
+              ..._getThemeProps(context, themeVariants.dark, themeName, false, ref),
             ],
           ))
         : Text('No theme found');
   }
 
-  List<Widget> _getThemeProps(BuildContext context, t.Theme theme,
-      String? themeName, bool isLight, WidgetRef ref) {
+  List<Widget> _getThemeProps(BuildContext context, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     return [
       for (final prop in ThemeProps.values)
         Card(
@@ -130,12 +120,9 @@ class ThemeDetailPane extends ConsumerWidget {
                   ),
                 ),
                 switch (prop.propType) {
-                  AutoOrNum =>
-                    _getAutoOrNumWidget(prop, theme, themeName, isLight, ref),
+                  AutoOrNum => _getAutoOrNumWidget(prop, theme, themeName, isLight, ref),
                   bool => _getBoolWidget(prop, theme, themeName, isLight, ref),
-                  ThemeColor ||
-                  ThemeColorSolid =>
-                    _getColorWidget(prop, theme, themeName, isLight, ref),
+                  ThemeColor || ThemeColorSolid => _getColorWidget(prop, theme, themeName, isLight, ref),
                   Font => _getFontWidget(prop, theme, themeName, isLight, ref),
                   _ => throw UnimplementedError(),
                 },
@@ -146,8 +133,7 @@ class ThemeDetailPane extends ConsumerWidget {
     ];
   }
 
-  Widget _getAutoOrNumWidget(ThemeProps prop, t.Theme theme, String? themeName,
-      bool isLight, WidgetRef ref) {
+  Widget _getAutoOrNumWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     final isAuto = prop.getPropVariable(theme) is AONAuto;
     var intVal = prop.getPropVariable(theme).toString();
     return Row(
@@ -157,8 +143,7 @@ class ThemeDetailPane extends ConsumerWidget {
         Switch(
             value: isAuto,
             onChanged: (val) {
-              _updateTheme(val ? AONAuto() : AONInt.def(), prop, theme,
-                  themeName, isLight, ref);
+              _updateTheme(val ? AONAuto() : AONInt.def(), prop, theme, themeName, isLight, ref);
             }),
         VerticalDivider(),
         ConstrainedBox(
@@ -172,8 +157,7 @@ class ThemeDetailPane extends ConsumerWidget {
             ),
             onFocusChange: (value) {
               if (!value) {
-                _updateTheme(AONInt.fromStr(intVal), prop, theme, themeName,
-                    isLight, ref);
+                _updateTheme(AONInt.fromStr(intVal), prop, theme, themeName, isLight, ref);
               }
             },
           ),
@@ -182,8 +166,7 @@ class ThemeDetailPane extends ConsumerWidget {
     );
   }
 
-  _getBoolWidget(ThemeProps prop, t.Theme theme, String? themeName,
-      bool isLight, WidgetRef ref) {
+  _getBoolWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     return Row(
       children: [
         Text(
@@ -201,19 +184,17 @@ class ThemeDetailPane extends ConsumerWidget {
     );
   }
 
-  _getFontWidget(ThemeProps prop, t.Theme theme, String? themeName,
-      bool isLight, WidgetRef ref) {
-    final fontVal = prop.getPropVariable(theme).value as String;
+  _getFontWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
+    final fontVal = prop.getPropVariable(theme).value;
     return SystemFontSelector(
-      initial: fontVal.isEmpty ? null : fontVal,
+      initial: fontVal,
       onFontSelected: (val) {
         _updateTheme(Font(val), prop, theme, themeName, isLight, ref);
       },
     );
   }
 
-  _getColorWidget(ThemeProps prop, t.Theme theme, String? themeName,
-      bool isLight, WidgetRef ref) {
+  _getColorWidget(ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     return InkWell(
       onTap: () => _showColorPickerDialog(ref, prop, theme).then((value) {
         if (value == null) return;
@@ -232,8 +213,7 @@ class ThemeDetailPane extends ConsumerWidget {
     );
   }
 
-  Future<ThemeColor?> _showColorPickerDialog(
-      WidgetRef ref, ThemeProps prop, t.Theme theme) {
+  Future<ThemeColor?> _showColorPickerDialog(WidgetRef ref, ThemeProps prop, t.Theme theme) {
     t.ThemeColor res = prop.getPropVariable(theme);
     return showDialog<ThemeColor?>(
       context: ref.context,
@@ -247,11 +227,7 @@ class ThemeDetailPane extends ConsumerWidget {
                 onChange: (p0) => res = p0,
                 availableTypes: prop.propType == ThemeColorSolid
                     ? [PickerType.solid]
-                    : [
-                        PickerType.solid,
-                        PickerType.linearGradient,
-                        PickerType.radialGradient
-                      ],
+                    : [PickerType.solid, PickerType.linearGradient, PickerType.radialGradient],
               ),
             ),
           ),
@@ -280,8 +256,7 @@ class ThemeDetailPane extends ConsumerWidget {
     );
   }
 
-  void _updateTheme(dynamic val, ThemeProps prop, t.Theme theme,
-      String? themeName, bool isLight, WidgetRef ref) {
+  void _updateTheme(dynamic val, ThemeProps prop, t.Theme theme, String? themeName, bool isLight, WidgetRef ref) {
     prop.setPropVariable(theme, val);
     ref.read(themeProvider.notifier).updateTheme(theme, themeName, isLight);
   }

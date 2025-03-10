@@ -178,7 +178,9 @@ class InstalledPluginsView extends ConsumerWidget {
                                         if (dir.existsSync()) {
                                           dir.deleteSync(recursive: true);
                                           ref.invalidate(pluginProvider);
+                                          ref.invalidate(marketplacePluginsProvider);
                                           ref.read(selectedPluginProvider.notifier).state = (null, false);
+                                          stdout.write('config_updated');
                                           Navigator.pop(context);
                                         }
                                       } catch (e) {

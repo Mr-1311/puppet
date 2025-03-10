@@ -196,6 +196,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
           if (data == 'config_updated') {
             // ref.read(itemsProvider.notifier).clearCache();
             await ref.read(configProvider.notifier).rebuild();
+            ref.invalidate(pluginProvider);
           }
           if (data == 'theme_updated') {
             ref.read(themeProvider.notifier).rebuild();

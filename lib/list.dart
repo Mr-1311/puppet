@@ -572,7 +572,7 @@ class _ShortcutLabel extends ConsumerWidget {
       child: Text(
         item.shortcut?.isNotEmpty == true
             ? '$shortcutPrefix${item.shortcut}${index < 9 ? ' | ${index + 1}' : ''}'
-            : '$shortcutPrefix${index < 9 ? '${index + 1}' : ''}',
+            : '${index < 9 ? '$shortcutPrefix${index + 1}' : ''}',
         style: TextStyle(
           color: themeBrightness ? kDarkShortcutLabelColor : kLightShortcutLabelColor,
           letterSpacing: 2,
