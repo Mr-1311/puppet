@@ -12,6 +12,8 @@ import 'dart:io';
 
 final selectedPluginProvider = StateProvider<(String?, bool)>((ref) => (null, false));
 
+final updatingPluginProvider = StateProvider<String?>((ref) => null);
+
 class PluginsPane extends ConsumerWidget {
   const PluginsPane({super.key});
 
@@ -63,6 +65,7 @@ class InstalledPluginsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plugins = ref.watch(pluginProvider);
+    final updatingPlugin = ref.watch(updatingPluginProvider);
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 85.0),
@@ -115,7 +118,47 @@ class InstalledPluginsView extends ConsumerWidget {
                   ),
                   Row(
                     children: [
-                      if (!plugin.source.startsWith('built-in'))
+                      if (!plugin.source.startsWith('built-in')) ...[
+                        FutureBuilder<bool>(
+                          future: plugin.hasUpdate(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data == true) {
+                              return updatingPlugin == plugin.name
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : IconButton(
+                                      onPressed: () async {
+                                        ref.read(updatingPluginProvider.notifier).state = plugin.name;
+                                        final success = await updatePlugin(plugin);
+                                        if (success) {
+                                          ref.invalidate(pluginProvider);
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Plugin updated successfully')),
+                                            );
+                                          }
+                                        } else if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Failed to update plugin')),
+                                          );
+                                        }
+                                        ref.read(updatingPluginProvider.notifier).state = null;
+                                      },
+                                      icon: Icon(
+                                        Icons.upgrade,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                      tooltip: 'Update available',
+                                    );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
                         IconButton(
                           onPressed: () {
                             showDialog(
@@ -155,7 +198,8 @@ class InstalledPluginsView extends ConsumerWidget {
                             );
                           },
                           icon: Icon(Icons.delete),
-                        ),
+                        )
+                      ],
                       FaIcon(
                         FontAwesomeIcons.chevronRight,
                         size: 18,

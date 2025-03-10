@@ -46,7 +46,7 @@ class Plugin {
     if (source.startsWith('built-in')) return false;
 
     final versionFile = File('${PathManager().plugins}$name/.version');
-    if (!versionFile.existsSync()) return false;
+    if (!versionFile.existsSync()) return true;
 
     final currentVersion = versionFile.readAsStringSync().trim();
     final latestVersion = await getLatestVersion();

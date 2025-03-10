@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:puppet/config/path_manager.dart';
+import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/providers.dart';
 import 'package:path/path.dart' as path;
 
@@ -39,6 +40,32 @@ class MarketplacePlugin {
 final marketplacePluginsProvider =
     AsyncNotifierProvider<MarketplacePluginsNotifier, List<MarketplacePlugin>>(MarketplacePluginsNotifier.new);
 
+Future<Map<String, dynamic>?> _fetchLatestRelease(String repo) async {
+  final uri = Uri.parse(repo);
+  final pathSegments = uri.pathSegments;
+  if (pathSegments.length < 2) {
+    print('Invalid GitHub URL: $repo');
+    return null;
+  }
+
+  final repoPath = '${pathSegments[0]}/${pathSegments[1]}';
+  final apiUrl = 'https://api.github.com/repos/$repoPath/releases/latest';
+  final response = await http.get(Uri.parse(apiUrl));
+  if (response.statusCode != 200) return null;
+
+  final release = jsonDecode(response.body);
+  final assets = release['assets'] as List;
+  final version = release['tag_name'] as String;
+
+  return {
+    'version': version,
+    'assets': Map.fromEntries(assets.map((asset) => MapEntry(
+          asset['name'].toString().toLowerCase(),
+          asset['browser_download_url'] as String,
+        ))),
+  };
+}
+
 class MarketplacePluginsNotifier extends AsyncNotifier<List<MarketplacePlugin>> {
   static const _pluginsUrl = 'https://raw.githubusercontent.com/Mr-1311/puppet-plugins/main/plugins.json';
 
@@ -59,39 +86,6 @@ class MarketplacePluginsNotifier extends AsyncNotifier<List<MarketplacePlugin>> 
     }
 
     return plugins;
-  }
-
-  Future<Map<String, dynamic>?> _fetchLatestRelease(String repo) async {
-    final uri = Uri.parse(repo);
-    final pathSegments = uri.pathSegments;
-    if (pathSegments.length < 2) {
-      print('Invalid GitHub URL: $repo');
-      return null;
-    }
-
-    final repoPath = '${pathSegments[0]}/${pathSegments[1]}';
-    final apiUrl = 'https://api.github.com/repos/$repoPath/releases/latest';
-    final response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode != 200) return null;
-
-    final release = jsonDecode(response.body);
-    final assets = release['assets'] as List;
-    final version = release['tag_name'] as String;
-
-    return {
-      'version': version,
-      'assets': Map.fromEntries(assets.map((asset) => MapEntry(
-            asset['name'].toString().toLowerCase(),
-            asset['browser_download_url'] as String,
-          ))),
-    };
-  }
-
-  Future<String?> _downloadAsset(String url, bool isBinary) async {
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode != 200) return null;
-
-    return isBinary ? base64.encode(response.bodyBytes) : utf8.decode(response.bodyBytes);
   }
 
   Future<(String?, String?)> getPluginDetails(MarketplacePlugin plugin) async {
@@ -247,4 +241,113 @@ class MarketplacePluginsNotifier extends AsyncNotifier<List<MarketplacePlugin>> 
       return false;
     }
   }
+}
+
+Future<bool> updatePlugin(Plugin plugin) async {
+  final pluginsPath = PathManager().plugins;
+  final pluginPath = path.join(pluginsPath, plugin.name);
+  final pluginDir = Directory(pluginPath);
+  final backupDir = '${pluginDir.path}.b';
+
+  try {
+    if (Directory(backupDir).existsSync()) {
+      Directory(backupDir).deleteSync(recursive: true);
+    }
+    pluginDir.renameSync(backupDir);
+
+    // Create empty plugin directory
+    pluginDir.createSync();
+
+    // Fetch release info
+    final release = await _fetchLatestRelease(plugin.source);
+    if (release == null) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+
+    final assets = release['assets'] as Map<String, String>;
+    final version = release['version'] as String;
+
+    // Get and verify manifest
+    if (!assets.containsKey('manifest.json')) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+
+    final manifestContent = await _downloadAsset(assets['manifest.json']!, false);
+    if (manifestContent == null) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+
+    // Save manifest and verify name
+    final manifestPath = path.join(pluginPath, 'manifest.json');
+    await File(manifestPath).writeAsString(manifestContent);
+
+    final manifestJson = jsonDecode(manifestContent);
+    if (manifestJson['name'] != plugin.name) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+
+    // Save version file
+    await File(path.join(pluginPath, '.version')).writeAsString(version);
+
+    // Get and save plugin.wasm
+    if (!assets.containsKey('plugin.wasm')) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+
+    final wasmContent = await _downloadAsset(assets['plugin.wasm']!, true);
+    if (wasmContent == null) {
+      await pluginDir.delete(recursive: true);
+      await Directory(backupDir).rename(pluginPath);
+      return false;
+    }
+    await File(path.join(pluginPath, 'plugin.wasm')).writeAsBytes(base64.decode(wasmContent));
+
+    // Try to save readme
+    if (assets.containsKey('readme.md') || assets.containsKey('README.md')) {
+      final readmeUrl = assets['readme.md'] ?? assets['README.md'];
+      final readmeContent = await _downloadAsset(readmeUrl!, false);
+      if (readmeContent != null) {
+        await File(path.join(pluginPath, 'readme.md')).writeAsString(readmeContent);
+      }
+    }
+
+    // Save other assets to data directory
+    final dataDir = Directory(path.join(pluginPath, 'data'));
+    dataDir.createSync();
+
+    for (final entry in assets.entries) {
+      final name = entry.key;
+      if (!['plugin.wasm', 'manifest.json', 'readme.md', 'README.md'].contains(name)) {
+        final content = await _downloadAsset(entry.value, false);
+        if (content != null) {
+          await File(path.join(dataDir.path, name)).writeAsBytes(base64.decode(content));
+        }
+      }
+    }
+
+    await Directory(backupDir).delete(recursive: true);
+    return true;
+  } catch (e) {
+    print('Error installing plugin: $e');
+    await pluginDir.delete(recursive: true);
+    await Directory(backupDir).rename(pluginPath);
+    return false;
+  }
+}
+
+Future<String?> _downloadAsset(String url, bool isBinary) async {
+  final response = await http.get(Uri.parse(url));
+  if (response.statusCode != 200) return null;
+
+  return isBinary ? base64.encode(response.bodyBytes) : utf8.decode(response.bodyBytes);
 }

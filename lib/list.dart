@@ -43,6 +43,7 @@ final searchFocusProvider = Provider((ref) {
   ref.onDispose(() => focusNode.dispose());
   return focusNode;
 });
+
 final searchControllerProvider = Provider.autoDispose((ref) {
   final controller = TextEditingController();
 
@@ -147,7 +148,6 @@ class _ListContainer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hoveredIndex = ref.watch(hoveredItemProvider);
-
     return Container(
       decoration: BoxDecoration(
         color: switch (theme?.backgroundColor) {
@@ -188,6 +188,7 @@ class _ListContainer extends ConsumerWidget {
               type: MaterialType.transparency,
               child: TextField(
                 controller: ref.watch(searchControllerProvider),
+                autofocus: true,
                 focusNode: ref.read(searchFocusProvider),
                 onTapOutside: (event) => ref.read(searchFocusProvider).previousFocus(),
                 onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,

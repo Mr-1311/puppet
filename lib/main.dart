@@ -285,6 +285,9 @@ class _MenuState extends ConsumerState<Menu> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.menu.menuType == MenuType.list) {
+      ref.read(searchFocusProvider).requestFocus();
+    }
     return switch (widget.menu) {
       Menus(menuType: MenuType.wheel) => Wheel(maxElement: widget.menu.maxElement, menuName: widget.menu.name),
       Menus(menuType: MenuType.list) =>
