@@ -28,7 +28,7 @@
           "icon": "50",
           "plugin": "run",
           "pluginArgs": {
-            "command": "open",
+            "command": "xdg-open",
             "arguments": "https://github.com/Mr-1311/puppet",
             "environment variables": "{}",
             "run in shell": "false"

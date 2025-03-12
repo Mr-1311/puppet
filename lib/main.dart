@@ -25,6 +25,7 @@ void _setWindowMode(bool isSettings) {
     windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
   } else {
+    windowManager.setAlwaysOnTop(true);
     windowManager.setBackgroundColor(Colors.transparent);
     windowManager.setResizable(false);
 
@@ -40,10 +41,8 @@ void _setWindowMode(bool isSettings) {
       windowManager.setMaximizable(false);
       windowManager.setHasShadow(false);
     }
-
     windowManager.setAsFrameless();
     windowManager.setPreventClose(true);
-    windowManager.setAlwaysOnTop(true);
   }
 }
 
