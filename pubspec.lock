@@ -372,10 +372,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_rust_bridge
-      sha256: "35c257fc7f98e34c1314d6c145e5ed54e7c94e8a9f469947e31c9298177d546f"
+      sha256: "5a5c7a5deeef2cc2ffe6076a33b0429f4a20ceac22a397297aed2b1eb067e611"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.9.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -1120,6 +1120,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  wayland_layer_shell:
+    dependency: "direct main"
+    description:
+      name: wayland_layer_shell
+      sha256: fa71ae0e4b63c91ae1a882c52850f366a3c241f900773cea845761e589ce14fc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   web:
     dependency: transitive
     description:

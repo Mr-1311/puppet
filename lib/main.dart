@@ -8,16 +8,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/providers.dart';
-import 'package:puppet/error_page.dart';
 import 'package:puppet/settings/settings_page.dart';
 import 'package:puppet/src/rust/frb_generated.dart';
 import 'package:puppet/wheel.dart';
 import 'package:tray_manager/tray_manager.dart' as tray;
+import 'package:wayland_layer_shell/types.dart';
+import 'package:wayland_layer_shell/wayland_layer_shell.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:collection/collection.dart';
 import 'package:puppet/list.dart';
 
-void _setWindowMode(bool isSettings) {
+Future<void> _setWindowMode(bool isSettings) async {
   if (isSettings) {
     windowManager.setTitle('Settings');
     windowManager.setIcon(Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png');
@@ -25,10 +26,15 @@ void _setWindowMode(bool isSettings) {
     windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
   } else {
-    windowManager.setAlwaysOnTop(true);
+    if (Platform.isLinux) {
+      isWayland = await WaylandLayerShell().initialize(650, 600);
+      if (isWayland)
+        await WaylandLayerShell().setKeyboardMode(ShellKeyboardMode.keyboardModeExclusive);
+        await WaylandLayerShell().setLayer(ShellLayer.layerOverlay);
+    }
+
     windowManager.setBackgroundColor(Colors.transparent);
     windowManager.setResizable(false);
-
     if (Platform.isMacOS) {
       windowManager.setMovable(false);
       windowManager.setMinimizable(false);
@@ -41,6 +47,7 @@ void _setWindowMode(bool isSettings) {
       windowManager.setMaximizable(false);
       windowManager.setHasShadow(false);
     }
+    windowManager.setAlwaysOnTop(true);
     windowManager.setAsFrameless();
     windowManager.setPreventClose(true);
   }
@@ -60,6 +67,7 @@ void main(List<String> args) async {
   // final isSettings = true;
   final bool isSettings = results['settings'];
   isSettingsApp = isSettings;
+  mainMenuArg = results['menu'] ?? "";
 
   _setWindowMode(isSettings);
   // tray icon settings
@@ -101,9 +109,6 @@ void main(List<String> args) async {
           ? SettingsPage()
           : Consumer(
               builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                if (results['menu'] != null) {
-                  ref.read(configProvider.notifier).setMainMenu(results['menu']);
-                }
                 return MainApp();
               },
             )));
@@ -133,7 +138,6 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
 
   @override
   Widget build(BuildContext context) {
-    final conf = ref.watch(configProvider);
     final menu = ref.watch(menuProvider);
 
     // Set the text scaler from MediaQuery
@@ -143,9 +147,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: switch (conf) {
-          AsyncData(value: final conf) when conf.errors.isNotEmpty => ErrorPage(conf.errors),
-          _ => switch (menu) {
+        home: switch (menu) {
               AsyncData(:final value) => CallbackShortcuts(
                   bindings: {
                     const SingleActivator(
@@ -170,7 +172,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
                 ),
               _ => CircularProgressIndicator(),
             }
-        });
+        );
   }
 
   @override

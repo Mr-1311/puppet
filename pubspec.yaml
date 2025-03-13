@@ -16,7 +16,7 @@ dependencies:
   flutter_iconpicker: ^4.0.1
   flutter_markdown: ^0.7.6+2
   flutter_riverpod: ^2.4.9
-  flutter_rust_bridge: 2.7.0
+  flutter_rust_bridge: 2.9.0
   font_awesome_flutter: ^10.6.0
   gradient_borders: ^1.0.1
   hotkey_manager: ^0.2.3
@@ -28,6 +28,7 @@ dependencies:
   system_fonts: ^1.0.1
   tray_manager: ^0.2.1
   url_launcher: ^6.3.1
+  wayland_layer_shell: ^1.0.1
   window_manager: ^0.4.0
 
 dev_dependencies:

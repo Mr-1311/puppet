@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:wayland_layer_shell/types.dart';
+import 'package:wayland_layer_shell/wayland_layer_shell.dart';
 
 Future<Offset> calculateWindowPosition(
     {required Size windowSize,
@@ -121,4 +123,20 @@ Future<Offset> getWindowOffsetOnMouse(Size windowSize) async {
   Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
   return Offset(cursorScreenPoint.dx - windowSize.width * 0.5,
       cursorScreenPoint.dy - windowSize.height * 0.5);
+}
+
+waylandSetAnchors(Alignment alignment) {
+  _waylandClearAnchors();
+  if (alignment == Alignment.center) {
+    return;
+  }
+
+}
+
+_waylandClearAnchors() {
+  final wls = WaylandLayerShell();
+  wls.setAnchor(ShellEdge.edgeBottom, false);
+  wls.setAnchor(ShellEdge.edgeLeft, false);
+  wls.setAnchor(ShellEdge.edgeRight, false);
+  wls.setAnchor(ShellEdge.edgeTop, false);
 }

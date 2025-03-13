@@ -12,6 +12,7 @@ import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:puppet/wheel.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:wayland_layer_shell/wayland_layer_shell.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:puppet/config/calculate_window_position.dart';
 import 'package:collection/collection.dart';
@@ -24,6 +25,8 @@ import 'config/theme.dart';
 import 'package:path/path.dart';
 
 bool isSettingsApp = false;
+String mainMenuArg = "";
+bool isWayland = false;
 
 void _hotkeyHandler(Config conf, Ref ref) async {
   if (isSettingsApp) {
@@ -161,7 +164,8 @@ class MenuNotifier extends AsyncNotifier<Menus> {
       return _menuHistory.last;
     }
 
-    final mainMenu = conf.menus.firstWhere((element) => element.name == conf.mainMenu);
+    String menuName = mainMenuArg.isNotEmpty ? mainMenuArg : conf.mainMenu;
+    final mainMenu = conf.menus.firstWhere((element) => element.name == menuName);
     _adjustWindow(mainMenu);
     _menuHistory = [mainMenu];
 
@@ -198,7 +202,12 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     if (menu.menuType == MenuType.list && (menu.height.trim().isEmpty || menu.height == '_')) {
       size = Size(size.width, _calculateListHeight(menu));
     }
-    windowManager.setSize(size);
+    if (isWayland) {
+
+    } else {
+      windowManager.setSize(size);
+    }
+
 
     final positionCoordinate = await calculateWindowPosition(
         windowSize: size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
