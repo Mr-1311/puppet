@@ -28,6 +28,7 @@ import 'package:path/path.dart';
 bool isSettingsApp = false;
 String mainMenuArg = "";
 bool isWayland = false;
+bool skipHide = false;
 
 void _hotkeyHandler(Config conf, Ref ref) async {
   if (isSettingsApp) {
@@ -399,7 +400,17 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
       ref
           .read(menuProvider.notifier)
           .changeMenu(conf.menus.firstWhere((element) => element.name == item.args['menu name']));
-    } else if (item.plugin == 'run') {
+
+      return;
+    }
+
+    if (item.repeat) {
+      skipHide = true;
+    } else {
+      windowManager.hide();
+    }
+
+    if (item.plugin == 'run') {
       final regExp = RegExp(r'("[^"]+"|\S+)');
       final args = regExp.allMatches(item.args['arguments']).map((match) {
         var item = match.group(0)!;
@@ -444,7 +455,6 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
       ref.read(menuProvider.notifier).clearHistory();
       ref.invalidate(menuProvider);
       ref.invalidate(currentPageProvider);
-      windowManager.hide();
     }
   }
 

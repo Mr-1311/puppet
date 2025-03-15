@@ -227,6 +227,10 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
 
   @override
   void onWindowBlur() {
+    if (skipHide) {
+      skipHide = false;
+      return;
+    }
     windowManager.hide();
   }
 }

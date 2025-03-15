@@ -192,6 +192,12 @@ class _ListContainer extends ConsumerWidget {
                 focusNode: ref.read(searchFocusProvider),
                 onTapOutside: (event) => ref.read(searchFocusProvider).previousFocus(),
                 onChanged: (value) => ref.read(searchQueryProvider.notifier).state = value,
+                onSubmitted: (_) {
+                  final item = ref.read(itemsProvider).valueOrNull?.first;
+                  if (item == null) return;
+                  ref.read(searchQueryProvider.notifier).state = '';
+                  ref.read(itemsProvider.notifier).onClick(item);
+                },
                 decoration: InputDecoration(
                   hintText: 'Search...',
                   prefixIcon: Icon(
