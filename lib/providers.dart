@@ -205,6 +205,9 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     if (menu.menuType == MenuType.list && (menu.height.trim().isEmpty || menu.height == '_')) {
       size = Size(size.width, _calculateListHeight(menu));
     }
+    if (menu.menuType == MenuType.wheel) {
+      size = Size(size.shortestSide, size.shortestSide);
+    }
 
     windowManager.setSize(size);
 
@@ -221,7 +224,7 @@ class MenuNotifier extends AsyncNotifier<Menus> {
 
       if (menu.alignment == null) {
         (positionCoordinate, currentDisplaySize) = await calculateWindowPosition(
-          windowSize: size, alignment: Alignment.center, offsets: menu.offsets, display: menu.monitor);
+            windowSize: size, alignment: Alignment.center, offsets: menu.offsets, display: menu.monitor);
       }
 
       wls.setMargin(ShellEdge.edgeLeft, positionCoordinate.dx.toInt());
