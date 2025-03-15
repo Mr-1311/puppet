@@ -8,6 +8,7 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/config/path_manager.dart';
 import 'package:puppet/list.dart';
+import 'package:puppet/main.dart';
 import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:puppet/wheel.dart';
@@ -190,7 +191,7 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     if (_menuHistory.length == 1) {
       // https://github.com/leanflutter/hotkey_manager/issues/20
       Future.delayed(const Duration(milliseconds: 190), () {
-        windowManager.hide();
+        handleHide();
       });
       return;
     }
@@ -407,7 +408,7 @@ class ItemsNotifier extends AsyncNotifier<List<PluginItem>> {
     if (item.repeat) {
       skipHide = true;
     } else {
-      windowManager.hide();
+      handleHide();
     }
 
     if (item.plugin == 'run') {

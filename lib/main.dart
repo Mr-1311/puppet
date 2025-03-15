@@ -76,7 +76,7 @@ void main(List<String> args) async {
   isSettingsApp = isSettings;
   mainMenuArg = results['menu'] ?? "";
 
-  if (!isSettings && !await fsi.FlutterSingleInstance().isFirstInstance()) {
+  if (!isSettings && mainMenuArg.isEmpty && !await fsi.FlutterSingleInstance().isFirstInstance()) {
     print("App is already running");
 
     final err = await fsi.FlutterSingleInstance().focus();
@@ -180,7 +180,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
                         ref.read(menuProvider.notifier).clearHistory();
                         ref.invalidate(menuProvider);
                         ref.invalidate(currentPageProvider);
-                        windowManager.hide();
+                        handleHide();
                       }
                     },
                   },
@@ -230,7 +230,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
 
   @override
   void onWindowClose() {
-    windowManager.hide();
+    handleHide();
   }
 
   @override
@@ -244,7 +244,7 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
       skipHide = false;
       return;
     }
-    windowManager.hide();
+    handleHide();
   }
 }
 
@@ -319,5 +319,13 @@ class _MenuState extends ConsumerState<Menu> {
         ListMenu(maxElement: widget.menu.maxElement, menuName: widget.menu.name, height: widget.menu.height),
       Menus(menuType: MenuType.canvas) => const CircularProgressIndicator(),
     };
+  }
+}
+
+handleHide() {
+  if (mainMenuArg.isEmpty) {
+    windowManager.hide();
+  } else {
+    windowManager.destroy();
   }
 }
