@@ -12,6 +12,7 @@ import 'package:puppet/plugin/plugin_model.dart';
 import 'package:puppet/settings/themes_pane.dart';
 import 'package:puppet/wheel.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:wayland_layer_shell/types.dart';
 import 'package:wayland_layer_shell/wayland_layer_shell.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:puppet/config/calculate_window_position.dart';
@@ -202,16 +203,30 @@ class MenuNotifier extends AsyncNotifier<Menus> {
     if (menu.menuType == MenuType.list && (menu.height.trim().isEmpty || menu.height == '_')) {
       size = Size(size.width, _calculateListHeight(menu));
     }
-    if (isWayland) {
 
-    } else {
-      windowManager.setSize(size);
-    }
+    windowManager.setSize(size);
 
-
-    final positionCoordinate = await calculateWindowPosition(
+    var (positionCoordinate, currentDisplaySize) = await calculateWindowPosition(
         windowSize: size, alignment: menu.alignment, offsets: menu.offsets, display: menu.monitor);
     windowManager.setPosition(positionCoordinate);
+
+    if (isWayland) {
+      final wls = WaylandLayerShell();
+      wls.setAnchor(ShellEdge.edgeBottom, true);
+      wls.setAnchor(ShellEdge.edgeLeft, true);
+      wls.setAnchor(ShellEdge.edgeRight, true);
+      wls.setAnchor(ShellEdge.edgeTop, true);
+
+      if (menu.alignment == null) {
+        (positionCoordinate, currentDisplaySize) = await calculateWindowPosition(
+          windowSize: size, alignment: Alignment.center, offsets: menu.offsets, display: menu.monitor);
+      }
+
+      wls.setMargin(ShellEdge.edgeLeft, positionCoordinate.dx.toInt());
+      wls.setMargin(ShellEdge.edgeTop, positionCoordinate.dy.toInt());
+      wls.setMargin(ShellEdge.edgeRight, (currentDisplaySize!.width - (positionCoordinate.dx + size.width)).toInt());
+      wls.setMargin(ShellEdge.edgeBottom, (currentDisplaySize.height - (positionCoordinate.dy + size.height)).toInt());
+    }
   }
 
   t.Theme _getCurrentTheme() {

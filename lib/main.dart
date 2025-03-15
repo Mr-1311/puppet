@@ -26,16 +26,10 @@ Future<void> _setWindowMode(bool isSettings) async {
     windowManager.setMinimumSize(Size(940, 640));
     windowManager.center();
   } else {
-    if (Platform.isLinux) {
-      isWayland = await WaylandLayerShell().initialize(650, 600);
-      if (isWayland)
-        await WaylandLayerShell().setKeyboardMode(ShellKeyboardMode.keyboardModeExclusive);
-        await WaylandLayerShell().setLayer(ShellLayer.layerOverlay);
-    }
-
     windowManager.setBackgroundColor(Colors.transparent);
-    windowManager.setResizable(false);
+
     if (Platform.isMacOS) {
+      windowManager.setResizable(false);
       windowManager.setMovable(false);
       windowManager.setMinimizable(false);
       windowManager.setMaximizable(false);
@@ -43,9 +37,18 @@ Future<void> _setWindowMode(bool isSettings) async {
       windowManager.setHasShadow(false);
     }
     if (Platform.isWindows) {
+      windowManager.setResizable(false);
       windowManager.setMinimizable(false);
       windowManager.setMaximizable(false);
       windowManager.setHasShadow(false);
+    }
+    if (Platform.isLinux) {
+      final wls = WaylandLayerShell();
+      if (await wls.initialize(400, 400)) {
+        isWayland = true;
+        wls.setKeyboardMode(ShellKeyboardMode.keyboardModeExclusive);
+        wls.setLayer(ShellLayer.layerOverlay);
+      }
     }
     windowManager.setAlwaysOnTop(true);
     windowManager.setAsFrameless();
@@ -57,6 +60,9 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   await hotKeyManager.unregisterAll();
+  if (Platform.isLinux) {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
   await RustLib.init();
 
   final argParser = ArgParser();
@@ -71,7 +77,7 @@ void main(List<String> args) async {
 
   _setWindowMode(isSettings);
   // tray icon settings
-  if (!isSettings) {
+  if (!isSettings && mainMenuArg.isEmpty) {
     await tray.trayManager.setIcon(
       Platform.isWindows ? 'assets/logo_32.ico' : 'assets/logo_64.png',
     );

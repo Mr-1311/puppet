@@ -17,6 +17,7 @@ dependencies:
   flutter_markdown: ^0.7.6+2
   flutter_riverpod: ^2.4.9
   flutter_rust_bridge: 2.9.0
+  flutter_svg: ^2.0.17
   font_awesome_flutter: ^10.6.0
   gradient_borders: ^1.0.1
   hotkey_manager: ^0.2.3

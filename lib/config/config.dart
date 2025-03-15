@@ -533,7 +533,9 @@ const supportedIconImageExtensions = [
   '.wbmp',
   '.ico',
   '.icon',
-  '.icns'
+  '.icns',
+  '.xpm',
+  '.svg'
 ];
 
 dynamic getIconData(String icon) {

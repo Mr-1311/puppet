@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
-import 'package:wayland_layer_shell/types.dart';
-import 'package:wayland_layer_shell/wayland_layer_shell.dart';
 
-Future<Offset> calculateWindowPosition(
+Future<(Offset, Size?)> calculateWindowPosition(
     {required Size windowSize,
     required Alignment? alignment,
     required List<Offset> offsets,
@@ -12,8 +10,8 @@ Future<Offset> calculateWindowPosition(
     String display = '1'}) async {
   Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
   if (alignment == null) {
-    return Offset(cursorScreenPoint.dx - windowSize.width * 0.5,
-        cursorScreenPoint.dy - windowSize.height * 0.5);
+    return (Offset(cursorScreenPoint.dx - windowSize.width * 0.5,
+        cursorScreenPoint.dy - windowSize.height * 0.5), null);
   }
 
   Display primaryDisplay = await screenRetriever.getPrimaryDisplay();
@@ -41,6 +39,8 @@ Future<Offset> calculateWindowPosition(
         ? allDisplays[displayIndex - 1]
         : primaryDisplay;
   }
+
+
 
   num visibleWidth = currentDisplay.size.width;
   num visibleHeight = currentDisplay.size.height;
@@ -116,7 +116,7 @@ Future<Offset> calculateWindowPosition(
     1.0 => position.dy - off.dy,
     _ => position.dy,
   };
-  return Offset(x, y);
+  return (Offset(x, y), currentDisplay.size);
 }
 
 Future<Offset> getWindowOffsetOnMouse(Size windowSize) async {
@@ -125,18 +125,28 @@ Future<Offset> getWindowOffsetOnMouse(Size windowSize) async {
       cursorScreenPoint.dy - windowSize.height * 0.5);
 }
 
-waylandSetAnchors(Alignment alignment) {
-  _waylandClearAnchors();
-  if (alignment == Alignment.center) {
-    return;
-  }
+// waylandSetAnchors(Alignment? alignment) {
+//   _waylandClearAnchors();
+//   if (alignment == null || alignment == Alignment.center) {
+//     return;
+//   }
+//   final wls = WaylandLayerShell();
+//   if (alignment.x == -1) {
+//     wls.setAnchor(ShellEdge.edgeLeft, true);
+//   } else if (alignment.x == 1) {
+//     wls.setAnchor(ShellEdge.edgeRight, true);
+//   }
+//   if (alignment.y == -1) {
+//     wls.setAnchor(ShellEdge.edgeTop, true);
+//   } else if (alignment.y == 1) {
+//     wls.setAnchor(ShellEdge.edgeBottom, true);
+//   }
+// }
 
-}
-
-_waylandClearAnchors() {
-  final wls = WaylandLayerShell();
-  wls.setAnchor(ShellEdge.edgeBottom, false);
-  wls.setAnchor(ShellEdge.edgeLeft, false);
-  wls.setAnchor(ShellEdge.edgeRight, false);
-  wls.setAnchor(ShellEdge.edgeTop, false);
-}
+// _waylandClearAnchors() {
+//   final wls = WaylandLayerShell();
+//   wls.setAnchor(ShellEdge.edgeBottom, false);
+//   wls.setAnchor(ShellEdge.edgeLeft, false);
+//   wls.setAnchor(ShellEdge.edgeRight, false);
+//   wls.setAnchor(ShellEdge.edgeTop, false);
+// }

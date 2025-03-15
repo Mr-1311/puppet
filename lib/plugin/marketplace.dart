@@ -210,9 +210,12 @@ class MarketplacePluginsNotifier extends AsyncNotifier<List<MarketplacePlugin>> 
       for (final entry in assets.entries) {
         final name = entry.key;
         if (!['plugin.wasm', 'manifest.json', 'readme.md', 'README.md'].contains(name)) {
-          final content = await _downloadAsset(entry.value, false);
+          final content = await _downloadAsset(entry.value, true);
           if (content != null) {
             await File(path.join(dataDir.path, name)).writeAsBytes(base64.decode(content));
+            if (Platform.isLinux || Platform.isMacOS) {
+              await Process.run('chmod', ['+x', path.join(dataDir.path, name)]);
+            }
           }
         }
       }
@@ -329,9 +332,12 @@ Future<bool> updatePlugin(Plugin plugin) async {
     for (final entry in assets.entries) {
       final name = entry.key;
       if (!['plugin.wasm', 'manifest.json', 'readme.md', 'README.md'].contains(name)) {
-        final content = await _downloadAsset(entry.value, false);
+        final content = await _downloadAsset(entry.value, true);
         if (content != null) {
           await File(path.join(dataDir.path, name)).writeAsBytes(base64.decode(content));
+          if (Platform.isLinux || Platform.isMacOS) {
+            await Process.run('chmod', ['+x', path.join(dataDir.path, name)]);
+          }
         }
       }
     }
