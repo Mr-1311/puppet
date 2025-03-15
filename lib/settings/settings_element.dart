@@ -23,17 +23,17 @@ const elementPadding = EdgeInsets.symmetric(horizontal: 32);
 
 enum Fields {
   mainMenu('Main Menu', description: 'Select which menu to show when the application starts'),
-  mainHotkey('Shortcut', description: 'Global shortcut key combination to open the main menu'),
+  mainHotkey('Shortcut', description: 'Global shortcut key combination to open the main menu. Note: On linux global shortcuts may not work, try to set shortcut via your WM/Compositor to run `Puppet`'),
   name('Name', description: 'Name of the menu - must be unique across all menus'),
   type('Type', description: 'Menu display style - either wheel (circular) or list (vertical) layout'),
-  menuHotkey('Shortcut', description: 'Shortcut key combination to open this specific menu'),
+  menuHotkey('Shortcut', description: 'Shortcut key combination to open this specific menu. Note: On linux global shortcuts may not work, try to set shortcut via your WM/Compositor, to open a specific menu pass menu argument to `Puppet` like `--menu "menu name"`'),
   theme('Theme', description: 'Visual theme for the menu - use default or select a custom theme'),
   colorScheme('Color Scheme', description: 'Choose between light, dark, or system color scheme for the menu'),
   width('Width', description: 'Width of the menu in pixels (px) or percentage (%) of screen width'),
   height('Height', description: 'Height of the menu in pixels (px) or percentage (%) of screen height'),
   position('Position',
       description:
-          'Menu position on screen - can be relative to mouse cursor or fixed position with vertical/horizontal alignment'),
+          'Menu position on screen - can be relative to mouse cursor or fixed position with vertical/horizontal alignment. Note: On Linux Wayland compositors, mouse-relative positioning is currently unsupported'),
   marginVertical('Margin Vertical',
       description: 'Vertical margin from the top/bottom of the screen in pixels (px) or percentage (%)'),
   marginHorizontal('Margin Horizontal',

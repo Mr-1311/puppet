@@ -5,6 +5,7 @@ import 'package:args/args.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_single_instance/flutter_single_instance.dart' as fsi;
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:puppet/config/config.dart';
 import 'package:puppet/providers.dart';
@@ -74,6 +75,18 @@ void main(List<String> args) async {
   final bool isSettings = results['settings'];
   isSettingsApp = isSettings;
   mainMenuArg = results['menu'] ?? "";
+
+  if (!isSettings && !await fsi.FlutterSingleInstance().isFirstInstance()) {
+    print("App is already running");
+
+    final err = await fsi.FlutterSingleInstance().focus();
+
+    if (err != null) {
+      print("Error focusing running instance: $err");
+    }
+
+    exit(0);
+  }
 
   _setWindowMode(isSettings);
   // tray icon settings
