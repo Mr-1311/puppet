@@ -3,7 +3,9 @@
   "mainMenu": "main menu",
   "shortcut": {
     "keyCode": "space",
-    "modifiers": ["alt"]
+    "modifiers": [
+      "alt"
+    ]
   },
   "menus": [
     {
@@ -28,10 +30,10 @@
           "icon": "50",
           "plugin": "run",
           "pluginArgs": {
-            "command": "open",
+            "command": "start",
             "arguments": "https://github.com/Mr-1311/puppet",
             "environment variables": "{}",
-            "run in shell": "false"
+            "run in shell": "true"
           }
         }
       ]
