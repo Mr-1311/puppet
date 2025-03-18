@@ -1,25 +1,32 @@
 # Puppet
 
-A modern, customizable application launcher built with Flutter and Rust.
+Puppet is a cross-platform dynamic menu system driven by WASM plugins. Create application launchers, window switchers, and more!
 
-## Features
+**Key Features:**
 
-- 🚀 Quick application launching
-- 👀 Multiple view modes:
-  - List view
-  - Wheel view
-- 🎨 Custom themes
-- 🔌 Plugin support
-- ⚙️ Configurable settings
-- 💻 Cross-platform support (Windows, macOS, Linux)
+-   **Dynamic Menus:** User-defined menus with wheel or list layouts.
+-   **WASM Plugins:** Extend functionality using Extism.
+-   **Customizable:** Themes, hotkeys, and more.
 
-## Overview
+**How it Works:**
 
-Puppet is a fast and efficient application launcher that helps you quickly find and launch applications on your system. Its modern interface offers different viewing options to suit your preference, whether you prefer a traditional list view or a unique wheel interface.
+1.  Open menu via hotkey.
+2.  Plugins generate menu items.
+3.  Puppet displays items.
+4.  User selects an item.
+5.  Plugin handles the selection.
 
-## Configuration
+**Plugin Highlights:**
 
-The launcher can be customized through the settings interface or by modifying the `assets/config.json` file.
+-   Written in any Extism PDK language.
+-   `init()`, `filter()`, `on_selected()` functions.
+-   `cli_run()` host function for running commands.
+-   `manifest.json` for configuration and permissions.
+
+**Publishing Plugins:**
+
+1.  Create a release with `plugin.wasm`, `manifest.json`, and `readme.md`.
+2.  Add your plugin to `plugins.json` in the [puppet-plugins](https://github.com/Mr-1311/puppet-plugins) repository.
 
 ## Building from Source
 
@@ -27,7 +34,7 @@ The launcher can be customized through the settings interface or by modifying th
 
 - Flutter SDK
 - Rust toolchain
-- Platform-specific build tools (Visual Studio/Xcode/CMake)
+- for linux install keybinder3 and gtk-layer-shell
 
 ### Build Steps
 
@@ -38,5 +45,4 @@ Use the included build script:
 ```
 
 ## License
-
-[Add your license information here]
+MIT

@@ -4,6 +4,9 @@ PODS:
   - hotkey_manager_macos (0.0.1):
     - FlutterMacOS
     - HotKey
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - rust_lib_puppet (0.0.1):
     - FlutterMacOS
   - screen_retriever_macos (0.0.1):
@@ -18,6 +21,7 @@ PODS:
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - hotkey_manager_macos (from `Flutter/ephemeral/.symlinks/plugins/hotkey_manager_macos/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - rust_lib_puppet (from `Flutter/ephemeral/.symlinks/plugins/rust_lib_puppet/macos`)
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
   - tray_manager (from `Flutter/ephemeral/.symlinks/plugins/tray_manager/macos`)
@@ -33,6 +37,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   hotkey_manager_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/hotkey_manager_macos/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   rust_lib_puppet:
     :path: Flutter/ephemeral/.symlinks/plugins/rust_lib_puppet/macos
   screen_retriever_macos:
@@ -48,6 +54,7 @@ SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   HotKey: e96d8a2ddbf4591131e2bb3f54e69554d90cdca6
   hotkey_manager_macos: 1e2edb0c7ae4fe67108af44a9d3445de41404160
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   rust_lib_puppet: 1666dbe7d893e24c9c2b674a6f56f04c455d9ffc
   screen_retriever_macos: 776e0fa5d42c6163d2bf772d22478df4b302b161
   tray_manager: 9064e219c56d75c476e46b9a21182087930baf90
