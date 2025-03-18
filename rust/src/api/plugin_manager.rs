@@ -132,7 +132,8 @@ impl PluginManager {
             ).with_allowed_path(data_dir_path.clone(), PathBuf::from("data")) // allow access to <plugin_path>/data
             .with_allowed_hosts(plugin_config.allowed_hosts.iter().cloned())
             .with_config(plugin_config.config.iter().cloned())
-            .with_config_key("platform", std::env::consts::OS); // add platform key to config - "linux" "windows" "macos"
+            .with_config_key("platform", std::env::consts::OS)
+            .with_config_key("data_dir_path", data_dir_path.clone()); // add platform key to config - "linux" "windows" "macos"
 
         let cli_config = CliConfig {
             enabled: plugin_config.cli,
