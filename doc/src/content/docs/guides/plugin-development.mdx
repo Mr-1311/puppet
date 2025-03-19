@@ -10,7 +10,7 @@ This guide covers everything you need to know about developing plugins for Puppe
 ## Getting Started
 
 ### Prerequisites
-- Understanding of any programming language supported by Extism PDK
+- Understanding of any programming language supported by [Extism PDK](https://extism.org/docs/concepts/pdk/)
 - Basic knowledge of WebAssembly concepts
 - Familiarity with JSON for manifest files
 
@@ -21,9 +21,9 @@ Start by cloning the plugin template:
 git clone https://github.com/Mr-1311/plugin_template_rust
 ```
 
-Currently, Rust template is available. Support for other Extism PDK languages will be added in the future.
+Currently, only the Rust template is available, and other templates will be added in the future. However, you can develop plugins using any language supported by the [Extism PDK](https://extism.org/docs/concepts/pdk/) right now.
 
-## Plugin Structure
+Check out template project readme for more information: [plugin_template_rust](https://github.com/Mr-1311/plugin_template_rust)
 
 ### Required Functions
 
@@ -39,6 +39,21 @@ filter(query: string): List<{name: string, desc: string, icon: string}>
 // Handle item selection
 on_selected(selected: string): void
 ```
+
+Note about icons:
+- For local images: Provide the full path to the image file
+- For Font Awesome icons: Use the Unicode value (e.g., "f0f3" for bell icon)
+- Supported image formats:
+  - PNG (`.png`)
+  - JPEG (`.jpg`, `.jpeg`)
+  - GIF (`.gif`)
+  - WebP (`.webp`)
+  - BMP (`.bmp`)
+  - WBMP (`.wbmp`)
+  - ICO (`.ico`, `.icon`)
+  - ICNS (`.icns`)
+  - XPM (`.xpm`)
+  - SVG (`.svg`)
 
 ### Plugin Manifest
 
@@ -77,10 +92,10 @@ cli_run(command: string, args: string[]): string
 
 ### Data Access
 - Read/write access to `/data` directory
-- Use `data_dir_path` config key for full path
-- Environment variables in paths (e.g., `$HOME/.config`)
-- Enable `wasi: true` for filesystem access
-
+- Use `data_dir_path` config key for full data folder path
+- For path access you can use environment variables in paths (e.g., `$HOME/.config` and access this path in plugin like `/HOME/.config`)
+- Enable `wasi: true` for filesystem aclc data foederss
+ For pathaccess you can use e and access this path in plugin like `/HOME/.config`
 ### Platform Detection
 - Use `platform` config key for OS detection
 - Values: "windows", "macos", "linux"
@@ -112,7 +127,9 @@ cli_run(command: string, args: string[]): string
 - Use semantic versioning for releases
 - Ensure unique plugin names
 - Avoid using terms like "puppet" or "official" in names
-- Include all necessary files in release assets
+- Include all necessary fils
+- Avoid using terms like "puppet" or "official" in names
+- Include all necessary files in release assetes in release assets
 - Properly document plugin usage and arguments
 
 ## Best Practices
@@ -129,8 +146,12 @@ cli_run(command: string, args: string[]): string
 
 ### User Experience
 - Provide clear item descriptions
-- Use appropriate icons
+- Use appropriate icons (local images or Font Awesome)
 - Include helpful plugin documentation
+
+### Icons
+- When using local images, ensure they are in a supported format
+- For Font Awesome icons, use the correct Unicode values
 
 ## Debugging Tips
 
@@ -139,3 +160,4 @@ cli_run(command: string, args: string[]): string
 - Check platform compatibility
 - Validate manifest format
 - Test data directory access
+- Verify icon paths and formats
