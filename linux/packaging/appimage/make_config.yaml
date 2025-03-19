@@ -22,7 +22,9 @@ startup_notify: true
 #
 # include:
 #   - libcurl.so.4
-include: []
+include:
+  - gtk-layer-shell-0
+  - keybinder-3.0
 # You can also specify [metainfo](https://www.freedesktop.org/software/appstream/metainfocreator/#/) file
 # which contains metadata of the app.
 # metainfo: linux/packaging/myappid.appdata.xml
