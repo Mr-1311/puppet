@@ -1,0 +1,24 @@
+display_name: puppet
+package_name: puppet
+maintainer:
+  name: metin ur
+  email: metinur.1311@gmail.com
+priority: optional
+section: utilities
+installed_size: 6604
+essential: false
+icon: assets/logo.png
+
+keywords:
+  - dynamic menu
+  - application launcher
+
+generic_name: puppet
+
+categories:
+  - Utility
+
+startup_notify: true
+# You can also specify [metainfo](https://freedesktop.org/software/appstream/docs/chap-Quickstart.html) file
+# which contains metadata of the app.
+# metainfo: linux/packaging/myappid.appdata.xml
