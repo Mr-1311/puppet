@@ -1,5 +1,9 @@
-# Puppet
 
+<p align="center">
+  <img src="assets/logo.png" alt="Puppet Logo" width="128" height="128" />
+</p>
+
+# Puppet
 Puppet is a cross-platform dynamic menu system driven by WASM plugins. Create application launchers, window switchers, and more!
 
 **Key Features:**

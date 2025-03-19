@@ -1,0 +1,73 @@
+---
+title: Architecture
+description: Understanding Puppet's plugin-based architecture and application flow
+---
+
+# Architecture Overview
+
+Puppet follows a plugin-based architecture where each menu can contain multiple plugins that generate and handle menu items. The application flow is designed to be modular and extensible through WASM plugins.
+
+## Application Flow
+
+1. **Menu Activation**
+   - User triggers menu via configured hotkey
+   - System loads associated plugins
+
+2. **Plugin Initialization**
+   - Each plugin's `init()` function is called with user-defined parameters
+   - Plugins return initial menu items
+
+3. **Menu Display**
+   - Items are rendered in the chosen layout (wheel/list)
+   - Visual theme and positioning are applied
+
+4. **User Interaction**
+   - User can filter items through text input
+   - Plugins can update items via `filter(query)` method
+   - Item selection triggers plugin's `on_selected()` handler
+
+## Plugin Architecture
+
+### Core Functions
+
+Every plugin must implement three essential functions:
+
+```typescript
+// Initialize and return initial menu items
+init(): List<{name: string, desc: string, icon: string}>
+
+// Filter or update items based on user input
+filter(query: string): List<{name: string, desc: string, icon: string}>
+
+// Handle item selection
+on_selected(selected: string): void
+```
+
+### Host Integration
+
+Plugins can execute system commands using the provided host function:
+
+```typescript
+cli_run(command: string, args: string[]): string
+```
+
+### Plugin Data Access
+
+- Each plugin has access to a dedicated `/data` directory for reading and writing
+- Filesystem access requires `wasi: true` in manifest
+- Paths specified in `allowedPaths` can include environment variables
+- Host system command execution via `cli_run` function
+
+## Configuration Architecture
+
+### Menu Configuration
+- Settings stored per menu
+- Plugin-specific parameters
+- Visual theme assignments
+- Layout and positioning rules
+
+### System Settings
+- Global configuration options
+- Default menu selection
+- System-wide hotkeys
+- Platform-specific settings

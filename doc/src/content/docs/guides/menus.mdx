@@ -1,0 +1,84 @@
+---
+title: Menus
+description: Understanding menu types, configurations, and theme customization
+---
+
+# Menu System
+
+Puppet provides two distinct menu types and extensive customization options through settings and themes.
+
+## Menu Types
+
+### Wheel Menu
+- Circular layout with items arranged around a center point
+- Items distributed evenly in a wheel formation
+- Center area for menu title
+- Page indicators for multiple pages
+
+### List Menu
+- Traditional vertical layout
+- Scrollable list of items
+- Efficient for large numbers of items
+
+## Menu Settings
+
+### Basic Configuration
+- `name`: Unique menu identifier
+- `type`: "wheel" or "list"
+- `menuHotkey`: Shortcut to open the menu
+- `theme`: Visual theme selection
+- `colorScheme`: "light", "dark", or "system"
+
+### Layout Settings
+- `width`: Menu width (px or %)
+- `height`: Menu height (px or %)
+- `maxElement`: Maximum items per page
+
+### Positioning
+- `position`: Screen position or relative to cursor
+- `marginVertical`: Top/bottom margin
+- `marginHorizontal`: Left/right margin
+- `monitor`: Display selection
+
+## Theme System
+
+Themes allow complete customization of menu appearance through various properties.
+
+### Colors
+- `backgroundColor`: Background color of the menu
+- `separatorColor`: Color of dividing lines between items
+- `outlineColor`: Border color around the menu
+- `centerColor`: Color of the central circle (wheel menu only)
+- `hoveredBackgroundColor`: Background color on item hover
+- `itemFontColor`: Text color for item names
+- `menuFontColor`: Text color for menu title
+- `descFontColor`: Text color for item descriptions
+
+### Typography
+- `itemNameFont`: Font family for item names
+- `menuNameFont`: Font family for menu title
+- `descriptionFont`: Font family for descriptions
+- `itemNameFontSize`: Size of item names
+- `menuNameFontSize`: Size of menu title
+- `descFontSize`: Size of descriptions
+
+### Layout Elements
+- `separatorThickness`: Width of dividing lines
+- `outlineThickness`: Width of menu border
+- `iconSize`: Size of menu item icons
+
+### Page Indicators (Wheel Menu)
+- `pageIndicatorActiveColor`: Color for current page indicator
+- `pageIndicatorPassiveColor`: Color for inactive page indicators
+
+## Item Configuration
+
+Each menu item can be customized with:
+
+- `itemName`: Primary display text
+- `itemDescription`: Secondary descriptive text
+- `itemRepeat`: Allow repeated use without closing
+- `itemShortcut`: Hotkey binding
+- `itemIcon`: Custom icon (Font Awesome or local image)
+- `itemPlugin`: Associated plugin
+- `itemPluginArg`: Plugin-specific parameters

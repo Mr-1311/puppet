@@ -1,0 +1,141 @@
+---
+title: Plugin Development
+description: Guide to developing plugins for Puppet using WASM
+---
+
+# Plugin Development
+
+This guide covers everything you need to know about developing plugins for Puppet using WebAssembly (WASM).
+
+## Getting Started
+
+### Prerequisites
+- Understanding of any programming language supported by Extism PDK
+- Basic knowledge of WebAssembly concepts
+- Familiarity with JSON for manifest files
+
+### Template Repository
+Start by cloning the plugin template:
+
+```bash
+git clone https://github.com/Mr-1311/plugin_template_rust
+```
+
+Currently, Rust template is available. Support for other Extism PDK languages will be added in the future.
+
+## Plugin Structure
+
+### Required Functions
+
+Every plugin must implement these three core functions:
+
+```typescript
+// Initialize and return initial menu items
+init(): List<{name: string, desc: string, icon: string}>
+
+// Filter or update items based on user input
+filter(query: string): List<{name: string, desc: string, icon: string}>
+
+// Handle item selection
+on_selected(selected: string): void
+```
+
+### Plugin Manifest
+
+Create a `manifest.json` file with plugin metadata and permissions:
+
+```json
+{
+  "name": "plugin_name",
+  "description": "Plugin description",
+  "author": "author_name",
+  "source": "repository_url",
+  "platforms": ["windows", "linux", "macos"],
+  "allowedPaths": ["$HOME/.config", "/opt"],
+  "allowedHosts": ["domain.com", "*"],
+  "wasi": false,
+  "cli": false,
+  "pluginArgs": [
+    {
+      "name": "argument_name",
+      "description": "argument_description",
+      "defaultValue": "default_value",
+      "type": "argument_type"
+    }
+  ]
+}
+```
+
+## System Integration
+
+### Host Function
+Plugins can execute system commands using:
+
+```typescript
+cli_run(command: string, args: string[]): string
+```
+
+### Data Access
+- Read/write access to `/data` directory
+- Use `data_dir_path` config key for full path
+- Environment variables in paths (e.g., `$HOME/.config`)
+- Enable `wasi: true` for filesystem access
+
+### Platform Detection
+- Use `platform` config key for OS detection
+- Values: "windows", "macos", "linux"
+
+## Publishing Plugins
+
+1. **Create a Release**
+   - Include required files:
+     - `readme.md`
+     - `plugin.wasm`
+     - `manifest.json`
+   - Add any additional files for the data directory
+
+2. **Register Your Plugin**
+   - Fork `puppet-plugins` repository
+   - Edit `plugins.json`:
+     ```json
+     {
+       "name": "plugin name",
+       "author": "author name",
+       "description": "plugin description",
+       "platforms": ["macos", "windows", "linux"],
+       "repo": "github repo url"
+     }
+     ```
+   - Submit pull request
+
+### Publishing Guidelines
+- Use semantic versioning for releases
+- Ensure unique plugin names
+- Avoid using terms like "puppet" or "official" in names
+- Include all necessary files in release assets
+- Properly document plugin usage and arguments
+
+## Best Practices
+
+### Security
+- Request minimum required permissions
+- Use specific paths in `allowedPaths`
+- Carefully consider `allowedHosts` entries
+
+### Performance
+- Optimize item generation in init function
+- Implement efficient filtering
+- Handle errors gracefully
+
+### User Experience
+- Provide clear item descriptions
+- Use appropriate icons
+- Include helpful plugin documentation
+
+## Debugging Tips
+
+- Test plugin with different inputs
+- Verify file permissions
+- Check platform compatibility
+- Validate manifest format
+- Test data directory access

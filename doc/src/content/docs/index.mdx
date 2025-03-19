@@ -1,0 +1,54 @@
+---
+title: Puppet Documentation
+description: Documentation for Puppet - A Cross-Platform Dynamic Menu System
+template: splash
+hero:
+  tagline: A powerful cross-platform dynamic menu system with plugin support
+  image:
+    file: ../../assets/logo.png
+  actions:
+    - text: Get Started
+      link: /guides/getting-started
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/Mr-1311/puppet
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Welcome to Puppet
+
+Puppet is a versatile dynamic menu system that allows you to create custom menus powered by WebAssembly plugins. Whether you need an application launcher, window switcher, or any other type of menu interface, Puppet's extensible architecture makes it possible.
+
+## Key Documentation Sections
+
+<CardGrid stagger>
+  <Card title="Getting Started" icon="rocket">
+    Learn about Puppet's core features and get up and running quickly.
+    
+    [Get Started →](/guides/getting-started)
+  </Card>
+  <Card title="Architecture" icon="puzzle">
+    Understand Puppet's plugin-based architecture and application flow.
+    
+    [Learn More →](/guides/architecture)
+  </Card>
+  <Card title="Menus" icon="list">
+    Explore menu types, configurations, and theme customization.
+    
+    [View Details →](/guides/menus)
+  </Card>
+  <Card title="Plugin Development" icon="setting">
+    Learn how to create and publish plugins for Puppet.
+    
+    [Start Development →](/guides/plugin-development)
+  </Card>
+</CardGrid>
+
+## Quick Links
+
+- [GitHub Repository](https://github.com/Mr-1311/puppet)
+- [Plugin Template (Rust)](https://github.com/Mr-1311/plugin_template_rust)
+- [Plugin Registry](https://github.com/Mr-1311/puppet-plugins)

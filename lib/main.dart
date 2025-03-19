@@ -167,31 +167,30 @@ class _MainAppState extends ConsumerState<MainApp> with tray.TrayListener, Windo
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: switch (menu) {
-              AsyncData(:final value) => CallbackShortcuts(
-                  bindings: {
-                    const SingleActivator(
-                      LogicalKeyboardKey.escape,
-                    ): () {
-                      final searchQuery = ref.read(searchQueryProvider);
-                      if (searchQuery.isNotEmpty) {
-                        ref.read(searchQueryProvider.notifier).state = '';
-                        ref.read(searchFocusProvider).previousFocus();
-                      } else {
-                        ref.read(menuProvider.notifier).clearHistory();
-                        ref.invalidate(menuProvider);
-                        ref.invalidate(currentPageProvider);
-                        handleHide();
-                      }
-                    },
-                  },
-                  child: Focus(
-                    autofocus: true,
-                    child: Menu(menu: value),
-                  ),
-                ),
-              _ => CircularProgressIndicator(),
-            }
-        );
+          AsyncData(:final value) => CallbackShortcuts(
+              bindings: {
+                const SingleActivator(
+                  LogicalKeyboardKey.escape,
+                ): () {
+                  final searchQuery = ref.read(searchQueryProvider);
+                  if (searchQuery.isNotEmpty) {
+                    ref.read(searchQueryProvider.notifier).state = '';
+                    ref.read(searchFocusProvider).previousFocus();
+                  } else {
+                    ref.read(menuProvider.notifier).clearHistory();
+                    ref.invalidate(menuProvider);
+                    ref.invalidate(currentPageProvider);
+                    handleHide();
+                  }
+                },
+              },
+              child: Focus(
+                autofocus: true,
+                child: Menu(menu: value),
+              ),
+            ),
+          _ => CircularProgressIndicator(),
+        });
   }
 
   @override
