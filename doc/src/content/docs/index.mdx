@@ -1,12 +1,12 @@
 ---
-title: Puppet Documentation
+title: Puppet
 description: Documentation for Puppet - A Cross-Platform Dynamic Menu System
 template: splash
 hero:
-  tagline: A powerful cross-platform dynamic menu system with plugin support
+  tagline: A cross-platform dynamic menu system with plugin support
   image:
+    alt: A glittering, brightly colored logo
     file: ../../assets/logo.png
-    alt: Puppet logo
   actions:
     - text: Get Started
       link: /guides/getting-started
@@ -19,24 +19,26 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-<div style="display: flex; justify-content: center; gap: 1rem; margin: 2rem 0;">
-  <div style="width: 300px; height: 300px;">
-    <img src="/src/assets/img1.png" alt="Screenshot 1" style="width: 100%; height: 100%; object-fit: cover;" />
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; margin: 2rem 0;">
+  <div style="flex: 0 0 auto;">
+    <img src="/images/img2.png" alt="Screenshot 2" style="display: block; width: 300px; height: 300px; object-fit: contain;" />
   </div>
-  <img src="/src/assets/img2.png" alt="Screenshot 2" style="max-width: 33%;" />
-  <img src="/src/assets/img3.png" alt="Screenshot 3" style="max-width: 33%;" />
+  <div style="flex: 0 0 auto;">
+    <img src="/images/img1.png" alt="Screenshot 1" style="display: block; width: 330px; height: 330px; object-fit: contain;" />
+  </div>
+  <div style="flex: 0 0 auto;">
+    <img src="/images/img3.png" alt="Screenshot 3" style="display: block; width: 300px; height: 300px; object-fit: contain;" />
+  </div>
 </div>
 
 ## Downloads
 
-<div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0;">
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; margin: 2rem 0;">
   <a href="https://github.com/Mr-1311/puppet/releases/download/v0.1.0/puppet-0.1.0-macos.dmg" 
      style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; 
-            background-color: #2d2d2d; color: white; text-decoration: none; border-radius: 8px;
+            background-color: rgb(6, 172, 172); color: white; text-decoration: none; border-radius: 8px;
             transition: background-color 0.2s;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09998 22C7.78998 22.05 6.79998 20.68 5.95998 19.47C4.24998 17 2.93998 12.45 4.69998 9.39C5.56998 7.87 7.12998 6.91 8.81998 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z" fill="white"/>
-    </svg>
+    <img src="/images/apple-brands-solid.svg" alt="macOS" width="24" height="24" style="filter: brightness(0) invert(1);" />
     <div>
       <div style="font-weight: bold;">macOS</div>
       <div style="font-size: 0.8rem;">Download DMG</div>
@@ -45,25 +47,20 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
   <a href="https://github.com/Mr-1311/puppet/releases/download/v0.1.0/puppet-0.1.0-windows-setup.exe"
      style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
-            background-color: #2d2d2d; color: white; text-decoration: none; border-radius: 8px;
+            background-color: rgb(6, 172, 172); color: white; text-decoration: none; border-radius: 8px;
             transition: background-color 0.2s;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 5.75L10.5 4.87V11.5H3V5.75ZM11.5 4.72L21 3.5V11.5H11.5V4.72ZM3 12.5H10.5V19.13L3 18.25V12.5ZM11.5 19.28V12.5H21V20.5L11.5 19.28Z" fill="white"/>
-    </svg>
+    <img src="/images/windows-brands.svg" alt="Windows" width="24" height="24" style="filter: brightness(0) invert(1);" />
     <div>
       <div style="font-weight: bold;">Windows</div>
       <div style="font-size: 0.8rem;">Download EXE</div>
     </div>
   </a>
 
-  <div style="display: flex; gap: 0.5rem;">
     <a href="https://github.com/Mr-1311/puppet/releases/download/v0.1.0/puppet-0.1.0-linux.deb"
        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
-              background-color: #2d2d2d; color: white; text-decoration: none; border-radius: 8px;
+              background-color: rgb(6, 172, 172); color: white; text-decoration: none; border-radius: 8px;
               transition: background-color 0.2s;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 0 0-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587.14 1.147.27 1.726.27 1.14 0 2.06-.232 2.815-.668a.5.5 0 0 0 .12.087c.313.2.658.248.968.248.658 0 1.287-.268 1.902-.67.614-.4 1.187-.806 1.618-1.404 0 0 .299-.47.486-.685.34-.334.487-.67.487-1.006.0-1.629-4.381-5.024-4.381-5.024.213-3.05.313-4.263.313-4.263 0 0 .4-.979 1.209-1.355 0 0-.473.605-.473 1.203 0 0 3.062-4.879 3.062-4.879v.135c0 .334-.373.605-.532.872-.532.872-5.106 7.764-5.106 7.764.848-6.422 3.832-8.41 3.832-8.41h.135c-.4.203-.736.469-.864.605C16.157.472 14.441.007 12.534.007v-.007h-.03zm1.532 1.485c-.313.201-.633.535-.633.535 1.187.53 2.632 2.088 2.632 2.088l-1.006-.536c.267.334.54.7.668 1.07.313.736.424 1.687.424 3.172 0 .402-.09 1.599-.09 1.599 0 .2-.09.47-.09.47 0 .333.09.603.09.603.094 2.219.663 3.474.663 3.474 0 0 .001-4.164-.38-5.547-.381-1.405-.993-2.275-1.437-2.677.363.334.861.869 1.143 1.203 1.386 1.726 2.158 3.88 2.158 5.27 0 .466-.053.936-.156 1.398a7.64 7.64 0 0 1-.4 1.187c-.477 1.07-1.327 1.92-2.037 2.355.848-.535 1.827-1.338 2.32-2.088.712-1.09.831-2.489.831-4.127 0-3.927-3.382-7.316-3.382-7.316s-.466 1.92-.466 2.99c-.506-1.537-1.503-3.556-1.503-3.556l.448.203c-.495-1.124-1.939-2.316-1.939-2.316l.6.4c-1.83-2.009-4.865-1.951-4.865-1.951z" fill="white"/>
-      </svg>
+      <img src="/images/linux-brands.svg" alt="Linux" width="24" height="24" style="filter: brightness(0) invert(1);" />
       <div>
         <div style="font-weight: bold;">Linux</div>
         <div style="font-size: 0.8rem;">Download DEB</div>
@@ -72,14 +69,14 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
     <a href="https://github.com/Mr-1311/puppet/releases/download/v0.1.0/puppet-0.1.0-linux.AppImage"
        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
-              background-color: #2d2d2d; color: white; text-decoration: none; border-radius: 8px;
+              background-color:rgb(6, 172, 172); color: white; text-decoration: none; border-radius: 8px;
               transition: background-color 0.2s;">
+      <img src="/images/linux-brands.svg" alt="Linux" width="24" height="24" style="filter: brightness(0) invert(1);" />
       <div>
         <div style="font-weight: bold;">Linux</div>
         <div style="font-size: 0.8rem;">Download AppImage</div>
       </div>
     </a>
-  </div>
 </div>
 
 ## Key Documentation Sections

@@ -4,6 +4,8 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://mr-1311.github.io',
+  base: '/doc',
   integrations: [
     starlight({
       title: 'Puppet',
