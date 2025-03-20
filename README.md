@@ -7,7 +7,7 @@
 Puppet is a cross-platform dynamic menu system driven by WASM plugins. Create application launchers, window switchers, and more!
 
 <p align="center" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
-  <img src="../../assets/img2.png" alt="Screenshot 2" style="width: 250px; height: auto;" />
+  <img src="doc/src/assets/img2.png" alt="Screenshot 2" style="width: 250px; height: auto;" />
   <img src="doc/src/assets/img1.png" alt="Screenshot 1" style="width: 250px; height: 250px; object-fit: contain;" />
   <img src="doc/src/assets/img3.png" alt="Screenshot 3" style="width: 250px; height: auto;" />
 </p>
