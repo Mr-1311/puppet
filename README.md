@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="assets/logo.png" alt="Puppet Logo" width="128" height="128" />
 </p>
@@ -7,6 +6,9 @@ Puppet is a cross-platform dynamic menu system driven by WASM plugins. Create ap
 
 **[📖 Documentation](https://mr-1311.github.io/puppet/)**
 
+<p align="center">
+  <img src="doc/public/puppet_showcase.gif" alt="Puppet Showcase" />
+</p>
 <p align="center" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; max-width: 800px; margin: 0 auto;">
   <img src="doc/src/assets/img2.png" alt="Screenshot 2" style="width: 250px; height: auto;" />
   <img src="doc/src/assets/img1.png" alt="Screenshot 1" style="width: 250px; height: 250px; object-fit: contain;" />
@@ -18,7 +20,6 @@ Puppet is a cross-platform dynamic menu system driven by WASM plugins. Create ap
 -   **Dynamic Menus:** User-defined menus with wheel or list layouts.
 -   **WASM Plugins:** Extend functionality using Extism.
 -   **Customizable:** Themes, hotkeys, and more.
-
 
 **How it Works:**
 
